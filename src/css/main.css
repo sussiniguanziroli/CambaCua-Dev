@@ -34,16 +34,38 @@
   }
 }
 .header {
-  border: 1px solid red;
-  height: 100%;
-  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2vh 4vw;
+  background-color: #0b369c;
+  box-shadow: 0 0.5vh 1vh rgba(0, 0, 0, 0.1);
+  margin-bottom: 1%;
 }
-@media (max-width: 1330px) {
-  .header {
-    display: none;
-  }
+.header .header-logo {
+  width: 15vw;
+  height: 5vw;
+  max-width: 100%;
+  max-height: 100%;
+  background-image: url("https://i.ibb.co/fMb1dQS/camba-cua-logo-nobg.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 3vh 4vw;
+    display: none;
+  }
+  .header .header-logo {
+    width: 15vw;
+    height: 15vw;
+    margin-bottom: 2vh;
+  }
+}
 @media (min-width: 768px) {
   .landing-dad {
     display: flex;
@@ -204,6 +226,39 @@
   margin: 0 auto;
 }
 
+.nav-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.nav-bar .nav-div {
+  margin: 0 15px;
+}
+.nav-bar .nav-div .nav-button {
+  text-decoration: none;
+  color: #0b369c;
+  font-weight: bold;
+  padding: 10px 20px;
+  border-radius: 5px;
+  transition: background-color 0.3s, color 0.3s;
+}
+.nav-bar .nav-div .nav-button.active {
+  background-color: #1d5aea;
+  color: #F5F5F5;
+}
+.nav-bar .nav-div .nav-button:hover {
+  background-color: #1d5aea;
+  color: #F5F5F5;
+}
+
+@media (max-width: 768px) {
+  .nav-bar {
+    flex-direction: column;
+  }
+  .nav-bar .nav-div {
+    margin: 5px 0;
+  }
+}
 .nav-burger {
   width: 100%;
   height: 5em;

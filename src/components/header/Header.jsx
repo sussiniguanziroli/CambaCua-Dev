@@ -1,17 +1,17 @@
-import React from 'react'
-import NavBar from './NavBar'
-import Menu from '../Menu'
+import React from 'react';
+import NavBar from './NavBar';
+import Menu from '../Menu';
 
 const Header = () => {
   return (
     <>
-    <Menu />
-    <header className='header'>
+      <Menu />
+      <header className='header'>
         <div className='header-logo'></div>
         <NavBar />
-    </header>
+      </header>
     </>
-  )
-}
+  );
+};
 
-export default Header
+export default Header;

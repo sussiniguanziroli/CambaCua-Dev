@@ -1,8 +1,37 @@
+
+
 .header {
-    border: 1px solid red;
-    height: 100%;
-    width: 100%;
-    @media (max-width: 1330px) {
-        display: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2vh 4vw; // Usar unidades relativas para el padding
+  background-color: $azul-cambacua;
+  box-shadow: 0 0.5vh 1vh rgba(0, 0, 0, 0.1);
+  margin-bottom: 1%;
+
+  .header-logo {
+    width: 15vw; // Ancho relativo al viewport
+    height: 5vw; // Altura relativa al viewport
+    max-width: 100%; // Limitar el tamaño máximo
+    max-height: 100%;
+    background-image: url('https://i.ibb.co/fMb1dQS/camba-cua-logo-nobg.png'); // Placeholder para el logo
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 3vh 4vw;
+    display: none;
+
+    .header-logo {
+      width: 15vw;
+      height: 15vw;
+      margin-bottom: 2vh;
     }
+  }
 }
