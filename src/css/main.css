@@ -214,8 +214,8 @@
 .menu-logo-camba {
   background-image: url(https://i.ibb.co/fMb1dQS/camba-cua-logo-nobg.png);
   width: 20%;
-  height: 140%;
-  background-size: contain;
+  height: 100%;
+  background-size: cover;
   background-repeat: no-repeat;
 }
 
@@ -240,7 +240,7 @@
 }
 
 .menu {
-  width: 30%;
+  width: 50%;
   height: 100vh;
   background-color: #0b369c;
   z-index: 6;
