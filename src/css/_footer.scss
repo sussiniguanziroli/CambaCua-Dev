@@ -1,0 +1,32 @@
+.landing-footer {
+    width: 100%;
+    padding: 16px 0;
+    background-color: $azul-cambacua;
+    font-family: "Raleway", sans-serif;
+
+    .footer-links,
+    .footer-contact {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        margin: 8px 0;
+        color: $main-white;
+        a {
+            text-decoration: none;
+            color: $main-white;
+        }
+    }
+
+    .social-icons {
+        display: flex;
+        gap: 8px;
+    }
+}
+
+@media (min-width: 768px) {
+    .landing-footer {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+}

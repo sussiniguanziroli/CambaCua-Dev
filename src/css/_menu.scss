@@ -1,0 +1,182 @@
+.nav-burger {
+    width: 100%;
+    height: 5em;
+    background-color: $azul-cambacua;
+    border-radius: 1px solid;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1em;
+    z-index: 6;
+}
+
+.menu-logo-camba {
+    background-image: url(../assets/camba-cua-logo-nobg.png);
+    width: 20%;
+    height: 140%;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.burger-menu {
+    height: 100%;
+    width: 4em;
+    background-color: $azul-cambacua;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    cursor: pointer;
+    z-index: 6;
+}
+
+.burger-bar {
+    width: 4em;
+    height: 0.5em;
+    background-color: $main-white;
+    border-radius: 0.5em;
+    z-index: 4;
+}
+
+.menu {
+    width: 30%;
+    height: 100vh;
+    background-color: $azul-cambacua;
+    z-index: 6;
+    position: fixed;
+    top: 8vh;
+    transition: all 0.3s;
+    overflow: hidden;
+    @media (max-width: 600px) {
+        top: 6vh;
+    }
+}
+
+.slide-right {
+
+    animation: slide-right 0.3s ease-in both;
+
+}
+
+@keyframes slide-right {
+    0% {
+       
+        transform: translateX(-100%);
+    }
+
+    100% {
+       
+        transform: translateX(0);
+    }
+}
+
+
+
+
+//hiding menu
+.hidden {
+    display: none;
+   
+}
+
+.visible {
+    display: inherit;
+    
+}
+
+//animations
+//clicked
+.burger-bar.clicked:nth-child(1) {
+    transform: rotate(45deg) translate(0.75em, 1.25em);
+    transition: ease-out 0.5s;
+}
+
+.burger-bar.clicked:nth-child(2) {
+    transform: scale(0.1);
+    transition: ease-out 0.5s;
+}
+
+.burger-bar.clicked:nth-child(3) {
+    transform: rotate(135deg) translate(-0.5em, 1em);
+    transition: ease-out 0.5s;
+}
+
+//unclicked
+.burger-bar.unclicked {
+    transform: rotate(0), translate(0);
+    transition: cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.5s;
+}
+
+//menu nav inside
+
+.burger-nav-menu {
+    width: fit-content;
+    height: 40vh;
+    background-color: $azul-cambacua;
+    position: relative;
+    z-index: 6;
+    left: -12%;
+    ul {
+        li {
+            list-style: none;
+           
+        }
+    }
+    
+}
+
+.burger-nav-item {
+    background-color: $azul-cambacua;
+    text-decoration: none;
+    font-family: "Raleway", sans-serif;
+    font-weight: 700;
+    font-size: x-large;
+    color: white;
+   
+}
+
+.burger-nav-ul {
+    li {
+        margin: 1rem;
+        padding: 0.5rem;
+    }
+}
+
+.burger-active {
+    color: $dark-gray;
+}
+
+.burger-god {
+    @media (min-width: 1330px) {
+        display: none;
+        
+    }
+    
+}
+
+
+
+.overlay {
+    position: fixed;
+    top: 5em;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Fondo oscuro semitransparente */
+    z-index: 4; /* Asegura que esté por encima de otros elementos */
+}
+
+.burger-god.menu-active {
+    overflow: hidden; /* Evita el desplazamiento del contenido detrás del menú */
+    
+}
+
+.burger-god.menu-active .overlay {
+    display: block; /* Muestra la capa de fondo oscuro cuando el menú está activo */
+    
+}
+
+.no-scroll {
+    overflow: hidden; /* Desactiva el scroll en la página */
+  }
+  

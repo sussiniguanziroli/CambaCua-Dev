@@ -1,0 +1,12 @@
+@media (max-width: 600px) {
+    html {
+      font-size: 12px; /* Ajusta el tamaño para dispositivos más pequeños */
+    }
+
+  }
+  
+  @media (min-width: 1200px) {
+    html {
+      font-size: 16px; /* Ajusta el tamaño para pantallas más grandes */
+    }
+}

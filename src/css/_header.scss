@@ -1,0 +1,8 @@
+.header {
+    border: 1px solid red;
+    height: 100%;
+    width: 100%;
+    @media (max-width: 1330px) {
+        display: none;
+    }
+}

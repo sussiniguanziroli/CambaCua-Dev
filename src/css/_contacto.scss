@@ -1,0 +1,98 @@
+.contacto-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px;
+    background-color: $main-white;
+    font-family: "Poppins", sans-serif;
+    color: $azul-cambacua;
+
+    h2 {
+        font-size: 28px;
+        margin-bottom: 24px;
+        color: $azul-cambacua;
+    }
+
+    .contacto-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 24px;
+        width: 100%;
+    }
+
+    .contact-form, .contact-info {
+        width: 100%;
+        max-width: 500px;
+        text-align: center;
+
+        h3 {
+            font-size: 22px;
+            margin-bottom: 16px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+
+            input, textarea {
+                width: 100%;
+                padding: 12px;
+                border: 1px solid $azul-cambacua;
+                border-radius: 8px;
+                font-size: 16px;
+            }
+
+            button {
+                background-color: $azul-cambacua;
+                color: $main-white;
+                padding: 12px;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: background-color 0.3s;
+
+                &:hover {
+                    background-color: darken($azul-cambacua, 10%);
+                }
+            }
+        }
+    }
+
+    .social-links {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        margin-bottom: 24px;
+
+        a {
+            color: $azul-cambacua;
+            font-size: 24px;
+            transition: color 0.3s;
+
+            &:hover {
+                color: darken($azul-cambacua, 10%);
+            }
+        }
+    }
+
+    .map-container {
+        iframe {
+            width: 100%;
+            border-radius: 8px;
+        }
+    }
+}
+
+@media (min-width: 768px) {
+    .contacto-content {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .contact-form, .contact-info {
+        text-align: left;
+    }
+}

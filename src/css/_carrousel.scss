@@ -1,0 +1,11 @@
+.carousel-item img {
+    width: 100%; // Ajusta el ancho a 100% del contenedor
+    height: auto; // Mantiene la proporción de aspecto
+    max-height: 500px; // Define una altura máxima para las imágenes
+    object-fit: cover; // Asegura que las imágenes cubran el área del carrusel sin distorsionarse
+}
+
+.carousel {
+    background-color: $main-white;
+}
+
