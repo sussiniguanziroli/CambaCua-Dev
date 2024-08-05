@@ -1,5 +1,11 @@
-// Variables de color
-// Puedes ajustar este valor al azul específico que prefieras
+.landing-dad {
+    @media (min-width: 768px) {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+}
 
 .landing-container {
     display: flex;
@@ -15,12 +21,6 @@
     margin-top: 16px;
     border-bottom: 1px solid lightgray;
     padding-bottom: 6%;
-
-    .hero-image {
-        width: 100%;
-        height: auto;
-        border-radius: 8px;
-    }
 
     h1 {
         font-size: 24px;
@@ -54,10 +54,7 @@
     }
 }
 
-
-
 @media (min-width: 768px) {
-
     .portfolio-section {
         h2 {
             font-size: 28px;
@@ -67,6 +64,7 @@
             font-size: 18px;
         }
     }
+
     .landing-container {
         padding: 32px;
     }
@@ -75,11 +73,6 @@
         flex-direction: row;
         align-items: center;
         justify-content: space-between;
-
-        .hero-image {
-            width: 50%;
-            margin-right: 16px;
-        }
 
         h1 {
             font-size: 36px;
@@ -100,28 +93,20 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            
-            .servicios-images  {
-                margin-right: 32px;
-                
-                img {
-                    width: 800px;
-                    height: 500px;
-                }
-            }
 
-            .servicios-images-2 {
+            .servicios-images, .servicios-images-2 {
                 margin-right: 32px;
-                
+                width: 600px; // Aumenta el ancho del contenedor del carrusel
                 img {
-                    width: 800px;
-                    height: 500px;
+                    width: 100%; // Ajusta la imagen al contenedor del carrusel
+                    height: auto;
+                    max-height: 600px; // Aumenta la altura máxima de las imágenes
+                    object-fit: cover;
                 }
             }
 
             .servicios-list {
                 margin-top: 0;
-                
             }
         }
     }
@@ -141,15 +126,16 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        
 
-        .servicios-images .servicios-images-2 {
+        .servicios-images, .servicios-images-2 {
             display: flex;
             gap: 16px;
+            margin-bottom: 16px;
+            width: 100%;
 
             img {
-                width: 150px;
-                height: 100px;
+                width: 100%;
+                height: auto;
                 border-radius: 8px;
                 object-fit: cover;
             }
@@ -160,8 +146,6 @@
             list-style: none;
             padding: 0;
             width: 90vw;
-            
-             
         }
     }
 }
@@ -169,8 +153,16 @@
 .carrouseles-section {
     display: flex;
     flex-direction: column;
+    justify-content: center;
     gap: 1rem;
-    width: 90%;
+    width: 100%;
+    max-width: 100%;
+
+    .carousel {
+        width: 100%;
+        max-width: 700px; // Aumenta el ancho máximo del carrusel en escritorio
+        margin: 0 auto;
+    }
 }
 
 .portfolio-section {

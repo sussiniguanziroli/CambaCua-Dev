@@ -4,9 +4,30 @@ import Accordeon from './Accordeon';
 import Carousel from 'react-bootstrap/Carousel';
 import { NavLink } from 'react-router-dom';
 
+const ImageCarousel = ({ images }) => (
+    <Carousel>
+        {images.map((img, index) => (
+            <Carousel.Item key={index} interval={4000}>
+                <img src={img.src} alt={img.alt} />
+            </Carousel.Item>
+        ))}
+    </Carousel>
+);
+
 const Landing = () => {
+    const serviciosImages1 = [
+        { src: "https://i.ibb.co/qD5p6dJ/consul-3.jpg", alt: "consul-3" },
+        { src: "https://i.ibb.co/x3hVQgD/consul-1.jpg", alt: "consul-1" }
+    ];
+
+    const serviciosImages2 = [
+        { src: "https://i.ibb.co/7gBkk2p/salon-1.jpg", alt: "salon-1" },
+        { src: "https://i.ibb.co/q1np82S/salon-2.jpg", alt: "salon-2" },
+        { src: "https://i.ibb.co/zHr6HSR/consul-0.jpg", alt: "consul-0" }
+    ];
+
     return (
-        <>
+        <div className='landing-dad'>
             <Carrousel />
             <div className="landing-container">
                 <section className="welcome-section">
@@ -20,27 +41,10 @@ const Landing = () => {
                     <div className="servicios-content">
                         <section className='carrouseles-section'>
                             <div className="servicios-images">
-                                <Carousel>
-                                    <Carousel.Item interval={2000}>
-                                    <img src="https://i.ibb.co/qD5p6dJ/consul-3.jpg" alt="consul-3" />
-                                    </Carousel.Item>
-                                    <Carousel.Item>
-                                    <img src="https://i.ibb.co/x3hVQgD/consul-1.jpg" alt="consul-1" />
-                                    </Carousel.Item>
-                                </Carousel>
+                                <ImageCarousel images={serviciosImages1} />
                             </div>
                             <div className="servicios-images-2">
-                                <Carousel>
-                                    <Carousel.Item interval={2000}>
-                                    <img src="https://i.ibb.co/7gBkk2p/salon-1.jpg" alt="salon-1" />
-                                    </Carousel.Item>
-                                    <Carousel.Item interval={2000}>
-                                    <img src="https://i.ibb.co/q1np82S/salon-2.jpg" alt="salon-2" />
-                                    </Carousel.Item>
-                                    <Carousel.Item>
-                                    <img src="https://i.ibb.co/zHr6HSR/consul-0.jpg" alt="consul-0" />
-                                    </Carousel.Item>
-                                </Carousel>
+                                <ImageCarousel images={serviciosImages2} />
                             </div>
                         </section>
                         <div className='servicios-list'>
@@ -49,7 +53,6 @@ const Landing = () => {
                     </div>
                 </section>
 
-                {/* Nueva sección para el portafolio de la Dra. María Celeste Guanziroli Stefani */}
                 <section className="portfolio-section">
                     <h2>Conoce a la Dra. María Celeste Guanziroli Stefani</h2>
                     <p className="portfolio-summary">
@@ -57,9 +60,8 @@ const Landing = () => {
                     </p>
                 </section>
             </div>
-        </>
+        </div>
     );
 };
 
 export default Landing;
-

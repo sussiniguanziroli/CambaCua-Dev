@@ -44,6 +44,15 @@
   }
 }
 
+@media (min-width: 768px) {
+  .landing-dad {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
 .landing-container {
   display: flex;
   flex-direction: column;
@@ -58,11 +67,6 @@
   margin-top: 16px;
   border-bottom: 1px solid lightgray;
   padding-bottom: 6%;
-}
-.welcome-section .hero-image {
-  width: 100%;
-  height: auto;
-  border-radius: 8px;
 }
 .welcome-section h1 {
   font-size: 24px;
@@ -107,10 +111,6 @@
     align-items: center;
     justify-content: space-between;
   }
-  .welcome-section .hero-image {
-    width: 50%;
-    margin-right: 16px;
-  }
   .welcome-section h1 {
     font-size: 36px;
     margin: 0 0 16px 0;
@@ -126,19 +126,15 @@
     justify-content: center;
     align-items: center;
   }
-  .servicios-veterinarios .servicios-content .servicios-images {
+  .servicios-veterinarios .servicios-content .servicios-images, .servicios-veterinarios .servicios-content .servicios-images-2 {
     margin-right: 32px;
+    width: 600px;
   }
-  .servicios-veterinarios .servicios-content .servicios-images img {
-    width: 800px;
-    height: 500px;
-  }
-  .servicios-veterinarios .servicios-content .servicios-images-2 {
-    margin-right: 32px;
-  }
-  .servicios-veterinarios .servicios-content .servicios-images-2 img {
-    width: 800px;
-    height: 500px;
+  .servicios-veterinarios .servicios-content .servicios-images img, .servicios-veterinarios .servicios-content .servicios-images-2 img {
+    width: 100%;
+    height: auto;
+    max-height: 600px;
+    object-fit: cover;
   }
   .servicios-veterinarios .servicios-content .servicios-list {
     margin-top: 0;
@@ -158,13 +154,15 @@
   flex-direction: column;
   align-items: center;
 }
-.servicios-veterinarios .servicios-content .servicios-images .servicios-images-2 {
+.servicios-veterinarios .servicios-content .servicios-images, .servicios-veterinarios .servicios-content .servicios-images-2 {
   display: flex;
   gap: 16px;
+  margin-bottom: 16px;
+  width: 100%;
 }
-.servicios-veterinarios .servicios-content .servicios-images .servicios-images-2 img {
-  width: 150px;
-  height: 100px;
+.servicios-veterinarios .servicios-content .servicios-images img, .servicios-veterinarios .servicios-content .servicios-images-2 img {
+  width: 100%;
+  height: auto;
   border-radius: 8px;
   object-fit: cover;
 }
@@ -178,8 +176,15 @@
 .carrouseles-section {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 1rem;
-  width: 90%;
+  width: 100%;
+  max-width: 100%;
+}
+.carrouseles-section .carousel {
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
 }
 
 .portfolio-section {
@@ -372,6 +377,11 @@
 
 .carousel {
   background-color: #F5F5F5;
+}
+@media (min-width: 768px) {
+  .carousel {
+    width: 80%;
+  }
 }
 
 .Accordion {
