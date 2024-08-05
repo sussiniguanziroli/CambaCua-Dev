@@ -22,23 +22,23 @@ const Landing = () => {
                             <div className="servicios-images">
                                 <Carousel>
                                     <Carousel.Item interval={2000}>
-                                        <img src="public/assets/consul-3.jpg" alt="primera foto" />
+                                    <img src="https://i.ibb.co/qD5p6dJ/consul-3.jpg" alt="consul-3" />
                                     </Carousel.Item>
                                     <Carousel.Item>
-                                        <img src="public/assets/consul-1.jpg" alt="3era foto" />
+                                    <img src="https://i.ibb.co/x3hVQgD/consul-1.jpg" alt="consul-1" />
                                     </Carousel.Item>
                                 </Carousel>
                             </div>
                             <div className="servicios-images-2">
                                 <Carousel>
                                     <Carousel.Item interval={2000}>
-                                        <img src="public/assets/salon-1.jpg" alt="primera foto" />
+                                    <img src="https://i.ibb.co/7gBkk2p/salon-1.jpg" alt="salon-1" />
                                     </Carousel.Item>
                                     <Carousel.Item interval={2000}>
-                                        <img src="public/assets/salon-2.jpg" alt="2da foto" />
+                                    <img src="https://i.ibb.co/q1np82S/salon-2.jpg" alt="salon-2" />
                                     </Carousel.Item>
                                     <Carousel.Item>
-                                        <img src="public/assets/consul-0.jpg" alt="3era foto" />
+                                    <img src="https://i.ibb.co/zHr6HSR/consul-0.jpg" alt="consul-0" />
                                     </Carousel.Item>
                                 </Carousel>
                             </div>
