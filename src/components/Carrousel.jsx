@@ -9,15 +9,15 @@ const Carrousel = () => {
 
     <Carousel>
       <Carousel.Item interval={2000}>
-       <img src="src/assets/carro-1.jpg" alt="primera foto" />
+       <img src="public/assets/carro-1.jpg" alt="primera foto" />
         
       </Carousel.Item>
       <Carousel.Item interval={2000}>
-        <img src="src/assets/carro-2.jpg" alt="2da foto" />
+        <img src="public/assets/carro-2.jpg" alt="2da foto" />
         
       </Carousel.Item>
       <Carousel.Item >
-        <img src="src/assets/carro-3.jpg" alt="3era foto" />
+        <img src="public/assets/carro-3.jpg" alt="3era foto" />
         
       </Carousel.Item>
     </Carousel>

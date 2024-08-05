@@ -212,7 +212,7 @@
 }
 
 .menu-logo-camba {
-  background-image: url(src/assets/camba-cua-logo-nobg.png);
+  background-image: url(public/assets/camba-cua-logo-nobg.png);
   width: 20%;
   height: 140%;
   background-size: contain;
