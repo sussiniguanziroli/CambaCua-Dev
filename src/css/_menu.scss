@@ -44,12 +44,10 @@
     background-color: $azul-cambacua;
     z-index: 6;
     position: fixed;
-    top: 8vh;
+    
     transition: all 0.3s;
     overflow: hidden;
-    @media (max-width: 600px) {
-        top: 6vh;
-    }
+
 }
 
 .slide-right {

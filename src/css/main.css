@@ -305,14 +305,8 @@
   background-color: #0b369c;
   z-index: 6;
   position: fixed;
-  top: 8vh;
   transition: all 0.3s;
   overflow: hidden;
-}
-@media (max-width: 600px) {
-  .menu {
-    top: 6vh;
-  }
 }
 
 .slide-right {
