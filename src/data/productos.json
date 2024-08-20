@@ -1,0 +1,113 @@
+[
+    {
+      "id": 1,
+      "producto": {
+        "nombre": "Alimento Balanceado para Perros",
+        "precio": 3500,
+        "imagen": "https://placehold.co/150",
+        "descripcion": "Alimento balanceado para perros adultos de razas medianas, 15 kg.",
+        "stock": 50
+      },
+      "categorias": ["Alimentos", "Perros"]
+    },
+    {
+      "id": 2,
+      "producto": {
+        "nombre": "Juguete para Gato",
+        "precio": 800,
+        "imagen": "https://placehold.co/150",
+        "descripcion": "Ratón de juguete con plumas para gatos.",
+        "stock": 100
+      },
+      "categorias": ["Juguetes", "Gatos"]
+    },
+    {
+      "id": 3,
+      "producto": {
+        "nombre": "Antipulgas para Perros",
+        "precio": 2200,
+        "imagen": "https://placehold.co/150",
+        "descripcion": "Pipeta antipulgas para perros de 20-40 kg.",
+        "stock": 75
+      },
+      "categorias": ["Salud", "Perros"]
+    },
+    {
+      "id": 4,
+      "producto": {
+        "nombre": "Arena Sanitaria para Gatos",
+        "precio": 900,
+        "imagen": "https://placehold.co/150",
+        "descripcion": "Arena sanitaria absorbente con olor a lavanda, 10 kg.",
+        "stock": 120
+      },
+      "categorias": ["Higiene", "Gatos"]
+    },
+    {
+      "id": 5,
+      "producto": {
+        "nombre": "Cama para Perro",
+        "precio": 5000,
+        "imagen": "https://placehold.co/150",
+        "descripcion": "Cama acolchonada para perro tamaño grande.",
+        "stock": 25
+      },
+      "categorias": ["Accesorios", "Perros"]
+    },
+    {
+      "id": 6,
+      "producto": {
+        "nombre": "Collar con Correa para Gato",
+        "precio": 1200,
+        "imagen": "https://placehold.co/150",
+        "descripcion": "Collar y correa ajustables para gatos, color rojo.",
+        "stock": 80
+      },
+      "categorias": ["Accesorios", "Gatos"]
+    },
+    {
+      "id": 7,
+      "producto": {
+        "nombre": "Alimento Húmedo para Gatos",
+        "precio": 200,
+        "imagen": "https://placehold.co/150",
+        "descripcion": "Alimento húmedo para gatos adultos, sabor pescado, 85 g.",
+        "stock": 200
+      },
+      "categorias": ["Alimentos", "Gatos"]
+    },
+    {
+      "id": 8,
+      "producto": {
+        "nombre": "Cepillo para Perro",
+        "precio": 2500,
+        "imagen": "https://placehold.co/150",
+        "descripcion": "Cepillo desheddante para perros de pelo corto.",
+        "stock": 60
+      },
+      "categorias": ["Higiene", "Perros"]
+    },
+    {
+      "id": 9,
+      "producto": {
+        "nombre": "Transportadora para Mascotas",
+        "precio": 4500,
+        "imagen": "https://placehold.co/150",
+        "descripcion": "Transportadora para mascotas pequeñas, 50x30x30 cm.",
+        "stock": 15
+      },
+      "categorias": ["Accesorios", "Perros", "Gatos"]
+    },
+    {
+      "id": 10,
+      "producto": {
+        "nombre": "Rascador para Gatos",
+        "precio": 3700,
+        "imagen": "https://placehold.co/150",
+        "descripcion": "Rascador para gatos con postes de sisal y plataforma.",
+        "stock": 40
+      },
+      "categorias": ["Juguetes", "Gatos"]
+    }
+  ]
+  
