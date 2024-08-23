@@ -1,0 +1,54 @@
+.product-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    text-align: start;
+    width: 100%; // Ocupa todo el ancho disponible en la celda del grid
+    box-sizing: border-box; // Asegura que padding y borde se incluyan en el ancho total
+}
+
+.product-image {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.product-name {
+    font-size: 18px;
+    margin: 8px 0;
+    font-weight: 600;
+}
+
+.product-price {
+    font-size: 16px;
+    color: #333;
+}
+
+.add-to-cart-button {
+    background-color: $azul-cambacua;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 10px;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+        background-color: $button-hover-cambacua;
+    }
+}
+
+@media (min-width: 768px) {
+    .product-card {
+        margin: 8px; // Agrega margen entre tarjetas en pantallas medianas
+    }
+}
+
+@media (min-width: 1024px) {
+    .product-card {
+        margin: 12px; // Agrega más margen entre tarjetas en pantallas grandes
+    }
+}
