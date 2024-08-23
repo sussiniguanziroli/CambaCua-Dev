@@ -6,7 +6,7 @@ const Item = ( {producto} ) => {
         <div key={producto.id} className='product-card'>
             <img className="product-image" src={producto.imagen} alt={producto.nombre} />
             <h3 className="product-name" >{producto.nombre}</h3>
-            <h4>{producto.categoria}</h4>
+            <p className='product-category' >{producto.categoria}</p>
             <strong className="product-price" >${producto.precio}</strong>
             <button className="add-to-cart-button">Agregar al carrito</button>
         </div>

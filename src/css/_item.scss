@@ -8,6 +8,7 @@
     box-sizing: border-box; // Asegura que padding y borde se incluyan en el ancho total
 }
 
+
 .product-image {
     width: 100%;
     height: auto;
@@ -15,16 +16,23 @@
     object-fit: cover;
 }
 
+.product-category {
+    font-size: 16px;
+    color: #333;
+}
+
 .product-name {
     font-size: 18px;
     margin: 8px 0;
     font-weight: 600;
+
 }
 
 .product-price {
     font-size: 16px;
     color: #333;
 }
+
 
 .add-to-cart-button {
     background-color: $azul-cambacua;
@@ -35,7 +43,7 @@
     cursor: pointer;
     width: 100%;
     transition: background-color 0.3s ease;
-
+    margin-top: 1rem;
     &:hover {
         background-color: $button-hover-cambacua;
     }
@@ -50,5 +58,31 @@
 @media (min-width: 1024px) {
     .product-card {
         margin: 12px; // Agrega más margen entre tarjetas en pantallas grandes
+        width: 90%;
     }
+
+    .product-image {
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        object-fit: cover;
+        margin-bottom: 1rem;
+    }
+    
+    .product-category {
+        font-size: 1.2rem;
+        color: #333;
+    }
+    
+    .product-name {
+        font-size: 1.5rem;
+        margin: 8px 0;
+        font-weight: 600;
+    }
+    
+    .product-price {
+        font-size: 1.3rem;
+        color: #333;
+    }
+
 }
