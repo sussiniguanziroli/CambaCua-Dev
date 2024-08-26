@@ -1,21 +1,26 @@
 import React from 'react'
 import Item from './Item'
+import { GridLoader } from 'react-spinners'
 
-const ItemList = ( {productos} ) => {
-
-    //en itemList solamente hacemos control de lo que se muestra en la pantalla, si productos, si grid, y condicionamos el entorno de donde luego vamos a tener nuestro grid ITEM
-
-  return (
-    <div className='item-list'>
-        {
-        productos.length > 0 ? 
-        productos.map(producto => {
-            return <Item producto={producto} />
-        })
-        : <p>Cargando...</p>
-        }
-    </div>
-  )
+const ItemList = ({ productos, searchTerm, selectedCategory, selectedSubcategory }) => {
+    return (
+        <div className='item-list'>
+            
+            {productos.length > 0 ? (
+                productos.map(producto => (
+                    <Item key={producto.id} producto={producto} />
+                ))
+            ) : searchTerm || selectedCategory || selectedSubcategory  ? (
+                <div className='no-results'>
+                    <p>Ningún producto coincide con el criterio de búsqueda.</p>
+                </div>
+            ) : (
+                <div className='loader'>
+                    <GridLoader color="#0b369c" size={25} margin={2} />
+                </div>
+            )}
+        </div>
+    )
 }
 
 export default ItemList
