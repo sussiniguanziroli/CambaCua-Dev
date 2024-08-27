@@ -3,6 +3,9 @@
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     text-align: start;
     width: 100%; // Ocupa todo el ancho disponible en la celda del grid
     box-sizing: border-box; // Asegura que padding y borde se incluyan en el ancho total

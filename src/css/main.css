@@ -87,10 +87,10 @@
   margin-top: 1rem;
   margin-bottom: 1rem;
   font-weight: 700;
-  border: 2px dashed #ff8c34;
-  padding: 1rem;
+  background-color: #0b369c;
+  padding: 0.7rem;
   border-radius: 1rem;
-  color: #2c2c2c;
+  color: #F5F5F5;
   text-transform: uppercase;
 }
 .item-list-container .item-list-container-controls .search-container {
@@ -780,6 +780,9 @@
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   text-align: start;
   width: 100%;
   box-sizing: border-box;
