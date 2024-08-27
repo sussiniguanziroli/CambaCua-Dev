@@ -691,7 +691,7 @@
 .item-list {
   display: grid;
   gap: 8px;
-  padding: 16px;
+  padding: 1%;
   grid-template-columns: repeat(2, 1fr);
   min-height: 50vh;
   position: relative;

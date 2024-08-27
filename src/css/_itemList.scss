@@ -1,7 +1,7 @@
 .item-list {
     display: grid;
     gap: 8px; // Espacio entre los productos
-    padding: 16px;
+    padding: 1%;
     grid-template-columns: repeat(2, 1fr);
     min-height: 50vh; // Asegura que el contenedor tenga una altura mínima
     position: relative;
