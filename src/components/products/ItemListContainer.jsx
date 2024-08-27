@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../../firebase/config';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import ItemList from './ItemList';
+import { FiSearch } from 'react-icons/fi'; // Importamos el icono de búsqueda
 
 const ItemListContainer = () => {
     const [productos, setProductos] = useState([]);
@@ -77,15 +78,20 @@ const ItemListContainer = () => {
                 <h1>Productos</h1>
 
                 {/* Barra de búsqueda */}
-                <input
-                    type="text"
-                    placeholder="Buscar productos..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-
-                {/* Filtro de categorías */}
-                <select
+                <div className="search-container">
+                    <input
+                        type="text"
+                        className="search-input"
+                        placeholder="Buscar productos..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        aria-label="Buscar productos"
+                    />
+                    <FiSearch className="search-icon" />
+                </div>
+                <div className='search-container'>
+                    {/* Filtro de categorías */}
+                <select className='menu-categorias'
                     value={selectedCategory}
                     onChange={(e) => {
                         setSelectedCategory(e.target.value);
@@ -102,7 +108,7 @@ const ItemListContainer = () => {
 
                 {/* Filtro de subcategorías */}
                 {selectedCategory && (
-                    <select
+                    <select className='menu-subcategorias'
                         value={selectedSubcategory}
                         onChange={(e) => setSelectedSubcategory(e.target.value)}
                     >
@@ -115,6 +121,8 @@ const ItemListContainer = () => {
                             ))}
                     </select>
                 )}
+                </div>
+                
 
             </div>
 

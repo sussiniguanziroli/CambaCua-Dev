@@ -67,6 +67,7 @@
   }
 }
 .item-list-container {
+  font-family: "Poppins", sans-serif;
   margin: 0.3rem;
   padding: 0.3rem;
   background-image: url("https://i.ibb.co/q5TLstK/container-bg.png");
@@ -91,6 +92,132 @@
   border-radius: 1rem;
   color: #2c2c2c;
   text-transform: uppercase;
+}
+.item-list-container .item-list-container-controls .search-container {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+.item-list-container .item-list-container-controls .search-container .search-input {
+  width: 100%;
+  padding: 12px 48px 12px 16px;
+  font-size: 16px;
+  font-family: "Poppins", sans-serif;
+  color: #0b369c;
+  background-color: #ffffff;
+  border: 2px solid #d1d5db;
+  border-radius: 9999px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+.item-list-container .item-list-container-controls .search-container .search-input:hover {
+  background-color: #e2e8f0;
+}
+.item-list-container .item-list-container-controls .search-container .search-input:focus {
+  border-color: #0b369c;
+  box-shadow: 0 0 0 4px rgba(11, 54, 156, 0.1);
+}
+.item-list-container .item-list-container-controls .search-container .search-input::placeholder {
+  color: #d1d5db;
+  opacity: 1;
+  transition: color 0.3s ease;
+}
+.item-list-container .item-list-container-controls .search-container .search-input:focus::placeholder {
+  color: white;
+}
+.item-list-container .item-list-container-controls .search-container .search-icon {
+  position: absolute;
+  top: 50%;
+  right: 24px;
+  transform: translateY(-50%);
+  font-size: 20px;
+  color: #0b369c;
+  pointer-events: none;
+}
+@media (max-width: 640px) {
+  .item-list-container .item-list-container-controls .search-container {
+    padding: 0 8px;
+  }
+  .item-list-container .item-list-container-controls .search-container .search-input {
+    font-size: 14px;
+    padding: 10px 40px 10px 12px;
+  }
+  .item-list-container .item-list-container-controls .search-container .search-icon {
+    right: 16px;
+    font-size: 18px;
+  }
+}
+.item-list-container .item-list-container-controls .menu-categorias,
+.item-list-container .item-list-container-controls .menu-subcategorias {
+  margin: 0.5rem auto;
+  width: 100%;
+  max-width: 500px;
+  padding: 12px 16px;
+  font-size: 16px;
+  font-family: "Poppins", sans-serif;
+  color: #0b369c;
+  background-color: #ffffff;
+  border: 2px solid #d1d5db;
+  border-radius: 9999px;
+  outline: none;
+  transition: all 0.3s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%230B369C' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  opacity: 0;
+  transform: translateY(-10px);
+  animation: fadeIn 0.5s forwards;
+}
+.item-list-container .item-list-container-controls .menu-categorias .menu-categorias:focus option,
+.item-list-container .item-list-container-controls .menu-categorias .menu-subcategorias:focus option,
+.item-list-container .item-list-container-controls .menu-subcategorias .menu-categorias:focus option,
+.item-list-container .item-list-container-controls .menu-subcategorias .menu-subcategorias:focus option {
+  animation: slideDown 0.3s ease forwards;
+}
+.item-list-container .item-list-container-controls .menu-categorias:hover,
+.item-list-container .item-list-container-controls .menu-subcategorias:hover {
+  background-color: #e2e8f0;
+}
+.item-list-container .item-list-container-controls .menu-categorias:focus,
+.item-list-container .item-list-container-controls .menu-subcategorias:focus {
+  border-color: #0b369c;
+  box-shadow: 0 0 0 4px rgba(11, 54, 156, 0.1);
+}
+.item-list-container .item-list-container-controls .menu-categorias option,
+.item-list-container .item-list-container-controls .menu-subcategorias option {
+  padding: 12px;
+  color: #0b369c;
+}
+@keyframes slideDown {
+  0% {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (max-width: 640px) {
+  .item-list-container .item-list-container-controls .menu-categorias,
+  .item-list-container .item-list-container-controls .menu-subcategorias {
+    font-size: 14px;
+    padding: 10px 12px;
+    background-position: right 12px center;
+  }
 }
 
 @media (min-width: 768px) {
@@ -565,28 +692,36 @@
   display: grid;
   gap: 8px;
   padding: 16px;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  min-height: 50vh;
+  position: relative;
 }
 
-.loader {
-  width: 100%;
-  height: auto;
-  display: flex;
-  justify-content: center;
-  margin-bottom: 10rem;
-  margin-top: 2rem;
-}
-
+.loader,
 .no-results {
-  width: 100%;
-  color: #F5F5F5;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   justify-content: center;
   align-items: center;
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.loader {
+  height: auto;
+}
+
+.no-results {
+  width: 80%;
+  color: #F5F5F5;
   margin-top: 2rem;
   font-size: 1.2em;
   background-color: #0b369c;
   border-radius: 1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 .no-results p {
   margin: 1rem;
@@ -595,7 +730,7 @@
 
 @media (min-width: 768px) {
   .item-list {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     padding: 24px;
     gap: 16px;
   }
@@ -607,6 +742,39 @@
     gap: 16px;
   }
 }
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+.pagination button {
+  background-color: #0b369c;
+  color: white;
+  border: none;
+  padding: 10px;
+  font-family: "Poppins", sans-serif;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background-color 0.3s ease;
+  margin: 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pagination button:hover {
+  background-color: #08266c;
+}
+.pagination button:disabled {
+  background-color: #c4c4c4;
+  cursor: not-allowed;
+}
+.pagination span {
+  font-family: "Poppins", sans-serif;
+  font-size: 16px;
+}
+
 .product-card {
   background-color: #fff;
   border-radius: 8px;
@@ -703,7 +871,6 @@
 
 body {
   background-color: #F5F5F5;
-  font-family: "Poppins", sans-serif;
 }
 
 ::selection {

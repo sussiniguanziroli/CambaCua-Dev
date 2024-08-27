@@ -1,10 +1,11 @@
 .item-list-container {
+    font-family: "Poppins", sans-serif;
     margin: .3rem;
     padding: .3rem;
     background-image: url("https://i.ibb.co/q5TLstK/container-bg.png");
     background-size: cover;
     border-radius: 8px;
-   
+    
     margin-bottom: 1rem;
 
     .item-list-container-controls {
@@ -12,8 +13,9 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
-        
+
         align-items: center;
+
         h1 {
             font-size: 2.2rem;
             margin-top: 1rem;
@@ -25,5 +27,153 @@
             color: $text-gray;
             text-transform: uppercase;
         }
+
+        .search-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 0 16px;
+
+            .search-input {
+                width: 100%;
+                padding: 12px 48px 12px 16px;
+                font-size: 16px;
+                font-family: 'Poppins', sans-serif;
+                color: $primary-color;
+                background-color: $secondary-color;
+                border: 2px solid $border-color;
+                border-radius: 9999px; // Hace los bordes completamente redondeados
+                outline: none;
+                transition: all 0.3s ease;
+
+                &:hover {
+                    background-color: $hover-color;
+                }
+
+                &:focus {
+                    border-color: $primary-color;
+                    box-shadow: 0 0 0 4px $focus-color;
+                }
+
+                &::placeholder {
+                    color: $border-color;
+                    opacity: 1;
+                    transition: color 0.3s ease;
+                }
+
+                &:focus::placeholder {
+                    color: lighten($border-color, 20%);
+                }
+            }
+
+            .search-icon {
+                position: absolute;
+                top: 50%;
+                right: 24px;
+                transform: translateY(-50%);
+                font-size: 20px;
+                color: $primary-color;
+                pointer-events: none;
+            }
+        }
+
+        // Media Queries para Responsividad
+        @media (max-width: 640px) {
+            .search-container {
+                padding: 0 8px;
+
+                .search-input {
+                    font-size: 14px;
+                    padding: 10px 40px 10px 12px;
+                }
+
+                .search-icon {
+                    right: 16px;
+                    font-size: 18px;
+                }
+            }
+        }
+
+
+
+        // Estilos para el filtro de categorías y subcategorías
+        .menu-categorias,
+        .menu-subcategorias {
+            margin: .5rem auto;
+            width: 100%;
+            max-width: 500px;
+            padding: 12px 16px;
+            font-size: 16px;
+            font-family: 'Poppins', sans-serif;
+            color: $primary-color;
+            background-color: $secondary-color;
+            border: 2px solid $border-color;
+            border-radius: 9999px;
+            outline: none;
+            transition: all 0.3s ease;
+            appearance: none; // Elimina el estilo por defecto del select
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%230B369C' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+
+            // Animación inicial (entrada)
+            opacity: 0;
+            transform: translateY(-10px);
+            animation: fadeIn 0.5s forwards;
+
+            // Animación para el despliegue de opciones
+            .menu-categorias:focus,
+            .menu-subcategorias:focus {
+                option {
+                    animation: slideDown 0.3s ease forwards;
+                }
+            }
+
+            &:hover {
+                background-color: $hover-color;
+            }
+
+            &:focus {
+                border-color: $primary-color;
+                box-shadow: 0 0 0 4px $focus-color;
+            }
+
+            option {
+                padding: 12px;
+                color: $primary-color;
+            }
+
+            @keyframes slideDown {
+                0% {
+                    transform: translateY(-10px);
+                    opacity: 0;
+                }
+                100% {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            @keyframes fadeIn {
+                0% {
+                    opacity: 0;
+                    transform: translateY(-10px);
+                }
+
+                100% {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            @media (max-width: 640px) {
+                font-size: 14px;
+                padding: 10px 12px;
+                background-position: right 12px center;
+            }
+        }
+
+
     }
 }

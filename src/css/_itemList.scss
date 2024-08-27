@@ -2,32 +2,41 @@
     display: grid;
     gap: 8px; // Espacio entre los productos
     padding: 16px;
-    grid-template-columns: 1fr 1fr; // 1 columna en móvil
-    
-    
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    min-height: 50vh; // Asegura que el contenedor tenga una altura mínima
+    position: relative;
 }
 
-.loader {
- 
-    width: 100%;
-    height: auto;
-    display: flex;
-    justify-content: center;
-    margin-bottom: 10rem;
-    margin-top: 2rem;
-    
-}
+
+
+.loader,
 .no-results {
-    width: 100%;
-    color: $main-white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     display: flex;
     justify-content: center;
     align-items: center;
-  
+    text-align: center; // Asegura que el texto esté centrado
+    margin: 2rem 0; // Espacio superior e inferior para separar del contenido
+
+}
+
+.loader {
+    height: auto;
+
+}
+
+.no-results {
+    width: 80%;
+    color: $main-white;
     margin-top: 2rem;
     font-size: 1.2em;
     background-color: $azul-cambacua;
     border-radius: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); // Añade una sombra sutil
+
     p {
         margin: 1rem;
         padding: 1rem;
@@ -36,10 +45,10 @@
 
 @media (min-width: 768px) {
     .item-list {
-        grid-template-columns: repeat(2, 1fr); // 2 columnas en tablet
+        grid-template-columns: repeat(3, 1fr); // 2 columnas en tablet
         padding: 24px;
         gap: 16px;
-        
+
     }
 }
 
@@ -48,7 +57,44 @@
         grid-template-columns: repeat(4, 1fr); // 4 columnas en escritorio
         padding: 32px;
         gap: 16px;
-        
+
     }
-    
+
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+
+    button {
+        background-color: #0b369c;
+        color: white;
+        border: none;
+        padding: 10px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 16px;
+        cursor: pointer;
+        border-radius: 50%;
+        transition: background-color 0.3s ease;
+        margin: 0 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &:hover {
+            background-color: darken(#0b369c, 10%);
+        }
+
+        &:disabled {
+            background-color: #c4c4c4;
+            cursor: not-allowed;
+        }
+    }
+
+    span {
+        font-family: 'Poppins', sans-serif;
+        font-size: 16px;
+    }
 }
