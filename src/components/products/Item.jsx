@@ -1,16 +1,33 @@
-import React from 'react'
+import React, { useState } from 'react';
+import { useCarrito } from '../../context/CarritoContext'; // Ajusta la ruta según tu estructura de carpetas
 
-const Item = ( {producto} ) => {
-    //Un item es donde tenemos recien la visual a nuestro gusto de lo que recibimos, luego veremos como hacer para toquetear un poquito. aca luego tenemos que agregar el botoncito de compra etc. 
+const Item = ({ producto }) => {
+    const { agregarAlCarrito } = useCarrito();
+    const [cantidad, setCantidad] = useState(1);
+
+    const handleAddToCart = () => {
+        agregarAlCarrito(producto, cantidad);
+    };
+
     return (
         <div key={producto.id} className='product-card'>
             <img className="product-image" src={producto.imagen} alt={producto.nombre} />
-            <h3 className="product-name" >{producto.nombre}</h3>
-            <p className='product-category' >{producto.categoria}</p>
-            <strong className="product-price" >${producto.precio}</strong>
-            <button className="add-to-cart-button">Agregar al carrito</button>
+            <h3 className="product-name">{producto.nombre}</h3>
+            <p className='product-category'>{producto.categoria}</p>
+            <strong className="product-price">${producto.precio}</strong>
+            <div className="quantity-control">
+                <button onClick={() => setCantidad(cantidad > 1 ? cantidad - 1 : 1)}>-</button>
+                <input
+                    type="number"
+                    value={cantidad}
+                    onChange={(e) => setCantidad(Number(e.target.value))}
+                    min="1"
+                />
+                <button onClick={() => setCantidad(cantidad + 1)}>+</button>
+            </div>
+            <button className="add-to-cart-button" onClick={handleAddToCart}>Agregar al carrito</button>
         </div>
-    )
-}
+    );
+};
 
-export default Item
+export default Item;

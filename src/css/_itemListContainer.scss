@@ -177,3 +177,38 @@
 
     }
 }
+
+.carrito-button-container {
+    text-align: center;
+    align-self: flex-end;
+    margin: .5rem;
+
+    .carrito-button {
+        display: flex;
+        align-items: center;
+        border: 1px solid #ddd; // Cambié el color del borde a un gris claro
+        border-radius: 4px;
+        padding: 6px 12px; // Ajusté el padding para hacerlo más pequeño
+        cursor: pointer;
+        font-size: 14px; // Tamaño de fuente reducido
+        transition: background-color 0.3s ease, color 0.3s ease;
+        background-color: #fff; // Fondo blanco para que el ícono se destaque
+        color: #333; // Color del texto
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); // Agregué una ligera sombra para darle un poco de profundidad
+    
+        // Alinea el ícono y el texto verticalmente
+        svg {
+            margin-right: 8px; // Espacio entre el ícono y el texto
+            font-size: 18px; // Tamaño del ícono
+        }
+    
+        &:hover {
+            background-color: #2980b9; // Fondo azul en hover
+            color: #fff; // Texto blanco en hover
+            border-color: #2980b9; // Color del borde en hover
+        }
+    }
+    
+
+}
+

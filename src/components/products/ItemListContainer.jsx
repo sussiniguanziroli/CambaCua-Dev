@@ -3,8 +3,12 @@ import { db } from '../../firebase/config';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import ItemList from './ItemList';
 import { FiSearch } from 'react-icons/fi'; // Importamos el icono de búsqueda
+import { Link } from 'react-router-dom'; // Importar Link para la navegación
+import { FaShoppingCart } from 'react-icons/fa'; // Ejemplo de ícono
+import { CarritoProvider, useCarrito } from '../../context/CarritoContext';
 
 const ItemListContainer = () => {
+    const { carrito } = useCarrito(CarritoProvider);
     const [productos, setProductos] = useState([]);
     const [filteredProducts, setFilteredProducts] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -77,6 +81,15 @@ const ItemListContainer = () => {
             <div className='item-list-container-controls'>
                 <h1>Productos</h1>
 
+                {/* Botón de Carrito */}
+                <div className='carrito-button-container'>
+                    <Link to="/carrito">
+                        <button className='carrito-button'><FaShoppingCart />
+                        <p>{carrito.length}</p>
+                        </button>
+                    </Link>
+                </div>
+
                 {/* Barra de búsqueda */}
                 <div className="search-container">
                     <input
@@ -91,38 +104,38 @@ const ItemListContainer = () => {
                 </div>
                 <div className='search-container'>
                     {/* Filtro de categorías */}
-                <select className='menu-categorias'
-                    value={selectedCategory}
-                    onChange={(e) => {
-                        setSelectedCategory(e.target.value);
-                        setSelectedSubcategory(''); // Reiniciar subcategoría cuando se cambia la categoría
-                    }}
-                >
-                    <option value="">Todas las categorías</option>
-                    {categories.map(category => (
-                        <option key={category.id} value={category.adress}>
-                            {category.nombre}
-                        </option>
-                    ))}
-                </select>
-
-                {/* Filtro de subcategorías */}
-                {selectedCategory && (
-                    <select className='menu-subcategorias'
-                        value={selectedSubcategory}
-                        onChange={(e) => setSelectedSubcategory(e.target.value)}
+                    <select className='menu-categorias'
+                        value={selectedCategory}
+                        onChange={(e) => {
+                            setSelectedCategory(e.target.value);
+                            setSelectedSubcategory(''); // Reiniciar subcategoría cuando se cambia la categoría
+                        }}
                     >
-                        <option value="">Todas las subcategorías</option>
-                        {categories.find(category => category.adress === selectedCategory)
-                            ?.subcategorias.map(subcat => (
-                                <option key={subcat} value={subcat}>
-                                    {subcat}
-                                </option>
-                            ))}
+                        <option value="">Todas las categorías</option>
+                        {categories.map(category => (
+                            <option key={category.id} value={category.adress}>
+                                {category.nombre}
+                            </option>
+                        ))}
                     </select>
-                )}
+
+                    {/* Filtro de subcategorías */}
+                    {selectedCategory && (
+                        <select className='menu-subcategorias'
+                            value={selectedSubcategory}
+                            onChange={(e) => setSelectedSubcategory(e.target.value)}
+                        >
+                            <option value="">Todas las subcategorías</option>
+                            {categories.find(category => category.adress === selectedCategory)
+                                ?.subcategorias.map(subcat => (
+                                    <option key={subcat} value={subcat}>
+                                        {subcat}
+                                    </option>
+                                ))}
+                        </select>
+                    )}
                 </div>
-                
+
 
             </div>
 
