@@ -10,6 +10,7 @@ import Footer from './components/Footer.jsx';
 import { CarritoProvider } from './context/CarritoContext.jsx';
 import Carrito from './components/Carrito.jsx';
 
+
 function App() {
 
 

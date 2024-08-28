@@ -1035,6 +1035,11 @@
   text-decoration: none;
   border-radius: 1rem;
   margin: 1rem;
+  transition: all 0.3s;
+}
+.boton-volver:hover {
+  color: #2c2c2c;
+  background-color: #F5F5F5;
 }
 
 .carrito {
@@ -1049,8 +1054,20 @@
   flex-direction: column;
   align-items: center;
   margin-bottom: 5vh;
+  z-index: -3;
+  animation: slide-bottom 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
+@keyframes slide-bottom {
+  0% {
+    opacity: 0;
+    transform: translateY(-250px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 .carrito h1 {
   text-align: center;
   color: #F5F5F5;
@@ -1173,7 +1190,8 @@
 
 /* Input de cantidad */
 .cantidad-input {
-  width: 60px; /* Ajusta el ancho según el diseño */
+  width: 60px;
+  /* Ajusta el ancho según el diseño */
   padding: 0.5rem;
   font-size: 1rem;
   border: 1px solid #ddd;
@@ -1183,9 +1201,11 @@
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 .cantidad-input:focus {
-  border-color: #007bff; /* Color del borde al enfocar */
+  border-color: #007bff;
+  /* Color del borde al enfocar */
   outline: none;
-  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3); /* Sombra al enfocar */
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+  /* Sombra al enfocar */
 }
 
 @media (min-width: 768px) {

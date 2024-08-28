@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useCarrito } from '../../context/CarritoContext'; // Ajusta la ruta según tu estructura de carpetas
 
-const Item = ({ producto }) => {
+
+const Item = ({ producto, notify }) => {
     const { agregarAlCarrito } = useCarrito();
     const [cantidad, setCantidad] = useState(1);
 
@@ -25,7 +26,7 @@ const Item = ({ producto }) => {
                 />
                 <button onClick={() => setCantidad(cantidad + 1)}>+</button>
             </div>
-            <button className="add-to-cart-button" onClick={handleAddToCart}>Agregar al carrito</button>
+            <button className="add-to-cart-button" onClick={() => { handleAddToCart(); notify();}}>Agregar al carrito</button>
         </div>
     );
 };

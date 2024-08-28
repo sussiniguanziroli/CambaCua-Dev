@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import Item from './Item';
 import { GridLoader } from 'react-spinners';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ITEMS_PER_PAGE = 8; // Número de productos por página
 
@@ -24,12 +26,19 @@ const ItemList = ({ productos, searchTerm, selectedCategory, selectedSubcategory
         setCurrentPage(prev => Math.max(prev - 1, 1));
     };
 
+    const notify = () => toast.success("Agregado al carrito");
+
     return (
         <div className='item-list-container'>
+            <ToastContainer
+                autoClose={1500}
+
+                position="top-left"
+            />
             <div className='item-list'>
                 {currentItems.length > 0 ? (
                     currentItems.map(producto => (
-                        <Item key={producto.id} producto={producto} />
+                        <Item notify={notify} key={producto.id} producto={producto} />
                     ))
                 ) : searchTerm || selectedCategory || selectedSubcategory ? (
                     <div className='no-results'>

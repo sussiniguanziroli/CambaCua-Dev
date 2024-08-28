@@ -1,9 +1,10 @@
 // src/components/Carrito.jsx
-import React from 'react';
+import React, { useState } from 'react';
 import { useCarrito } from '../context/CarritoContext';
 import { FaTrashAlt, FaArrowLeft } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Carrito = () => {
     const { carrito, eliminarDelCarrito, actualizarCantidad, vaciarCarrito } = useCarrito();
@@ -15,9 +16,15 @@ const Carrito = () => {
         }
     };
 
+    const notifyEliminar = () => toast.error("Producto Eliminado!");
+    const notifyVaciar = () => toast.error("Carrito Vacio!");
+    
+
     return (
         <div className="carrito">
             <h1>Carrito de Compras</h1>
+            <ToastContainer 
+            autoClose={1500}/>
             <Link className='boton-volver' to="/productos"><FaArrowLeft /> Atras</Link>
 
             {carrito.length === 0 ? (
@@ -40,14 +47,14 @@ const Carrito = () => {
                             />
                             <div className='price-delete'>
                                 <p className="total-price">Total: ${item.precio * item.cantidad}</p>
-                                <button className="eliminar-button" onClick={() => eliminarDelCarrito(item.id)}>
+                                <button className="eliminar-button" onClick={() => {eliminarDelCarrito(item.id);notifyEliminar();}}>
                                     <FaTrashAlt /> Eliminar
                                 </button>
                             </div>
 
                         </div>
                     ))}
-                    <button className="vaciar-carrito-button" onClick={vaciarCarrito}>Vaciar Carrito</button>
+                    <button className="vaciar-carrito-button" onClick={() => {vaciarCarrito(); notifyVaciar();}} >Vaciar Carrito</button>
                 </div>
 
             )}

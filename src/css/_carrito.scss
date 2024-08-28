@@ -11,7 +11,13 @@
     text-decoration: none;
     border-radius: 1rem;
     margin: 1rem;
+    transition: all 0.3s;
+    &:hover {
+        color: $text-gray;
+        background-color: $main-white;
+    }
 }
+
 
 .carrito {
     font-family: "Poppins", sans-serif;
@@ -25,6 +31,20 @@
     flex-direction: column;
     align-items: center;
     margin-bottom: 5vh;
+    z-index: -3;
+    animation: slide-bottom 0.4s cubic-bezier(0.250, 0.460, 0.450, 0.940) forwards;
+}
+
+@keyframes slide-bottom {
+    0% {
+        opacity: 0;
+        transform: translateY(-250px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .carrito h1 {
@@ -49,17 +69,18 @@
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     width: 100%;
-
     .carrito-first-item {
         display: flex;
         align-items: center;
         justify-content: space-between;
+
         h2 {
             font-size: 1.6rem;
             color: #333;
             font-weight: bold;
             text-wrap: wrap;
         }
+
         img {
             object-fit: contain;
             border-radius: 1rem;
@@ -67,13 +88,13 @@
         }
     }
 
-    
+
     .price-delete {
         display: flex;
         align-items: center;
         justify-content: space-between;
     }
-    
+
 
     p {
         font-size: 1.5rem;
@@ -163,7 +184,8 @@
 
 /* Input de cantidad */
 .cantidad-input {
-    width: 60px; /* Ajusta el ancho según el diseño */
+    width: 60px;
+    /* Ajusta el ancho según el diseño */
     padding: 0.5rem;
     font-size: 1rem;
     border: 1px solid #ddd;
@@ -172,11 +194,13 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: border-color 0.3s, box-shadow 0.3s;
 
-    
+
 
     &:focus {
-        border-color: #007bff; /* Color del borde al enfocar */
+        border-color: #007bff;
+        /* Color del borde al enfocar */
         outline: none;
-        box-shadow: 0 0 8px rgba(0, 123, 255, 0.3); /* Sombra al enfocar */
+        box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+        /* Sombra al enfocar */
     }
 }
