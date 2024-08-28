@@ -5,7 +5,7 @@
     background-image: url("https://i.ibb.co/q5TLstK/container-bg.png");
     background-size: cover;
     border-radius: 8px;
-    
+
     margin-bottom: 1rem;
 
     .item-list-container-controls {
@@ -149,6 +149,7 @@
                     transform: translateY(-10px);
                     opacity: 0;
                 }
+
                 100% {
                     transform: translateY(0);
                     opacity: 1;
@@ -182,33 +183,173 @@
     text-align: center;
     align-self: flex-end;
     margin: .5rem;
+    border: 1px solid $naranja-cambacua;
+    border-radius: 3rem;
+
+    &:hover {
+        border: 1px solid $azul-cambacua;
+    }
+
+    .cart-link {
+        text-decoration: none;
+    }
 
     .carrito-button {
+        background-color: inherit;
+        appearance: none;
+        border: none;
         display: flex;
         align-items: center;
-        border: 1px solid #ddd; // Cambié el color del borde a un gris claro
-        border-radius: 4px;
+        border-radius: 2rem;
         padding: 6px 12px; // Ajusté el padding para hacerlo más pequeño
         cursor: pointer;
         font-size: 14px; // Tamaño de fuente reducido
         transition: background-color 0.3s ease, color 0.3s ease;
-        background-color: #fff; // Fondo blanco para que el ícono se destaque
-        color: #333; // Color del texto
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); // Agregué una ligera sombra para darle un poco de profundidad
-    
+        color: $azul-cambacua; // Color del texto
+        
+
+
         // Alinea el ícono y el texto verticalmente
         svg {
             margin-right: 8px; // Espacio entre el ícono y el texto
-            font-size: 18px; // Tamaño del ícono
+            font-size: 1.7rem; // Tamaño del ícono
         }
-    
+
+        strong {
+            text-decoration: none;
+            font-size: 1.5rem;
+        }
+
         &:hover {
-            background-color: #2980b9; // Fondo azul en hover
+            background-color: $azul-cambacua; // Fondo azul en hover
             color: #fff; // Texto blanco en hover
-            border-color: #2980b9; // Color del borde en hover
+            border: $azul-cambacua;
         }
+
     }
-    
+
 
 }
 
+@media (min-width: 768px) {
+    // en tablet
+    
+}
+
+@media (min-width: 1024px) {
+    // en escritorio
+    .carrito-button-container {
+        position: relative;
+        top: -5rem;
+        right: 6rem;
+    }
+
+}
+
+//--------------CARRITO TMB ACA MUY CARGADO---------------
+
+.carrito-button-container {
+    position: relative;
+    
+}
+.carrito-button {
+    display: flex;
+    align-items: center;
+    border: none;
+    background-color: #2980b9;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+
+    svg {
+        margin-right: 8px;
+        font-size: 20px;
+    }
+
+    &:hover {
+        background-color: #1f6397;
+    }
+}
+
+//---------MENU ABAJO BOTON ARRIBA---------------
+
+
+// Keyframes para la animación de apertura del menú
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+// Keyframes para la animación de cierre del menú
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.carrito-menu-desk {
+    overflow-y: auto; // Asegura que el scroll solo esté en el eje Y
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 25rem;
+    height: 100%;
+    background-color: #fff;
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transform: translateX(100%); // Estado inicial fuera de la pantalla
+    animation-duration: 0.5s;
+    animation-fill-mode: forwards;
+
+    &.visible {
+        animation-name: slideIn;
+    }
+
+    &.hidden {
+        animation-name: slideOut;
+    }
+
+    h2 {
+        margin-bottom: 20px;
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+    }
+    
+
+   
+}
+
+.close-menu-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #333;
+    transition: color 0.3s ease;
+
+    &:hover {
+        color: #ff6b6b;
+    }
+}

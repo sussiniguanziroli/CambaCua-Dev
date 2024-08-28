@@ -4,11 +4,11 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import ItemList from './ItemList';
 import { FiSearch } from 'react-icons/fi'; // Importamos el icono de búsqueda
 import { Link } from 'react-router-dom'; // Importar Link para la navegación
-import { FaShoppingCart } from 'react-icons/fa'; // Ejemplo de ícono
+import { FaShoppingCart, FaTimes } from 'react-icons/fa'; // Ejemplo de ícono
 import { CarritoProvider, useCarrito } from '../../context/CarritoContext';
 
 const ItemListContainer = () => {
-    const { carrito } = useCarrito(CarritoProvider);
+    const {carrito, eliminarDelCarrito, actualizarCantidad, vaciarCarrito } = useCarrito(CarritoProvider);
     const [productos, setProductos] = useState([]);
     const [filteredProducts, setFilteredProducts] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -76,16 +76,79 @@ const ItemListContainer = () => {
         setFilteredProducts(filtered);
     }, [searchTerm, selectedCategory, selectedSubcategory, productos]);
 
+    //FUNCION PARA MENU FACHERISIMO EN DEKTOP
+
+    const [isMenuHidden, setIsMenuHidden] = useState(true);
+
+    const toggleMenuFachaCarrito = () => {
+        setIsMenuHidden(!isMenuHidden);
+    };
+
+    const closeMenu = () => {
+        setIsMenuHidden(true);
+    };
+
+    
+
+    //TRAIGO ACA LA LOGICA DEL CARRITO PARA NO MANOSEAR MUCHO
+
+    const handleCantidadChange = (id, e) => {
+        const cantidad = parseInt(e.target.value, 10);
+        if (cantidad >= 0) {
+            actualizarCantidad(id, cantidad);
+        }
+    };
+
+
+
     return (
         <div className='item-list-container'>
             <div className='item-list-container-controls'>
                 <h1>Productos</h1>
 
-                {/* Botón de Carrito */}
-                <div className='carrito-button-container'>
-                    <Link to="/carrito">
+                {/* Botón de Carrito DESKTOP*/}
+                <div className='carrito-button-container hiddenInMobile'>
+
+                    <button onClick={toggleMenuFachaCarrito} className='carrito-button'><FaShoppingCart />
+                        <strong>{carrito.length}</strong>
+                    </button>
+
+                </div>
+
+                {/* Menú Lateral */}
+                <div className={`carrito-menu-desk ${isMenuHidden ? 'hidden' : 'visible'}`}>
+                    <button className='close-menu-button' onClick={closeMenu}>
+                        <FaTimes />
+                    </button>
+                    <h2>Tu Carrito</h2>
+                    {carrito.length === 0 ? (
+                <p>El carrito está vacío</p>
+            ) : (
+                <div>
+                    {carrito.map(item => (
+                        <div key={item.id} className="carrito-item-desk">
+                            <h2>{item.nombre}</h2>
+                            <p>Precio: ${item.precio}</p>
+                            <input
+                                type="number"
+                                value={item.cantidad}
+                                onChange={(e) => handleCantidadChange(item.id, e)}
+                            />
+                            <p>Total: ${item.precio * item.cantidad}</p>
+                            <button onClick={() => eliminarDelCarrito(item.id)}>Eliminar</button>
+                        </div>
+                    ))}
+                    <button onClick={vaciarCarrito}>Vaciar Carrito</button>
+                </div>
+            )}
+                </div>
+
+
+                {/* Botón de Carrito MOBILE*/}
+                <div className='carrito-button-container hiddenInDesktop'>
+                    <Link className='cart-link' to="/carrito">
                         <button className='carrito-button'><FaShoppingCart />
-                        <p>{carrito.length}</p>
+                            <strong>{carrito.length}</strong>
                         </button>
                     </Link>
                 </div>
