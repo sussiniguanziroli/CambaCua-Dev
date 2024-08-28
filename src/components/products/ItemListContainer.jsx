@@ -100,8 +100,12 @@ const ItemListContainer = () => {
 
     const handleCantidadChange = (id, e) => {
         const cantidad = parseInt(e.target.value, 10);
-        if (cantidad >= 0) {
+        if (cantidad > 0) {
             actualizarCantidad(id, cantidad);
+        }
+        else {
+            eliminarDelCarrito(id);
+            notifyEliminar();
         }
     };
 

@@ -371,6 +371,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  text-align: right;
 }
 .carrito-item-desk .carrito-first-item h2 {
   font-size: 1.6rem;
