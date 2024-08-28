@@ -4,11 +4,17 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import ItemList from './ItemList';
 import { FiSearch } from 'react-icons/fi'; // Importamos el icono de búsqueda
 import { Link } from 'react-router-dom'; // Importar Link para la navegación
-import { FaShoppingCart, FaTimes } from 'react-icons/fa'; // Ejemplo de ícono
+import { FaMinus, FaPlus, FaShoppingCart, FaTimes, FaTrashAlt } from 'react-icons/fa'; // Ejemplo de ícono
 import { CarritoProvider, useCarrito } from '../../context/CarritoContext';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+
+
+
 
 const ItemListContainer = () => {
-    const {carrito, eliminarDelCarrito, actualizarCantidad, vaciarCarrito } = useCarrito(CarritoProvider);
+    const { calcularTotal, carrito, eliminarDelCarrito, actualizarCantidad, vaciarCarrito } = useCarrito(CarritoProvider);
     const [productos, setProductos] = useState([]);
     const [filteredProducts, setFilteredProducts] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -88,7 +94,7 @@ const ItemListContainer = () => {
         setIsMenuHidden(true);
     };
 
-    
+
 
     //TRAIGO ACA LA LOGICA DEL CARRITO PARA NO MANOSEAR MUCHO
 
@@ -99,6 +105,8 @@ const ItemListContainer = () => {
         }
     };
 
+    const notifyEliminar = () => toast.error("Producto Eliminado!");
+    const notifyVaciar = () => toast.error("Carrito Vacio!");
 
 
     return (
@@ -122,25 +130,43 @@ const ItemListContainer = () => {
                     </button>
                     <h2>Tu Carrito</h2>
                     {carrito.length === 0 ? (
-                <p>El carrito está vacío</p>
-            ) : (
-                <div>
-                    {carrito.map(item => (
-                        <div key={item.id} className="carrito-item-desk">
-                            <h2>{item.nombre}</h2>
-                            <p>Precio: ${item.precio}</p>
-                            <input
-                                type="number"
-                                value={item.cantidad}
-                                onChange={(e) => handleCantidadChange(item.id, e)}
-                            />
-                            <p>Total: ${item.precio * item.cantidad}</p>
-                            <button onClick={() => eliminarDelCarrito(item.id)}>Eliminar</button>
+                        <p>El carrito está vacío</p>
+                    ) : (
+                        <div>
+                            {carrito.map(item => (
+                                <div key={item.id} className="carrito-item-desk">
+                                    <div className='carrito-first-item'>
+
+                                        
+                                        <img src={item.imagen} alt={item.nombre} />
+
+                                        <h2>{item.nombre}</h2>
+                                    </div>
+
+                                    <p>Precio: ${item.precio}</p>
+                                    <div className="cantidad-control">
+                                        <button onClick={() => handleCantidadChange(item.id, { target: { value: item.cantidad - 1 } })}><FaMinus /></button>
+                                        <input
+                                            type="number"
+                                            value={item.cantidad}
+                                            onChange={(e) => handleCantidadChange(item.id, e)}
+                                        />
+                                        <button onClick={() => handleCantidadChange(item.id, { target: { value: item.cantidad + 1 } })}><FaPlus /></button>
+                                    </div>
+                                    <div className='precio-borrar'>
+                                        <p className="total-price">Subtotal: ${item.precio * item.cantidad}</p>
+                                        <button className="eliminar-button" onClick={() => { eliminarDelCarrito(item.id); notifyEliminar() }}>
+                                            <FaTrashAlt />Eliminar
+                                        </button>
+                                    </div>
+
+                                </div>
+                            ))}
+                            <strong className='total-compra'>Total Compra: ${(calcularTotal()).toFixed(2)}</strong>
+                            <button className='button-vaciar' onClick={() => { vaciarCarrito(); notifyVaciar() }}>Vaciar Carrito</button>
                         </div>
-                    ))}
-                    <button onClick={vaciarCarrito}>Vaciar Carrito</button>
-                </div>
-            )}
+
+                    )}
                 </div>
 
 

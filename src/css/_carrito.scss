@@ -18,8 +18,12 @@
     }
 }
 
-
+.carrito-vacio {
+    font-size: 1.6rem;
+    margin-top: 3rem;
+}
 .carrito {
+    min-height: 90vh;
     font-family: "Poppins", sans-serif;
     max-width: 100%;
     margin: .5rem;
@@ -69,6 +73,43 @@
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     width: 100%;
+
+
+    .quantity-imput {
+        button {
+            background-color: #007bff;
+            border: none;
+            color: white;
+            margin: .7rem;
+            border-radius: 1rem;
+            padding: .7rem;
+            font-size: 1.4rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+
+            &:hover {
+                background-color: #0056b3;
+            }
+
+            &:first-child {
+                background-color: #dc3545;
+            }
+
+            &:last-child {
+                background-color: #28a745;
+            }
+
+            &:first-child:hover {
+                background-color: #c82333;
+            }
+
+            &:last-child:hover {
+                background-color: #218838;
+            }
+        }
+    }
+
+
     .carrito-first-item {
         display: flex;
         align-items: center;
@@ -103,43 +144,12 @@
         text-align: left;
     }
 
-    .cantidad-container {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-top: 10px;
-
-        .cantidad-button {
-            background-color: #2980b9;
-            color: #fff;
-            border: none;
-            border-radius: 50%;
-            font-size: 20px;
-            padding: 10px;
-            cursor: pointer;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.3s;
-
-            &:hover {
-                background-color: #1a5f8a;
-            }
-        }
-
-        .cantidad-display {
-            font-size: 18px;
-            width: 50px;
-            text-align: center;
-        }
-    }
+    
 
     .total-price {
         font-size: 18px;
         color: #333;
-        font-weight: bold;
+        font-weight: 500;
         text-align: left;
         margin-top: 10px;
     }
@@ -165,6 +175,11 @@
     }
 }
 
+.total-compra {
+    font-size: 1.6rem;
+}
+
+
 .vaciar-carrito-button {
     background-color: #ff6b6b;
     color: #fff;
@@ -187,7 +202,7 @@
     width: 60px;
     /* Ajusta el ancho según el diseño */
     padding: 0.5rem;
-    font-size: 1rem;
+    font-size: 1.4rem;
     border: 1px solid #ddd;
     border-radius: 4px;
     text-align: center;
