@@ -1042,6 +1042,7 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 16px;
   display: flex;
+  max-height: 100%;
   flex-direction: column;
   justify-content: space-between;
   text-align: start;
@@ -1049,11 +1050,19 @@
   box-sizing: border-box;
 }
 
-.product-image {
+.carousel {
+  width: 100%;
+  max-height: 300px;
+}
+.carousel .carousel-cell {
+  width: 100%; /* Ajusta este valor según tus necesidades */
+  border-radius: 10px;
+}
+.carousel .carousel-cell .product-image {
+  object-fit: contain;
   width: 100%;
   height: auto;
-  border-radius: 8px;
-  object-fit: cover;
+  border-radius: 10px; /* Ejemplo de un estilo extra */
 }
 
 .product-category {
@@ -1122,18 +1131,39 @@
   .product-card {
     margin: 8px;
   }
+  .carousel {
+    width: 100%;
+    max-height: 210px;
+  }
+  .carousel .carousel-cell {
+    width: 100%; /* Ajusta este valor según tus necesidades */
+    border-radius: 10px;
+  }
+  .carousel .carousel-cell .product-image {
+    object-fit: contain;
+    width: 100%;
+    max-height: 210px;
+    border-radius: 10px; /* Ejemplo de un estilo extra */
+  }
 }
 @media (min-width: 1024px) {
   .product-card {
     margin: 12px;
     width: 90%;
   }
-  .product-image {
+  .carousel {
     width: 100%;
-    height: auto;
-    border-radius: 8px;
-    object-fit: cover;
-    margin-bottom: 1rem;
+    max-height: 300px;
+  }
+  .carousel .carousel-cell {
+    width: 100%; /* Ajusta este valor según tus necesidades */
+    border-radius: 10px;
+  }
+  .carousel .carousel-cell .product-image {
+    object-fit: contain;
+    width: 100%;
+    max-height: 300px;
+    border-radius: 10px; /* Ejemplo de un estilo extra */
   }
   .product-category {
     font-size: 1.2rem;
