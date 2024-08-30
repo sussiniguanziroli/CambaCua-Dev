@@ -1042,27 +1042,11 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 16px;
   display: flex;
-  max-height: 100%;
   flex-direction: column;
   justify-content: space-between;
   text-align: start;
   width: 100%;
   box-sizing: border-box;
-}
-
-.carousel {
-  width: 100%;
-  max-height: 300px;
-}
-.carousel .carousel-cell {
-  width: 100%; /* Ajusta este valor según tus necesidades */
-  border-radius: 10px;
-}
-.carousel .carousel-cell .product-image {
-  object-fit: contain;
-  width: 100%;
-  height: auto;
-  border-radius: 10px; /* Ejemplo de un estilo extra */
 }
 
 .product-category {
@@ -1086,6 +1070,7 @@
   align-items: center;
   margin: 10px 0;
 }
+
 .quantity-control button {
   background-color: #f0f0f0;
   border: 1px solid #ddd;
@@ -1095,12 +1080,7 @@
   font-size: 18px;
   transition: background-color 0.3s ease;
 }
-.quantity-control button:hover {
-  background-color: #e0e0e0;
-}
-.quantity-control button:focus {
-  outline: none;
-}
+
 .quantity-control input {
   width: 60px;
   text-align: center;
@@ -1123,8 +1103,31 @@
   transition: background-color 0.3s ease;
   margin-top: 1rem;
 }
+
 .add-to-cart-button:hover {
-  background-color: #1d5aea;
+  background-color: #0056b3;
+}
+
+.carousel {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  max-height: 300px;
+}
+
+.carousel-cell {
+  width: 100%;
+  height: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.product-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
 }
 
 @media (min-width: 768px) {
@@ -1132,18 +1135,10 @@
     margin: 8px;
   }
   .carousel {
-    width: 100%;
-    max-height: 210px;
+    max-height: 250px;
   }
-  .carousel .carousel-cell {
-    width: 100%; /* Ajusta este valor según tus necesidades */
-    border-radius: 10px;
-  }
-  .carousel .carousel-cell .product-image {
-    object-fit: contain;
-    width: 100%;
-    max-height: 210px;
-    border-radius: 10px; /* Ejemplo de un estilo extra */
+  .product-image {
+    max-height: 250px;
   }
 }
 @media (min-width: 1024px) {
@@ -1152,31 +1147,10 @@
     width: 90%;
   }
   .carousel {
-    width: 100%;
     max-height: 300px;
   }
-  .carousel .carousel-cell {
-    width: 100%; /* Ajusta este valor según tus necesidades */
-    border-radius: 10px;
-  }
-  .carousel .carousel-cell .product-image {
-    object-fit: contain;
-    width: 100%;
+  .product-image {
     max-height: 300px;
-    border-radius: 10px; /* Ejemplo de un estilo extra */
-  }
-  .product-category {
-    font-size: 1.2rem;
-    color: #333;
-  }
-  .product-name {
-    font-size: 1.5rem;
-    margin: 8px 0;
-    font-weight: 600;
-  }
-  .product-price {
-    font-size: 1.3rem;
-    color: #333;
   }
 }
 .boton-volver {
@@ -1369,6 +1343,82 @@
   /* Sombra al enfocar */
 }
 
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal.fade-in-up {
+  animation: fadeInUp 0.5s ease forwards;
+}
+.modal .modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+.modal .modal-content .close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  cursor: pointer;
+}
+.modal .modal-content .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.modal .modal-content .modal-header h2 {
+  margin: 0;
+}
+.modal .modal-content .modal-header .add-to-cart {
+  background-color: #0b369c;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.modal .modal-content .modal-header .add-to-cart:hover {
+  background-color: #082a78;
+}
+.modal .modal-content .modal-header .add-to-cart svg {
+  margin-right: 8px;
+}
+.modal .modal-content .modal-body p {
+  margin-bottom: 10px;
+}
+.modal .modal-content .carousel img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 @media (min-width: 768px) {
   .hiddenInDesktop {
     display: none;
