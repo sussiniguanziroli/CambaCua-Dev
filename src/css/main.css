@@ -1066,6 +1066,7 @@
   height: 100%;
   object-fit: contain;
   border-radius: 8px;
+  cursor: pointer;
 }
 
 .product-category {
@@ -1077,6 +1078,11 @@
   font-size: 18px;
   margin: 8px 0;
   font-weight: 600;
+  cursor: pointer;
+  transition: all 0.5s;
+}
+.product-name:hover {
+  color: #0b369c;
 }
 
 .product-price {
@@ -1419,7 +1425,7 @@
   cursor: pointer;
 }
 .modal .modal-content .modal-body p {
-  color: #555;
+  color: #2c2c2c;
   font-size: 1rem;
   margin-bottom: 1rem;
 }

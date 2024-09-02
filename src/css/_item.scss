@@ -28,6 +28,7 @@
     height: 100%;
     object-fit: contain;
     border-radius: 8px;
+    cursor: pointer;
 }
 
 .product-category {
@@ -39,7 +40,15 @@
     font-size: 18px;
     margin: 8px 0;
     font-weight: 600;
+    cursor: pointer;
+    transition: all .5s;
+    &:hover {
+        color: $azul-cambacua;
+
+    }
+    
 }
+
 
 .product-price {
     font-size: 16px;

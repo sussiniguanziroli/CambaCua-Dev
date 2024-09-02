@@ -4,21 +4,20 @@ import { GridLoader } from 'react-spinners';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ModalProducto from './ModalProducto';
-import { useCarrito } from '../../context/CarritoContext';
+
 
 const ITEMS_PER_PAGE = 8; // Número de productos por página
 
 const ItemList = ({ productos, searchTerm, selectedCategory, selectedSubcategory }) => {
     const [currentPage, setCurrentPage] = useState(1);
-    
+
 
     // Calcular los índices de los productos a mostrar en la página actual
     const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
     const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
     const currentItems = productos.slice(indexOfFirstItem, indexOfLastItem);
 
-    
+
 
     // Calcular el número total de páginas
     const totalPages = Math.ceil(productos.length / ITEMS_PER_PAGE);
@@ -31,12 +30,12 @@ const ItemList = ({ productos, searchTerm, selectedCategory, selectedSubcategory
         setCurrentPage(prev => Math.max(prev - 1, 1));
     };
 
-    const notify = () => toast.success("Agregado al carrito");
+    const notifyAgregado = () => toast.success("Agregado al carrito");
 
 
-   
 
-    
+
+
     return (
         <div className='item-list-container'>
             <ToastContainer
@@ -47,9 +46,9 @@ const ItemList = ({ productos, searchTerm, selectedCategory, selectedSubcategory
             <div className='item-list'>
                 {currentItems.length > 0 ? (
                     currentItems.map(producto => (
-                        <div key={producto.id}>
-                            <Item notify={notify}  producto={producto} />
-                        </div>                        
+
+                        <Item key={producto.id} notifyAgregado={notifyAgregado} producto={producto} />
+
                     ))
                 ) : searchTerm || selectedCategory || selectedSubcategory ? (
                     <div className='no-results'>
@@ -81,7 +80,7 @@ const ItemList = ({ productos, searchTerm, selectedCategory, selectedSubcategory
                 </div>
             )}
 
-            
+
         </div>
     );
 }

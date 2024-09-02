@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { useCarrito } from '../../context/CarritoContext'; // Ajusta la ruta según tu estructura de carpetas
 import ModalProducto from './ModalProducto';
 
-const Item = ({ producto, notify }) => {
+const Item = ({ producto, notifyAgregado }) => {
     const { agregarAlCarrito } = useCarrito();
     const [cantidad, setCantidad] = useState(1);
 
-
+   
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -28,7 +28,10 @@ const Item = ({ producto, notify }) => {
         setIsModalOpen(false);
     };
 
-
+    const handleAddToCartModal = (producto) => {
+        agregarAlCarrito(producto);
+        
+    };
 
 
     return (
@@ -38,7 +41,7 @@ const Item = ({ producto, notify }) => {
                     <img className="product-image" src={producto.imagen} alt={`${producto.nombre}`} />
                 </div>
                 <div>
-                    <h3 className="product-name">{producto.nombre}</h3>
+                    <h3 onClick={() => handleOpenModal(producto)} className="product-name">{producto.nombre}</h3>
                     <p className='product-category'>{producto.categoria}</p>
                     <strong className="product-price">${producto.precio}</strong>
                     <div className="quantity-control">
@@ -51,7 +54,7 @@ const Item = ({ producto, notify }) => {
                         />
                         <button onClick={() => setCantidad(cantidad + 1)}>+</button>
                     </div>
-                    <button className="add-to-cart-button" onClick={() => { handleAddToCart(); notify(); }}>Agregar al carrito</button>
+                    <button className="add-to-cart-button" onClick={() => { handleAddToCart(); notifyAgregado(); }}>Agregar al carrito</button>
                 </div>
             </div>
             {/* Modal para mostrar detalles del producto */}
@@ -59,7 +62,8 @@ const Item = ({ producto, notify }) => {
                 producto={selectedProduct}
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
-                addToCart={handleAddToCart}
+                addToCart={handleAddToCartModal}
+                notifyAgregado={notifyAgregado}
             />
         </>
     );

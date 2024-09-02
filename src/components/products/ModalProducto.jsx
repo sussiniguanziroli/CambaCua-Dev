@@ -3,7 +3,7 @@ import Flickity from 'flickity';
 import "flickity/css/flickity.css";
 import { FiShoppingCart } from 'react-icons/fi';
 
-const ModalProducto = ({ producto, isOpen, onClose, addToCart }) => {
+const ModalProducto = ({ producto, isOpen, onClose, addToCart, notifyAgregado }) => {
     const modalRef = useRef();
     const flickityRef = useRef(null);
 
@@ -35,6 +35,8 @@ const ModalProducto = ({ producto, isOpen, onClose, addToCart }) => {
 
     if (!isOpen) return null;
 
+    
+
     return (
         <div className="modal fade-in-up">
             <div className="modal-content" ref={modalRef}>
@@ -42,7 +44,7 @@ const ModalProducto = ({ producto, isOpen, onClose, addToCart }) => {
 
                 <div className="modal-header">
                     <h2>{producto.nombre}</h2>
-                    <button onClick={() => addToCart(producto)} className="add-to-cart">
+                    <button onClick={() => {addToCart(producto); notifyAgregado()}} className="add-to-cart">
                         <FiShoppingCart size={20} /> Agregar al carrito
                     </button>
                 </div>
@@ -60,7 +62,8 @@ const ModalProducto = ({ producto, isOpen, onClose, addToCart }) => {
                     <p className="product-price">Precio: ${producto.precio}</p>
                     <p className="product-details">
                         <strong>Categoría:</strong> {producto.categoria} <br />
-                        <strong>Disponibilidad:</strong> {producto.disponibilidad}
+                        <strong>Subcategoría:</strong> {producto.subcategoria} <br />
+                        <strong>Disponibilidad:</strong> {producto.stock}
                     </p>
                 </div>
             </div>
