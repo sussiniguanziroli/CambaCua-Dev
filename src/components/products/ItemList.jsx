@@ -67,8 +67,7 @@ const ItemList = ({ productos, searchTerm, selectedCategory, selectedSubcategory
                     currentItems.map(producto => (
                         <div key={producto.id} onClick={() => handleOpenModal(producto)}>
                             <Item notify={notify} producto={producto} />
-                        </div>
-                        
+                        </div>                        
                     ))
                 ) : searchTerm || selectedCategory || selectedSubcategory ? (
                     <div className='no-results'>

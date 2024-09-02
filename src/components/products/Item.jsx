@@ -1,36 +1,18 @@
-import React, { useEffect, useRef, useState } from 'react';
-import Flickity from 'flickity';
-import 'flickity/css/flickity.css'; // Importa los estilos de Flickity
+import React, { useState } from 'react';
 import { useCarrito } from '../../context/CarritoContext'; // Ajusta la ruta según tu estructura de carpetas
 
-const Item = ({ producto, notify, handleOpenModal }) => {
+const Item = ({ producto, notify }) => {
     const { agregarAlCarrito } = useCarrito();
     const [cantidad, setCantidad] = useState(1);
-    const flickityRef = useRef(null);
-
-    useEffect(() => {
-        if (flickityRef.current) {
-            new Flickity(flickityRef.current, {
-                cellAlign: 'left',
-                contain: true,
-                pageDots: false,
-                prevNextButtons: true,
-            });
-        }
-    }, []);
 
     const handleAddToCart = () => {
         agregarAlCarrito(producto, cantidad);
     };
 
     return (
-        <div key={producto.id} className='product-card' >
-            <div className="carousel" ref={flickityRef}>
-                {[producto.imagen, producto.imagenB, producto.imagenC].filter(Boolean).map((img, index) => (
-                    <div key={index} className="carousel-cell">
-                        <img className="product-image" src={img} alt={`${producto.nombre} - Imagen ${index + 1}`} />
-                    </div>
-                ))}
+        <div key={producto.id} className='product-card'>
+            <div className="image-container">
+                <img className="product-image" src={producto.imagen} alt={`${producto.nombre}`} />
             </div>
             <div>
                 <h3 className="product-name">{producto.nombre}</h3>

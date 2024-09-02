@@ -7,7 +7,6 @@ const ModalProducto = ({ producto, isOpen, onClose, addToCart }) => {
     const modalRef = useRef();
     const flickityRef = useRef(null);
 
-    // Cerrar modal al hacer clic fuera del contenido
     const handleClickOutside = (event) => {
         if (modalRef.current && !modalRef.current.contains(event.target)) {
             onClose();
@@ -20,7 +19,7 @@ const ModalProducto = ({ producto, isOpen, onClose, addToCart }) => {
         } 
         if (flickityRef.current) {
             new Flickity(flickityRef.current, {
-                cellAlign: 'left',
+                cellAlign: 'center', // Centrar las imágenes
                 contain: true,
                 pageDots: false,
                 prevNextButtons: true,
@@ -36,10 +35,6 @@ const ModalProducto = ({ producto, isOpen, onClose, addToCart }) => {
 
     if (!isOpen) return null;
 
-
-    
-
-
     return (
         <div className="modal fade-in-up">
             <div className="modal-content" ref={modalRef}>
@@ -51,7 +46,7 @@ const ModalProducto = ({ producto, isOpen, onClose, addToCart }) => {
                         <FiShoppingCart size={20} /> Agregar al carrito
                     </button>
                 </div>
-
+            
                 <div className="carousel" ref={flickityRef}>
                     {[producto.imagen, producto.imagenB, producto.imagenC].filter(Boolean).map((img, index) => (
                         <div key={index} className="carousel-cell">
@@ -62,8 +57,11 @@ const ModalProducto = ({ producto, isOpen, onClose, addToCart }) => {
 
                 <div className="modal-body">
                     <p>{producto.descripcion}</p>
-                    <p>Precio: ${producto.precio}</p>
-                    {/* Aquí puedes agregar más información del producto */}
+                    <p className="product-price">Precio: ${producto.precio}</p>
+                    <p className="product-details">
+                        <strong>Categoría:</strong> {producto.categoria} <br />
+                        <strong>Disponibilidad:</strong> {producto.disponibilidad}
+                    </p>
                 </div>
             </div>
         </div>
