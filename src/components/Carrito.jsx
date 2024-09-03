@@ -66,6 +66,7 @@ const Carrito = () => {
                     ))}
                     <strong className='total-compra'>Total Compra: ${(calcularTotal()).toFixed(2)}</strong>
                     <button className="vaciar-carrito-button" onClick={() => {vaciarCarrito(); notifyVaciar();}} >Vaciar Carrito</button>
+                    <Link to="/checkout"><button className='carrito-button-comprar'>Continuar Compra</button></Link>
 
                 </div>
 
