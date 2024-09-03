@@ -1,4 +1,3 @@
-
 import 'bootstrap/dist/css/bootstrap.min.css';
 import "./css/main.css";
 import Header from './components/header/Header.jsx'
@@ -9,6 +8,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Footer from './components/Footer.jsx';
 import { CarritoProvider } from './context/CarritoContext.jsx';
 import Carrito from './components/Carrito.jsx';
+import Checkout from './components/Checkout.jsx';
 
 
 function App() {
@@ -23,6 +23,7 @@ function App() {
                 <Route path='/productos' element={<ItemListContainer />} />
                 <Route path='/contacto' element={<Contacto />} />
                 <Route path='/carrito' element={<Carrito />}/>
+                <Route path='/checkout' element={<Checkout />} />
             </Routes>
             <Footer />
         </BrowserRouter>
