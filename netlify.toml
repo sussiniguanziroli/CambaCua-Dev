@@ -1,3 +1,9 @@
+[[redirects]]
+  from = "/checkout"
+  to = "/index.html"
+  status = 200
+  force = true
+
 
 
 [[redirects]]
@@ -10,3 +16,4 @@
   from = "/contacto"
   to = "/index.html"
   status = 200
+
