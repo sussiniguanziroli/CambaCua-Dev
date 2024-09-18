@@ -1,12 +1,15 @@
-@media (max-width: 600px) {
-    html {
-      font-size: 12px; /* Ajusta el tamaño para dispositivos más pequeños */
-    }
+html {
+    font-size: 9px;
+}
 
-  }
-  
-  @media (min-width: 1200px) {
+@media (min-width: 400px)  {
     html {
-      font-size: 16px; /* Ajusta el tamaño para pantallas más grandes */
+        font-size: 12px;
+    }
+}
+
+@media (min-width: 1200px) {
+    html {
+        font-size: 16px;
     }
 }
