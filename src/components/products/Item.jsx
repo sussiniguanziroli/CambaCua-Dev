@@ -27,22 +27,7 @@ const Item = ({ producto, notifyAgregado }) => {
 
     };
 
-    // me veo obligado a hacer una logica aparte para el trabajo con cantidades
-
-    // Lógica para controlar el aumento de la cantidad
-    const incrementQuantity = () => {
-        if (cantidad < producto.stock) {
-            setCantidad(cantidad + 1);
-        } else {
-            toast.info(`Se ha agregado el máximo de productos disponibles (${producto.stock})`);
-        }
-    };
-
-    // Lógica para controlar la disminución de la cantidad
-    const decrementQuantity = () => {
-        setCantidad(cantidad > 1 ? cantidad - 1 : 1);
-    };
-
+    
     //MODAL LOGICA
 
     // Función para abrir el modal y seleccionar el producto
