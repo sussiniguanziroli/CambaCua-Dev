@@ -8,6 +8,7 @@ import { FaMinus, FaPlus, FaShoppingCart, FaTimes, FaTrashAlt } from 'react-icon
 import { CarritoProvider, useCarrito } from '../../context/CarritoContext';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Carrito from '../Carrito';
 
 
 
@@ -60,9 +61,15 @@ const ItemListContainer = () => {
         obtenerCategorias();
     }, []);
 
+    const productosConStock = productos.filter(producto => producto.stock > 0);
+    const productosSinStock = productos.filter(producto => producto.stock === 0);
+
+    // Combina los productos con stock al principio y los sin stock al final.
+    const productosOrdenados = [...productosConStock, ...productosSinStock];
+
     // Filtrar productos basado en categoría, subcategoría y búsqueda
     useEffect(() => {
-        let filtered = productos;
+        let filtered = productosOrdenados;
 
         if (selectedCategory) {
             filtered = filtered.filter(producto => producto.categoryAdress === selectedCategory);
@@ -98,12 +105,31 @@ const ItemListContainer = () => {
 
     //TRAIGO ACA LA LOGICA DEL CARRITO PARA NO MANOSEAR MUCHO
 
-    const handleCantidadChange = (id, e) => {
-        const cantidad = parseInt(e.target.value, 10);
-        if (cantidad > 0) {
-            actualizarCantidad(id, cantidad);
+    //traigo productos
+
+    const obtenerStockDisponible = async (id) => {
+        const docRef = doc(db, "productos", id); // Asumiendo que tienes una colección llamada 'productos'
+        const docSnap = await getDoc(docRef);
+    
+        if (docSnap.exists()) {
+            return docSnap.data().stock;
+        } else {
+            console.error("No such document!");
+            return 0; // O cualquier valor que consideres apropiado en caso de que el producto no exista
         }
-        else {
+    };
+
+    const handleCantidadChangeDesktop = (id, e) => {
+        const cantidad = parseInt(e.target.value, 10);
+        const stockDisponible = obtenerStockDisponible(id);
+
+        if (cantidad > stockDisponible) {
+            actualizarCantidad(id, stockDisponible);
+            // Aquí puedes mostrar una notificación de que se ha alcanzado el stock máximo
+            toast.info(`Se ha alcanzado el máximo de productos disponibles (${stockDisponible})`);
+        } else if (cantidad > 0) {
+            actualizarCantidad(id, cantidad);
+        } else {
             eliminarDelCarrito(id);
             notifyEliminar();
         }
@@ -127,6 +153,8 @@ const ItemListContainer = () => {
 
                 </div>
 
+               
+
                 {/* Menú Lateral */}
                 <div className={`carrito-menu-desk ${isMenuHidden ? 'hidden' : 'visible'}`}>
                     <button className='close-menu-button' onClick={closeMenu}>
@@ -141,7 +169,7 @@ const ItemListContainer = () => {
                                 <div key={item.id} className="carrito-item-desk">
                                     <div className='carrito-first-item'>
 
-                                        
+
                                         <img src={item.imagen} alt={item.nombre} />
 
                                         <h2>{item.nombre}</h2>
@@ -149,13 +177,13 @@ const ItemListContainer = () => {
 
                                     <p>Precio: ${item.precio}</p>
                                     <div className="cantidad-control">
-                                        <button onClick={() => handleCantidadChange(item.id, { target: { value: item.cantidad - 1 } })}><FaMinus /></button>
+                                        <button onClick={() => handleCantidadChangeDesktop(item.id, { target: { value: item.cantidad - 1 } })}><FaMinus /></button>
                                         <input
                                             type="number"
                                             value={item.cantidad}
-                                            onChange={(e) => handleCantidadChange(item.id, e)}
+                                            onChange={(e) => handleCantidadChangeDesktop(item.id, e)}
                                         />
-                                        <button onClick={() => handleCantidadChange(item.id, { target: { value: item.cantidad + 1 } })}><FaPlus /></button>
+                                        <button onClick={() => handleCantidadChangeDesktop(item.id, { target: { value: item.cantidad + 1 } })}><FaPlus /></button>
                                     </div>
                                     <div className='precio-borrar'>
                                         <p className="total-price">Subtotal: ${item.precio * item.cantidad}</p>

@@ -39,7 +39,7 @@ const Checkout = () => {
                 text: "Lo enviaremos a la brevedad, muchas gracias!",
                 icon: "success",
                 confirmButtonColor: '#0b369c',
-              });
+            });
         } catch (error) {
             console.error("Error al enviar el pedido: ", error);
             Swal.fire({
@@ -101,7 +101,10 @@ const Checkout = () => {
                     value={formData.email}
                     onChange={handleChange}
                     required
+                    pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
+                    title="Por favor, ingresa un correo electrónico válido, por ejemplo: usuario@dominio.com"
                 />
+
                 <input
                     type="text"
                     name="direccion"
@@ -111,18 +114,19 @@ const Checkout = () => {
                     required
                 />
                 <input
-                    type="text"
+                    type="number"
                     name="dni"
                     placeholder="DNI"
                     value={formData.dni}
                     onChange={handleChange}
                     required
                 />
+
                 <button type="submit" className="checkout-button">Confirmar Pedido</button>
             </form>
 
             <div className="checkout-message">
-                ¡Gracias por tu compra!
+                Envios solo dentro de Corrientes Capital
             </div>
         </div>
     );

@@ -16,7 +16,7 @@ const ModalProducto = ({ producto, isOpen, onClose, addToCart, notifyAgregado })
     useEffect(() => {
         if (isOpen) {
             document.addEventListener('mousedown', handleClickOutside);
-        } 
+        }
         if (flickityRef.current) {
             new Flickity(flickityRef.current, {
                 cellAlign: 'center', // Centrar las imágenes
@@ -35,7 +35,7 @@ const ModalProducto = ({ producto, isOpen, onClose, addToCart, notifyAgregado })
 
     if (!isOpen) return null;
 
-    
+
 
     return (
         <div className="modal fade-in-up">
@@ -44,11 +44,16 @@ const ModalProducto = ({ producto, isOpen, onClose, addToCart, notifyAgregado })
 
                 <div className="modal-header">
                     <h2>{producto.nombre}</h2>
-                    <button onClick={() => {addToCart(producto); notifyAgregado()}} className="add-to-cart">
-                        <FiShoppingCart size={20} /> Agregar al carrito
-                    </button>
+                    {producto.stock === 0 ? (
+                        <div className="stock-status">Sin Stock</div>
+                    ) : (
+                        <button onClick={() => { addToCart(producto); notifyAgregado() }} className="add-to-cart">
+                            <FiShoppingCart size={20} /> Agregar al carrito
+                        </button>
+                    )}
+
                 </div>
-            
+
                 <div className="carousel" ref={flickityRef}>
                     {[producto.imagen, producto.imagenB, producto.imagenC].filter(Boolean).map((img, index) => (
                         <div key={index} className="carousel-cell">

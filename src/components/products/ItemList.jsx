@@ -31,9 +31,9 @@ const ItemList = ({ productos, searchTerm, selectedCategory, selectedSubcategory
     };
 
     const notifyAgregado = () => toast.success("Agregado al carrito");
+    
 
-
-
+    
 
 
     return (
@@ -47,7 +47,7 @@ const ItemList = ({ productos, searchTerm, selectedCategory, selectedSubcategory
                 {currentItems.length > 0 ? (
                     currentItems.map(producto => (
 
-                        <Item key={producto.id} notifyAgregado={notifyAgregado} producto={producto} />
+                        <Item key={producto.id} notifyAgregado={notifyAgregado}  producto={producto} />
 
                     ))
                 ) : searchTerm || selectedCategory || selectedSubcategory ? (

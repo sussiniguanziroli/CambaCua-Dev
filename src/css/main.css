@@ -1065,6 +1065,8 @@
   box-sizing: border-box;
   height: 100%; /* Ocupa todo el espacio disponible */
   min-height: 400px; /* Altura mínima para todas las tarjetas */
+  opacity: 1;
+  transition: opacity 0.3s ease;
 }
 
 .image-container {
@@ -1083,6 +1085,7 @@
   object-fit: contain;
   border-radius: 8px;
   cursor: pointer;
+  z-index: 1;
 }
 
 .product-category {
@@ -1172,6 +1175,35 @@
     height: 100%;
   }
 }
+.out-of-stock {
+  opacity: 0.5;
+}
+.out-of-stock .product-image {
+  filter: grayscale(100%);
+}
+.out-of-stock .add-to-cart-button {
+  background-color: grey;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.out-of-stock .product-name,
+.out-of-stock .product-category,
+.out-of-stock .product-price {
+  color: #888;
+}
+.out-of-stock .stock-status {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #ff4d4f;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
 .boton-volver {
   background-color: #0b369c;
   padding: 0.5rem;
