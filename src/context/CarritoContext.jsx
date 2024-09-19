@@ -10,14 +10,16 @@ export const CarritoProvider = ({ children }) => {
 
     const agregarAlCarrito = (producto, cantidad = 1) => {
         setCarrito(prevCarrito => {
+            // Verificar si el producto ya está en el carrito
             const productoEnCarrito = prevCarrito.find(item => item.id === producto.id);
+    
             if (productoEnCarrito) {
-                return prevCarrito.map(item =>
-                    item.id === producto.id
-                        ? { ...item, cantidad: item.cantidad + cantidad }
-                        : item
-                );
+                // Mostrar alerta si el producto ya está en el carrito
+                
+                return prevCarrito; // No agregamos el producto de nuevo
             }
+    
+            // Si no está en el carrito, lo agregamos con la cantidad inicial
             return [...prevCarrito, { ...producto, cantidad }];
         });
     };

@@ -3,31 +3,30 @@ import { useCarrito } from '../../context/CarritoContext'; // Ajusta la ruta seg
 import ModalProducto from './ModalProducto';
 
 const Item = ({ producto, notifyAgregado }) => {
-    const { agregarAlCarrito } = useCarrito();
+    const { agregarAlCarrito, carrito } = useCarrito();
     const [cantidad, setCantidad] = useState(1);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+    let cartItems = carrito;
+
+    const existsInCart = cartItems.some(item => item.id === producto.id);
+
     const handleAddToCart = () => {
-        if (cantidad < producto.stock) {
-            // Ajusta la cantidad al máximo stock disponible
-            
+        
+        if (existsInCart) {
+            // Mostrar alerta usando Toastify
 
-            // Muestra el mensaje de que se ha alcanzado el máximo disponible
-            
+        } else {
+            // Lógica para agregar el producto al carrito
             agregarAlCarrito(producto);
-        } else if (cantidad > producto.stock) {
-            alert(`Se ha agregado el máximo de productos disponibles (${producto.stock})`);
-            agregarAlCarrito(producto);
-            // Lógica para agregar al carrito
-            // Aquí puedes manejar la adición de productos al carrito
-            
-
+            notifyAgregado();
         }
+
+
 
     };
 
-    
     //MODAL LOGICA
 
     // Función para abrir el modal y seleccionar el producto
@@ -43,7 +42,15 @@ const Item = ({ producto, notifyAgregado }) => {
     };
 
     const handleAddToCartModal = (producto) => {
-        agregarAlCarrito(producto);
+        
+        if (existsInCart) {
+            // Mostrar alerta usando Toastify
+
+        } else {
+            // Lógica para agregar el producto al carrito
+            agregarAlCarrito(producto);
+            notifyAgregado();
+        }
 
     };
 
@@ -67,11 +74,13 @@ const Item = ({ producto, notifyAgregado }) => {
                     <h3 onClick={() => handleOpenModal(producto)} className="product-name">{producto.nombre}</h3>
                     <p className='product-category'>{producto.categoria}</p>
                     <strong className="product-price">${producto.precio}</strong>
-                    
+
                     {producto.stock === 0 ? (
                         <div className="stock-status">Sin Stock</div>
                     ) : (
-                        <button className="add-to-cart-button" onClick={() => { handleAddToCart(); notifyAgregado(); }}>Agregar al carrito</button>
+                        <button className="add-to-cart-button" onClick={handleAddToCart}>
+                             {existsInCart ? "En carrito" : "Agregar al carrito"}
+                            </button>
                     )}
 
                 </div>
@@ -82,7 +91,7 @@ const Item = ({ producto, notifyAgregado }) => {
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
                 addToCart={handleAddToCartModal}
-                notifyAgregado={notifyAgregado}
+                existsInCart={existsInCart}
             />
         </>
     );

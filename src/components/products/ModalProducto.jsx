@@ -3,7 +3,9 @@ import Flickity from 'flickity';
 import "flickity/css/flickity.css";
 import { FiShoppingCart } from 'react-icons/fi';
 
-const ModalProducto = ({ producto, isOpen, onClose, addToCart, notifyAgregado }) => {
+
+
+const ModalProducto = ({ producto, isOpen, onClose, addToCart, existsInCart }) => {
     const modalRef = useRef();
     const flickityRef = useRef(null);
 
@@ -47,8 +49,8 @@ const ModalProducto = ({ producto, isOpen, onClose, addToCart, notifyAgregado })
                     {producto.stock === 0 ? (
                         <div className="stock-status">Sin Stock</div>
                     ) : (
-                        <button onClick={() => { addToCart(producto); notifyAgregado() }} className="add-to-cart">
-                            <FiShoppingCart size={20} /> Agregar al carrito
+                        <button onClick={() => { addToCart(producto)}} className="add-to-cart">
+                            <FiShoppingCart size={20} /> {existsInCart ? "En carrito" : "Agregar al carrito"}
                         </button>
                     )}
 
