@@ -6,7 +6,7 @@ import Swal from 'sweetalert2'
 
 
 
-const Item = ({ producto, notifyAgregado, notifyCarrito }) => {
+const Item = ({ producto, notifyAgregado, notifyCarrito, notifyCopiar }) => {
     const { agregarAlCarrito, carrito } = useCarrito();
     const [cantidad, setCantidad] = useState(1);
     const [selectedProduct, setSelectedProduct] = useState(null);
@@ -104,6 +104,7 @@ const Item = ({ producto, notifyAgregado, notifyCarrito }) => {
                 onClose={handleCloseModal}
                 addToCart={handleAddToCartModal}
                 existsInCart={existsInCart}
+                notifyCopiar={notifyCopiar}
             />
         </>
     );

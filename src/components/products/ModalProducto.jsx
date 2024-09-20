@@ -4,7 +4,7 @@ import "flickity/css/flickity.css";
 import { FiShoppingCart, FiShare2, FiCopy } from 'react-icons/fi';
 
 
-const ModalProducto = ({ producto, isOpen, onClose, addToCart, existsInCart }) => {
+const ModalProducto = ({ producto, isOpen, onClose, addToCart, existsInCart, notifyCopiar }) => {
     const modalRef = useRef();
     const flickityRef = useRef(null);
 
@@ -41,7 +41,7 @@ const ModalProducto = ({ producto, isOpen, onClose, addToCart, existsInCart }) =
     const handleCopyLink = () => {
         navigator.clipboard.writeText(urlProducto)
             .then(() => {
-                alert('¡Enlace copiado al portapapeles!');
+                notifyCopiar();
             })
             .catch((error) => {
                 console.error('Error al copiar el enlace:', error);
