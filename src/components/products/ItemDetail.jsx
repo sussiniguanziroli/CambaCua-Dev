@@ -6,7 +6,9 @@ const ItemDetail = ({ product }) => {
 
 
     
-    
+    //se puede acceder a carrito desde aca sin problema ademas de que va a hacer falta.
+
+    //tambien tenemos que hacer boton para vover como teniamos en spirit y hacerlo responsive como no jaja
 
 
 
