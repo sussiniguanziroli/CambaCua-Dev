@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../firebase/config';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 import ItemList from './ItemList';
 import { FiSearch } from 'react-icons/fi'; // Importamos el icono de búsqueda
 import { Link } from 'react-router-dom'; // Importar Link para la navegación
@@ -107,25 +107,33 @@ const ItemListContainer = () => {
 
     //traigo productos
 
-    const obtenerStockDisponible = async (id) => {
-        const docRef = doc(db, "productos", id); // Asumiendo que tienes una colección llamada 'productos'
-        const docSnap = await getDoc(docRef);
+    useEffect(() => {
+        const fetchStock = async () => {
+            const stock = await obtenerStockDisponible(productos.id);
+            setStockActual(stock); // Puedes almacenar el stock en el estado local
+        };
+        fetchStock();
+    }, [productos.id]); // Consulta el stock cada vez que cambie el producto
     
-        if (docSnap.exists()) {
-            return docSnap.data().stock;
+
+    const obtenerStockDisponible = async (productoId) => {
+        // Aquí realizas la consulta a Firebase para obtener el stock
+        const productoRef = doc(db, 'productos', productoId);
+        const productoSnapshot = await getDoc(productoRef);
+        if (productoSnapshot.exists()) {
+            return productoSnapshot.data().stock;
         } else {
-            console.error("No such document!");
-            return 0; // O cualquier valor que consideres apropiado en caso de que el producto no exista
+            return 0; // Si no existe, retornas stock 0
         }
     };
+    
 
-    const handleCantidadChangeDesktop = (id, e) => {
+    const handleCantidadChangeDesktop = async (id, e) => {
         const cantidad = parseInt(e.target.value, 10);
-        const stockDisponible = obtenerStockDisponible(id);
-
+        const stockDisponible = await obtenerStockDisponible(id); // Consulta del stock actual
+    
         if (cantidad > stockDisponible) {
             actualizarCantidad(id, stockDisponible);
-            // Aquí puedes mostrar una notificación de que se ha alcanzado el stock máximo
             toast.info(`Se ha alcanzado el máximo de productos disponibles (${stockDisponible})`);
         } else if (cantidad > 0) {
             actualizarCantidad(id, cantidad);

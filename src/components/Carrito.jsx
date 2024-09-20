@@ -1,38 +1,66 @@
 // src/components/Carrito.jsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useCarrito } from '../context/CarritoContext';
 import { FaTrashAlt, FaArrowLeft, FaPlus, FaMinus } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { doc, getDoc, getDocs, query } from 'firebase/firestore';
+import { db } from '../firebase/config';
 
 const Carrito = () => {
+    const [productos, setProductos] = useState([]);
     const { calcularTotal, carrito, eliminarDelCarrito, actualizarCantidad, vaciarCarrito } = useCarrito();
 
     const notifyEliminar = () => toast.error("Producto Eliminado!");
     const notifyVaciar = () => toast.error("Carrito Vacio!");
 
+    useEffect(() => {
+        const obtenerProductos = async () => {
+            try {
+                const q = query(collection(db, 'productos'), where('activo', '==', true));
+                const snapshot = await getDocs(q);
+                const productosFirebase = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                setProductos(productosFirebase);
+                setFilteredProducts(productosFirebase);
+            } catch (error) {
+                console.error("Error obteniendo los productos: ", error);
+            }
+        };
 
-    const obtenerStockDisponible = async (id) => {
-        const docRef = doc(db, "productos", id); // Asumiendo que tienes una colección llamada 'productos'
-        const docSnap = await getDoc(docRef);
-    
-        if (docSnap.exists()) {
-            return docSnap.data().stock;
+        obtenerProductos();
+    }, []);
+
+    useEffect(() => {
+        const fetchStock = async () => {
+            const stock = await obtenerStockDisponible(productos.id);
+            setStockActual(stock); // Puedes almacenar el stock en el estado local
+        };
+        fetchStock();
+    }, [productos.id]); // Consulta el stock cada vez que cambie el producto
+
+
+    const obtenerStockDisponible = async (productoId) => {
+        // Aquí realizas la consulta a Firebase para obtener el stock
+        const productoRef = doc(db, 'productos', productoId);
+        const productoSnapshot = await getDoc(productoRef);
+        if (productoSnapshot.exists()) {
+            return productoSnapshot.data().stock;
         } else {
-            console.error("No such document!");
-            return 0; // O cualquier valor que consideres apropiado en caso de que el producto no exista
+            return 0; // Si no existe, retornas stock 0
         }
     };
 
 
-    const handleCantidadChangeMobile = (id, e) => {
+    const handleCantidadChangeMobile = async (id, e) => {
         const cantidad = parseInt(e.target.value, 10);
-        const stockDisponible = obtenerStockDisponible(id);
-
+        const stockDisponible = await obtenerStockDisponible(id); // Consulta del stock actual
+    
         if (cantidad > stockDisponible) {
             actualizarCantidad(id, stockDisponible);
-            // Aquí puedes mostrar una notificación de que se ha alcanzado el stock máximo
             toast.info(`Se ha alcanzado el máximo de productos disponibles (${stockDisponible})`);
         } else if (cantidad > 0) {
             actualizarCantidad(id, cantidad);
