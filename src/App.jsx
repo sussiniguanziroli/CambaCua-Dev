@@ -9,6 +9,7 @@ import Footer from './components/Footer.jsx';
 import { CarritoProvider } from './context/CarritoContext.jsx';
 import Carrito from './components/Carrito.jsx';
 import Checkout from './components/Checkout.jsx';
+import ItemDetailContainer from './components/products/ItemDetailContainer.jsx';
 
 
 function App() {
@@ -24,7 +25,7 @@ function App() {
                 <Route path='/contacto' element={<Contacto />} />
                 <Route path='/carrito' element={<Carrito />}/>
                 <Route path='/checkout' element={<Checkout />} />
-                
+                <Route path='/producto/:itemId' element={<ItemDetailContainer/>} />
             </Routes>
             <Footer />
         </BrowserRouter>
