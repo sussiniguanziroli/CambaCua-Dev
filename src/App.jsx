@@ -24,6 +24,7 @@ function App() {
                 <Route path='/contacto' element={<Contacto />} />
                 <Route path='/carrito' element={<Carrito />}/>
                 <Route path='/checkout' element={<Checkout />} />
+                
             </Routes>
             <Footer />
         </BrowserRouter>

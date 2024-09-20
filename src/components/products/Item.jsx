@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import { useCarrito } from '../../context/CarritoContext'; // Ajusta la ruta según tu estructura de carpetas
 import ModalProducto from './ModalProducto';
+import Swal from 'sweetalert2'
 
-const Item = ({ producto, notifyAgregado }) => {
+
+
+
+const Item = ({ producto, notifyAgregado, notifyCarrito }) => {
     const { agregarAlCarrito, carrito } = useCarrito();
     const [cantidad, setCantidad] = useState(1);
     const [selectedProduct, setSelectedProduct] = useState(null);
@@ -10,13 +14,20 @@ const Item = ({ producto, notifyAgregado }) => {
 
     let cartItems = carrito;
 
+    
+
     const existsInCart = cartItems.some(item => item.id === producto.id);
 
     const handleAddToCart = () => {
-        
+
         if (existsInCart) {
             // Mostrar alerta usando Toastify
-
+            Swal.fire({
+                title: "Producto ya en carrito",
+                text: "Para agregar mas de uno, debes seleccionar la cantidad desde el carrito!",
+                icon: "info",
+                confirmButtonColor: '#0b369c',
+            });
         } else {
             // Lógica para agregar el producto al carrito
             agregarAlCarrito(producto);
@@ -42,10 +53,10 @@ const Item = ({ producto, notifyAgregado }) => {
     };
 
     const handleAddToCartModal = (producto) => {
-        
+
         if (existsInCart) {
             // Mostrar alerta usando Toastify
-
+            notifyCarrito();
         } else {
             // Lógica para agregar el producto al carrito
             agregarAlCarrito(producto);
@@ -57,6 +68,7 @@ const Item = ({ producto, notifyAgregado }) => {
 
     return (
         <>
+
             <div className={`product-card ${producto.stock === 0 ? 'out-of-stock' : ''}`}>
                 <div onClick={() => handleOpenModal(producto)} className="image-container">
                     {producto.stock === 0 ? (
@@ -79,8 +91,8 @@ const Item = ({ producto, notifyAgregado }) => {
                         <div className="stock-status">Sin Stock</div>
                     ) : (
                         <button className="add-to-cart-button" onClick={handleAddToCart}>
-                             {existsInCart ? "En carrito" : "Agregar al carrito"}
-                            </button>
+                            {existsInCart ? "En carrito" : "Agregar al carrito"}
+                        </button>
                     )}
 
                 </div>
