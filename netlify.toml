@@ -1,24 +1,7 @@
-[[redirects]]
-  from = "/checkout"
-  to = "/index.html"
-  status = 200
-  force = true
-
+# Archivo netlify.toml
 
 
 [[redirects]]
-  from = "/productos"
+  from = "/*"
   to = "/index.html"
   status = 200
-  force = true
-
-[[redirects]]
-  from = "/contacto"
-  to = "/index.html"
-  status = 200
-
-  [[redirects]]
-  from = "/producto/*"
-  to = "/producto/:splat"
-  status = 200
-
