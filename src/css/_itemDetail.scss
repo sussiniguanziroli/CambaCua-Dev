@@ -1,0 +1,55 @@
+.item-detail-loading {
+    padding: 2rem;
+    min-height: 87vh;
+    background-color: white;
+
+    .back-button {
+        font-size: 1.8rem;
+        color: $azul-cambacua;
+    }
+}
+
+.detail {
+    font-family: 'Poppins',sans-serif;
+    min-height: 70vh;
+    background-color: $main-white;
+    border-radius: 1rem;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    .detail-img {
+        img {
+            object-fit: contain;
+            width: 80%;
+            height: auto;
+        }
+    }
+    .detail-text {
+        margin-top: 1rem;
+        font-size: 1.2rem;
+    }
+    .add-to-cart-button-detail {
+        background-color: $azul-cambacua; /* Cambia esto a $azul-cambacua si ya está definido */
+        color: white;
+        border: none;
+        width: 100%;
+        border-radius: 4px;
+        padding: 10px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        margin-top: 1rem;
+    }
+    
+    .add-to-cart-button-detail:hover {
+        background-color: #0056b3;
+    }
+
+}
+
+@media (min-width: 768px) {
+    .detail {
+        flex-direction: row;
+    }
+
+}
