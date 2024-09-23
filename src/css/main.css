@@ -1217,9 +1217,10 @@ html {
   color: #888;
 }
 .out-of-stock .stock-status {
-  background-color: #ff4d4f;
+  background-color: #dc5b5d;
   color: white;
-  padding: 5px 10px;
+  margin-top: 0.3rem;
+  padding: 0.7rem;
   border-radius: 4px;
   font-size: 14px;
   font-weight: bold;

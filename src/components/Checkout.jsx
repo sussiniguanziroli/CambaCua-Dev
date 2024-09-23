@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { collection, addDoc, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, getDoc, Timestamp, writeBatch } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { CarritoProvider, useCarrito } from '../context/CarritoContext';
-import Swal from 'sweetalert2'
+import Swal from 'sweetalert2';
 
 const Checkout = () => {
-    const { carrito, calcularTotal } = useCarrito(CarritoProvider);
+    const { carrito, calcularTotal, vaciarCarrito } = useCarrito(CarritoProvider);
     const [formData, setFormData] = useState({
         nombre: '',
         telefono: '',
@@ -21,30 +21,84 @@ const Checkout = () => {
         });
     };
 
+    // Función para verificar y actualizar el stock
+    const verificarYActualizarStock = async () => {
+        const batch = writeBatch(db);  // Firestore batch for atomic updates
+        let stockDisponible = true;
+
+        for (const item of carrito) {
+            const productoRef = doc(db, 'productos', item.id); // Referencia al producto en Firestore
+            const productoSnap = await getDoc(productoRef);
+
+            if (productoSnap.exists()) {
+                const productoData = productoSnap.data();
+                const stockActual = productoData.stock;
+
+                // Verificar si hay stock suficiente
+                if (item.cantidad > stockActual) {
+                    stockDisponible = false;
+                    break;
+                } else {
+                    // Actualizar el stock en la base de datos
+                    batch.update(productoRef, {
+                        stock: stockActual - item.cantidad
+                    });
+                }
+            } else {
+                stockDisponible = false;
+                break;
+            }
+        }
+
+        // Si hay stock suficiente para todos los productos, hacer commit del batch
+        if (stockDisponible) {
+            await batch.commit();
+        }
+
+        return stockDisponible;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Verificar stock antes de proceder
+        const stockDisponible = await verificarYActualizarStock();
+
+        if (!stockDisponible) {
+            Swal.fire({
+                title: "Stock insuficiente",
+                text: "Lo sentimos, no hay suficiente stock para uno o más productos en tu carrito.",
+                icon: "error"
+            });
+            return;
+        }
+
         try {
             const pedido = {
                 ...formData,
                 productos: carrito,
                 total: calcularTotal(),
                 fecha: Timestamp.now(),
+                estado: 'pendiente' // Estado inicial del pedido
             };
 
+            // Guardar el pedido en la base de datos
             await addDoc(collection(db, 'pedidos'), pedido);
 
-
             Swal.fire({
-                title: "Pedido Enviado con Exito!",
+                title: "Pedido Enviado con Éxito!",
                 text: "Lo enviaremos a la brevedad, muchas gracias!",
                 icon: "success",
                 confirmButtonColor: '#0b369c',
             });
+
+            // Vaciar el carrito después de la compra
+            vaciarCarrito();
         } catch (error) {
             console.error("Error al enviar el pedido: ", error);
             Swal.fire({
-                title: "Pedido no ha sido enviado",
-                text: "intente nuevamente",
+                title: "Error",
+                text: "Ocurrió un problema al procesar tu pedido. Intenta nuevamente.",
                 icon: "error"
             });
         }
@@ -73,7 +127,6 @@ const Checkout = () => {
 
             <div className="checkout-total">
                 <h2>Total: ${calcularTotal()}</h2>
-
                 <h2>Datos de Envio:</h2>
             </div>
 
@@ -104,7 +157,6 @@ const Checkout = () => {
                     pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
                     title="Por favor, ingresa un correo electrónico válido, por ejemplo: usuario@dominio.com"
                 />
-
                 <input
                     type="text"
                     name="direccion"
@@ -130,6 +182,6 @@ const Checkout = () => {
             </div>
         </div>
     );
-}
+};
 
 export default Checkout;
