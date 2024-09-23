@@ -14,7 +14,7 @@ const Item = ({ producto, notifyAgregado, notifyCarrito, notifyCopiar }) => {
 
     let cartItems = carrito;
 
-    
+
 
     const existsInCart = cartItems.some(item => item.id === producto.id);
 
@@ -71,15 +71,9 @@ const Item = ({ producto, notifyAgregado, notifyCarrito, notifyCopiar }) => {
 
             <div className={`product-card ${producto.stock === 0 ? 'out-of-stock' : ''}`}>
                 <div onClick={() => handleOpenModal(producto)} className="image-container">
-                    {producto.stock === 0 ? (
-                        <div>
-                            <img src="https://congorrito.wordpress.com/wp-content/uploads/2010/09/agotado.gif" alt="agota3" />
 
-                        </div>
+                    <img className="product-image" src={producto.imagen} alt={`${producto.nombre}`} />
 
-                    ) : (
-                        <img className="product-image" src={producto.imagen} alt={`${producto.nombre}`} />
-                    )}
 
                 </div>
                 <div>
