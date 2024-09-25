@@ -13,6 +13,9 @@ const NavBar = () => {
       <div className='nav-div'>
         <NavLink className="nav-button" activeclassname="active" to="/contacto" >Contacto</NavLink>
       </div>
+      <div className='nav-div'>
+        <NavLink className="nav-button" activeclassname="active" to="/" >Mis Compras</NavLink>
+      </div>
     </nav>
   );
 };
