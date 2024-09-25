@@ -10,6 +10,7 @@ import { CarritoProvider } from './context/CarritoContext.jsx';
 import Carrito from './components/Carrito.jsx';
 import Checkout from './components/checkout/Checkout.jsx';
 import ItemDetailContainer from './components/products/ItemDetailContainer.jsx';
+import OrderDetails from './components/OrderDetails.jsx';
 
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
                 <Route path='/carrito' element={<Carrito />}/>
                 <Route path='/checkout' element={<Checkout />} />
                 <Route path='/producto/:itemId' element={<ItemDetailContainer/>} />
+                <Route path='/miscompras' element={<OrderDetails/>}/>
             </Routes>
             <Footer />
         </BrowserRouter>

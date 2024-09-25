@@ -1844,6 +1844,49 @@ html {
     flex-direction: row;
   }
 }
+.order-details-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #F5F5F5;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+.order-details-container h2 {
+  color: #0b369c;
+}
+.order-details-container input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #474747;
+  border-radius: 5px;
+}
+.order-details-container button {
+  background-color: #ff8c34;
+  color: #F5F5F5;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+.order-details-container button:hover {
+  background-color: #1d5aea;
+}
+.order-details-container .error {
+  color: red;
+  margin-top: 10px;
+}
+.order-details-container .order-summary {
+  margin-top: 20px;
+}
+.order-details-container .order-summary p, .order-details-container .order-summary ul {
+  color: #2c2c2c;
+}
+.order-details-container .order-summary ul {
+  padding-left: 20px;
+}
+
 @media (min-width: 768px) {
   .hiddenInDesktop {
     display: none;

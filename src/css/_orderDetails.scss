@@ -1,0 +1,51 @@
+.order-details-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: $main-white;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  
+    h2 {
+      color: $azul-cambacua;
+    }
+  
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid $dark-gray;
+      border-radius: 5px;
+    }
+  
+    button {
+      background-color: $naranja-cambacua;
+      color: $main-white;
+      padding: 10px;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+  
+      &:hover {
+        background-color: $button-hover-cambacua;
+      }
+    }
+  
+    .error {
+      color: red;
+      margin-top: 10px;
+    }
+  
+    .order-summary {
+      margin-top: 20px;
+  
+      p, ul {
+        color: $text-gray;
+      }
+  
+      ul {
+        padding-left: 20px;
+      }
+    }
+  }
+  
