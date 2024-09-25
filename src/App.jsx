@@ -8,7 +8,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Footer from './components/Footer.jsx';
 import { CarritoProvider } from './context/CarritoContext.jsx';
 import Carrito from './components/Carrito.jsx';
-import Checkout from './components/Checkout.jsx';
+import Checkout from './components/checkout/Checkout.jsx';
 import ItemDetailContainer from './components/products/ItemDetailContainer.jsx';
 
 
