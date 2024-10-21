@@ -59,7 +59,7 @@ const OrderConfirmation = ({ formData, paymentMethod }) => {
                 productos: carrito,
                 total: calcularTotal(),
                 fecha: Timestamp.now(),
-                estado: 'pendiente',
+                estado: 'Pendiente',
                 metodoPago: paymentMethod
             };
 
