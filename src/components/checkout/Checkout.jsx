@@ -6,7 +6,7 @@ import OrderConfirmation from './OrderConfirmation';
 const Checkout = () => {
     const [currentStep, setCurrentStep] = useState(1); // Controla el paso del proceso
     const [formData, setFormData] = useState(null); // Almacena los datos del formulario
-    const [paymentMethod, setPaymentMethod] = useState(null); // Almacena el método de pago
+    const [paymentMethod, setPaymentMethod] = useState(''); // Almacena el método de pago
 
     const handleNextStep = (data) => {
         if (currentStep === 1) {
@@ -25,7 +25,7 @@ const Checkout = () => {
     return (
         <div className="checkout-container">
             {currentStep === 1 && <CheckoutForm onNext={handleNextStep} />}
-            {currentStep === 2 && <PaymentMethod onBack={handlePreviousStep} onNext={handleNextStep} />}
+            {currentStep === 2 && <PaymentMethod paymentMethod={paymentMethod} setPaymentMethod={setPaymentMethod} onBack={handlePreviousStep} onNext={handleNextStep} />}
             {currentStep === 3 && (
                 <OrderConfirmation
                     formData={formData}

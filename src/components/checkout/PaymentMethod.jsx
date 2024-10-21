@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
-const PaymentMethod = ({ onBack, onNext }) => {
-    const [paymentMethod, setPaymentMethod] = useState('');
+const PaymentMethod = ({ onBack, onNext , paymentMethod, setPaymentMethod}) => {
+   
 
     const handleSelectPayment = (e) => {
         setPaymentMethod(e.target.value);

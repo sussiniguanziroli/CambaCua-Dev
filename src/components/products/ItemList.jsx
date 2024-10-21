@@ -18,7 +18,6 @@ const ItemList = ({ productos, searchTerm, selectedCategory, selectedSubcategory
     const currentItems = productos.slice(indexOfFirstItem, indexOfLastItem);
 
 
-
     // Calcular el número total de páginas
     const totalPages = Math.ceil(productos.length / ITEMS_PER_PAGE);
 
