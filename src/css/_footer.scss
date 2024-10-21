@@ -1,32 +1,76 @@
-.landing-footer {
-    width: 100%;
-    padding: 16px 0;
-    background-color: $azul-cambacua;
-    font-family: "Raleway", sans-serif;
+.footer {
+    background-color: $bg-c-footer;
+    padding: 2rem 1rem;
+    color: $text-gray;
+    font-family: 'Poppins', sans-serif;
 
-    .footer-links,
-    .footer-contact {
+    .footer-container {
         display: flex;
-        justify-content: center;
-        gap: 16px;
-        margin: 8px 0;
-        color: $main-white;
-        a {
-            text-decoration: none;
-            color: $main-white;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 2rem;
+        text-align: center;
+
+        .footer-section {
+            flex: 1;
+            min-width: 220px;
+
+            h4 {
+                font-family: 'Raleway', sans-serif;
+                font-size: 1.2rem;
+                color: $azul-cambacua;
+                margin-bottom: 0.5rem;
+            }
+
+            p, ul {
+                font-size: 1rem;
+                color: $text-gray;
+                margin: 0;
+                padding: 0;
+                list-style: none;
+
+                a {
+                    color: $azul-cambacua;
+                    text-decoration: none;
+
+                    &:hover {
+                        color: $button-hover-cambacua;
+                    }
+                }
+            }
+
+            .social-media-links {
+                display: flex;
+                justify-content: center;
+                gap: 1rem;
+
+                a {
+                    font-size: 1.5rem;
+                    color: $azul-cambacua;
+
+                    &:hover {
+                        color: $button-hover-cambacua;
+                    }
+                }
+            }
         }
     }
 
-    .social-icons {
-        display: flex;
-        gap: 8px;
+    .footer-bottom {
+        text-align: center;
+        margin-top: 1.5rem;
+        font-size: 0.9rem;
+        color: $text-gray;
     }
 }
 
-@media (min-width: 768px) {
-    .landing-footer {
-        flex-direction: row;
-        justify-content: space-between;
+@media (max-width: 768px) {
+    .footer-container {
+        flex-direction: column;
         align-items: center;
+    }
+
+    .footer-section {
+        margin-bottom: 1.5rem;
     }
 }
