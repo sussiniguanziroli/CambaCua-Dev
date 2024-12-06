@@ -168,21 +168,7 @@
     }
 }
 
-// Footer fix for mobile
-.footer {
-    position: relative;
-    width: 100%;
-    padding: 1.5rem;
-    background-color: $bg-c-footer;
-    color: $text-gray;
-    text-align: center;
-    margin-top: auto;
 
-    @media (max-width: 768px) {
-        position: fixed;
-        bottom: 0;
-    }
-}
 
 
 //----------------ESTILOS RESTO DEL CHECKOUT---------------

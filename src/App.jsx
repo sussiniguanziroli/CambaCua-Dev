@@ -27,7 +27,7 @@ function App() {
                 <Route path='/carrito' element={<Carrito />}/>
                 <Route path='/checkout' element={<Checkout />} />
                 <Route path='/producto/:itemId' element={<ItemDetailContainer/>} />
-                <Route path='/miscompras' element={<OrderDetails/>}/>
+                <Route path='/miscompras' element={<OrderDetails/>}/> 
             </Routes>
             <Footer />
         </BrowserRouter>
