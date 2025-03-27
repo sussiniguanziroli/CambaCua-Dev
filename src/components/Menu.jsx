@@ -69,7 +69,7 @@ const Menu = () => {
                 className="burger-nav-item"
                 activeclassname="burger-active"
               >
-                Productos
+                Tienda
               </NavLink>
             </li>
             <li>

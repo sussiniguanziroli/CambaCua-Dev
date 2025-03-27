@@ -32,33 +32,14 @@ const Landing = () => {
             <div className="landing-container">
                 <section className="welcome-section">
                     <h1>Bienvenidos a Cambá Cuá Vet Shop</h1>
-                    <p>Tu tienda de confianza para el cuidado de tus mascotas. Descubre nuestros productos y servicios.</p>
-                    <NavLink className="explore-button" activeclassname="active" to="/productos">Explorar Productos</NavLink>
+                    <h2>Tu lugar de confianza para el cuidado de tus mascotas. Descubre nuestros productos y servicios.</h2>
+                    <h2>Lanzamos nuestra tienda virtual, para que tu peludo tenga todo lo que necesita desde la comodidad de tu hogar!</h2>
+                    <NavLink className="explore-button" activeclassname="active" to="/productos">Ir a la Tienda!</NavLink>
                 </section>
 
-                <section className="servicios-veterinarios">
-                    <h2>Servicios Veterinarios</h2>
-                    <div className="servicios-content">
-                        <section className='carrouseles-section'>
-                            <div className="servicios-images">
-                                <ImageCarousel images={serviciosImages1} />
-                            </div>
-                            <div className="servicios-images-2">
-                                <ImageCarousel images={serviciosImages2} />
-                            </div>
-                        </section>
-                        <div className='servicios-list'>
-                            <Accordeon />
-                        </div>
-                    </div>
-                </section>
+                
 
-                <section className="portfolio-section">
-                    <h2>Conoce a la Dra. María Celeste Guanziroli Stefani</h2>
-                    <p className="portfolio-summary">
-                        Aquí va un breve resumen del portafolio de la Dra. María Celeste Guanziroli Stefani. Completa esta sección con información relevante sobre su experiencia, educación y especialidades en el campo veterinario.
-                    </p>
-                </section>
+                
             </div>
         </div>
     );
