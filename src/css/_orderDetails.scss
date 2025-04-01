@@ -49,3 +49,11 @@
     }
   }
   
+
+  // Agregar estos estilos para SweetAlert
+.swal-copy-button {
+  background-color: $naranja-cambacua !important;
+  &:hover {
+    background-color: darken($naranja-cambacua, 10%) !important;
+  }
+}

@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { collection, addDoc, Timestamp, writeBatch, doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import Swal from 'sweetalert2';
 import { useCarrito } from '../../context/CarritoContext';
+import { useNavigate } from 'react-router-dom';
 
 const OrderConfirmation = ({ formData, paymentMethod }) => {
-
     const { carrito, calcularTotal, vaciarCarrito } = useCarrito();
+    const navigate = useNavigate();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const verificarYActualizarStock = async () => {
         const batch = writeBatch(db);
@@ -42,18 +44,22 @@ const OrderConfirmation = ({ formData, paymentMethod }) => {
     };
 
     const handleConfirmOrder = async () => {
-        const stockDisponible = await verificarYActualizarStock();
-
-        if (!stockDisponible) {
-            Swal.fire({
-                title: "Stock insuficiente",
-                text: "Lo sentimos, no hay suficiente stock para uno o más productos en tu carrito.",
-                icon: "error"
-            });
-            return;
-        }
+        if (isSubmitting) return;
+        setIsSubmitting(true);
 
         try {
+            const stockDisponible = await verificarYActualizarStock();
+            
+            if (!stockDisponible) {
+                setIsSubmitting(false);
+                Swal.fire({
+                    title: "Stock insuficiente",
+                    text: "Lo sentimos, no hay suficiente stock para uno o más productos en tu carrito.",
+                    icon: "error"
+                });
+                return;
+            }
+
             const pedido = {
                 ...formData,
                 productos: carrito,
@@ -63,18 +69,27 @@ const OrderConfirmation = ({ formData, paymentMethod }) => {
                 metodoPago: paymentMethod
             };
 
+            // Corrección aquí: se removió el paréntesis extra después de 'pedidos'
             const docRef = await addDoc(collection(db, 'pedidos'), pedido);
             vaciarCarrito();
 
-            Swal.fire({
-                title: "Pedido Enviado con Éxito!",
-                text: `Tu número de pedido es: ${docRef.id}. Gracias por tu compra!`,
-                icon: "success"
+            // Mostrar confirmación antes de redirigir
+            await Swal.fire({
+                title: "¡Pedido Confirmado!",
+                text: `Tu pedido #${docRef.id} ha sido registrado correctamente`,
+                icon: "success",
+                timer: 2000,
+                showConfirmButton: false
             });
+
+            navigate(`/order-summary/${docRef.id}`);
+
         } catch (error) {
+            console.error("Error en handleConfirmOrder:", error);
+            setIsSubmitting(false);
             Swal.fire({
                 title: "Error",
-                text: "Ocurrió un problema al procesar tu pedido.",
+                text: "Ocurrió un problema al procesar tu pedido. Por favor intenta nuevamente.",
                 icon: "error"
             });
         }
@@ -112,7 +127,17 @@ const OrderConfirmation = ({ formData, paymentMethod }) => {
             <p>Método de Pago: {paymentMethod}</p>
             <p>Total: ${calcularTotal()}</p>
 
-            <button onClick={handleConfirmOrder} className="checkout-button">Confirmar Pedido</button>
+            <button
+                onClick={handleConfirmOrder}
+                className={`checkout-button ${isSubmitting ? 'loading' : ''}`}
+                disabled={isSubmitting}
+            >
+                {isSubmitting ? (
+                    <span className="button-loader"></span>
+                ) : (
+                    "Confirmar Pedido"
+                )}
+            </button>
         </div>
     );
 };

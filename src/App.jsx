@@ -11,6 +11,7 @@ import Carrito from './components/Carrito.jsx';
 import Checkout from './components/checkout/Checkout.jsx';
 import ItemDetailContainer from './components/products/ItemDetailContainer.jsx';
 import OrderDetails from './components/OrderDetails.jsx';
+import OrderSummary from './components/checkout/OrderSummary.jsx';
 
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
                 <Route path='/checkout' element={<Checkout />} />
                 <Route path='/producto/:itemId' element={<ItemDetailContainer/>} />
                 <Route path='/miscompras' element={<OrderDetails/>}/> 
+                <Route path="/order-summary/:orderId" element={<OrderSummary />} />
             </Routes>
             <Footer />
         </BrowserRouter>

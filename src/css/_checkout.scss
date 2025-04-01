@@ -215,16 +215,80 @@
         justify-content: space-between;
     }
 
+    // Estilos para el botón de carga
     .checkout-button {
-        background-color: $azul-cambacua;
-        color: $main-white;
-        padding: 0.75rem;
-        border: none;
-        border-radius: 0.5rem;
-        cursor: pointer;
-        &:hover {
-            background-color: $button-hover-cambacua;
+        position: relative;
+        transition: all 0.3s ease;
+        
+        &.loading {
+          padding-left: 3rem;
+          cursor: not-allowed;
+          opacity: 0.8;
         }
-    }
+        
+        .button-loader {
+          position: absolute;
+          left: 1rem;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 1.5rem;
+          height: 1.5rem;
+          border: 3px solid rgba(255, 255, 255, 0.3);
+          border-radius: 50%;
+          border-top-color: white;
+          animation: spin 1s ease-in-out infinite;
+          
+          @keyframes spin {
+            to { transform: translateY(-50%) rotate(360deg); }
+          }
+        }
+      }
+  
+  
 }
 
+.order-summary-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 70vh;
+    text-align: center;
+    padding: 2rem;
+  
+    .tenor-gif-embed {
+      max-width: 300px;
+      margin: 0 auto 2rem;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+  
+    h3 {
+      color: $azul-cambacua;
+      font-size: 1.4rem;
+      margin-top: 1.5rem;
+      font-weight: 500;
+    }
+  }
+  
+  .order-summary-error {
+    text-align: center;
+    padding: 3rem;
+    
+    button {
+      background: $naranja-cambacua;
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 5px;
+      margin-top: 1rem;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+  }
+
+  .checkout-total {
+    margin-top: 1.5rem;
+    font-size: 1.2rem;
+  }
