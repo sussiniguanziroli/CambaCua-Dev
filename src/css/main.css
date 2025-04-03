@@ -1754,6 +1754,13 @@ html {
         width: 100%;
         padding-top: 1rem;
         border-top: 1px dashed #e5e7eb; } }
+.swal2-popup .cancelation-detail {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed #e5e7eb; }
+
 .order-summary-container {
   max-width: 800px;
   margin: 2rem auto;

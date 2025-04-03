@@ -81,10 +81,10 @@ const OrderDetails = () => {
       setError('Solo puedes cancelar pedidos en estado "Pendiente"');
       return;
     }
-
+  
     const { isConfirmed } = await Swal.fire({
       title: '¿Cancelar pedido?',
-      text: `¿Estás seguro que deseas cancelar el pedido #${order.id.substring(0, 8)}?`,
+      text: `¿Estás seguro que deseas cancelar el pedido #${order.id.substring(0, 8)}? Esta acción no se puede deshacer.`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Sí, cancelar',
@@ -92,29 +92,46 @@ const OrderDetails = () => {
       confirmButtonColor: '#d33',
       cancelButtonColor: '#3085d6'
     });
-
+  
     if (!isConfirmed) return;
-
+  
     try {
-      // Mover a pedidos_completados como Cancelado
-      await setDoc(doc(db, 'pedidos_completados', order.id), {
+      // Crear objeto con datos extendidos para la cancelación
+      const canceledOrderData = {
         ...order,
         estado: 'Cancelado',
-        fechaCancelacion: new Date()
-      });
-
-      // Eliminar de pedidos activos
+        fechaCancelacion: new Date(),
+        canceladoPor: 'cliente', // Diferenciador clave
+        motivoCancelacion: 'Cancelado por el cliente desde el portal',
+        fechaOriginal: order.fecha, // Conservamos la fecha original
+        // Mantenemos todos los productos y datos originales
+        productos: order.productos.map(p => ({...p})),
+        metodoPago: order.metodoPago,
+        total: order.total
+      };
+  
+      // 1. Mover a pedidos_completados con todos los datos
+      await setDoc(doc(db, 'pedidos_completados', order.id), canceledOrderData);
+  
+      // 2. Eliminar de pedidos activos
       await deleteDoc(doc(db, 'pedidos', order.id));
-
-      // Actualizar estado local
+  
+      // 3. Actualizar estado local
       setOrder(prev => ({
         ...prev,
-        estado: 'Cancelado'
+        estado: 'Cancelado',
+        // Mantenemos todos los datos pero actualizamos el estado
+        ...canceledOrderData
       }));
-
+  
       Swal.fire({
         title: '¡Pedido cancelado!',
-        text: 'El pedido ha sido cancelado exitosamente',
+        html: `
+          <div>
+            <p>El pedido ha sido cancelado exitosamente</p>
+            <p class="cancelation-detail">Cancelación realizada por el cliente</p>
+          </div>
+        `,
         icon: 'success',
         confirmButtonText: 'Entendido'
       });
