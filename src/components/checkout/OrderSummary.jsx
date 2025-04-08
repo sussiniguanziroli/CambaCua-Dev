@@ -10,6 +10,34 @@ const OrderSummary = () => {
     const [copied, setCopied] = useState(false);
     const navigate = useNavigate();
 
+    const generarMensajeWhatsApp = (order) => {
+        const resumenURL = `https://www.cambacuavetshop.com.ar/order-summary/${order.id}`;
+    
+        let mensaje = `*📦 Pedido Nº ${order.id}*\n\n`;
+        mensaje += `¡Confirmo el pedido!\n\n`;
+    
+        mensaje += `🔁 *Acceder nuevamente al resumen:*\n${resumenURL}\n\n`;
+    
+        mensaje += `💳 *Método de Pago:* ${order.metodoPago}\n`;
+        mensaje += `💰 *Total:* $${order.total}\n\n`;
+    
+        mensaje += `👤 *Datos del Cliente*\n`;
+        mensaje += `📍 Nombre: ${order.nombre}\n`;
+        mensaje += `🏠 Dirección: ${order.direccion}\n`;
+        if (order.telefono) mensaje += `📞 Teléfono: ${order.telefono}\n`;
+        if (order.email) mensaje += `📧 Email: ${order.email}\n\n`;
+    
+        mensaje += `🛒 *Productos*\n`;
+        order.productos.forEach((item) => {
+            mensaje += `• ${item.nombre} x${item.cantidad} - $${(item.precio * item.cantidad).toFixed(2)}\n`;
+        });
+    
+        mensaje += `\n📎 *Adjunto comprobante:*`;
+    
+        return encodeURIComponent(mensaje);
+    };
+    
+
     useEffect(() => {
         const fetchOrder = async () => {
             try {
@@ -79,7 +107,7 @@ const OrderSummary = () => {
         return (
             <div className="order-summary-error">
                 <h2>Pedido no encontrado</h2>
-                <button 
+                <button
                     onClick={() => navigate('/')}
                     className="back-button"
                 >
@@ -131,9 +159,9 @@ const OrderSummary = () => {
                 <div className="order-products">
                     {order.productos.map((item, index) => (
                         <div key={index} className="product-item">
-                            <img 
-                                src={item.imagen} 
-                                alt={item.nombre} 
+                            <img
+                                src={item.imagen}
+                                alt={item.nombre}
                                 className="product-image"
                             />
                             <div className="product-info">
@@ -150,7 +178,19 @@ const OrderSummary = () => {
                     ))}
                 </div>
             </div>
-
+            {order.metodoPago === 'Transferencia Bancaria' && (
+                <div className="order-section">
+                    <h3>Información para Transferencia</h3>
+                    <div className="order-detail">
+                        <strong>Alias MP:</strong>
+                        <span>cambacuavet.mp</span>
+                    </div>
+                    <div className="order-detail">
+                        <strong>Nombre:</strong>
+                        <span>Maria Celeste Guanziroli Stefani</span>
+                    </div>
+                </div>
+            )}
             <div className="order-section">
                 <h3>Datos de Envío</h3>
                 <div className="order-detail">
@@ -176,18 +216,21 @@ const OrderSummary = () => {
             </div>
 
             <div className="order-actions">
-                <button 
+                <button
                     onClick={() => navigate('/')}
                     className="action-button primary"
                 >
                     Volver al Inicio
                 </button>
-                <button 
-                    onClick={() => navigate('/mis-pedidos')}
-                    className="action-button secondary"
+                <a
+                    href={`https://wa.me/543795048310?text=${generarMensajeWhatsApp(order)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="action-button whatsapp"
                 >
-                    Ver mis pedidos
-                </button>
+                    Ir a WhatsApp para Enviar Comprobante
+                </a>
+
             </div>
         </div>
     );

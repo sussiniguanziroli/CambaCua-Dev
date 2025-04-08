@@ -1,5 +1,3 @@
-
-
 .checkout-container {
     font-family: 'Poppins', sans-serif;
     max-width: 60rem; // Aproximadamente 960px en rem
@@ -40,7 +38,7 @@
             align-items: center;
             padding: 1rem 0;
             border-bottom: 0.063rem solid $hover-color;
-            
+
 
             @media (max-width: 768px) {
                 flex-direction: column;
@@ -52,6 +50,7 @@
                 align-items: center;
                 margin-right: .5rem;
                 margin-left: .5rem;
+
                 img {
                     width: 5rem; // Tamaño de la imagen
                     height: 5rem;
@@ -65,7 +64,7 @@
                 }
 
                 .product-info {
-                    
+
                     h3 {
                         color: $text-gray;
                         font-size: 1.25rem;
@@ -85,7 +84,8 @@
                 font-weight: 600;
                 color: $text-gray;
                 margin-left: .5rem;
-                    margin-right: .5rem;
+                margin-right: .5rem;
+
                 @media (max-width: 768px) {
                     margin-top: 1rem;
                 }
@@ -166,6 +166,54 @@
         font-size: 1.25rem;
         font-weight: 500;
     }
+
+    .checkout-form-container {
+        form {
+            div {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+
+                label {
+                    font-weight: 500;
+                    color: $text-gray;
+                }
+
+                input {
+                    font-size: 1rem;
+                    padding: 0.75rem;
+                    border: 1px solid $border-color;
+                    border-radius: 0.5rem;
+                    transition: border-color 0.3s ease;
+
+                    &:focus {
+                        border-color: $azul-cambacua;
+                        outline: none;
+                    }
+                }
+
+                margin-bottom: 1rem;
+            }
+        }
+    }
+
+    .payment-method-container {
+        form {
+            div {
+                margin-bottom: 1rem;
+
+                label {
+                    font-weight: 500;
+                    color: $text-gray;
+
+                    input {
+                        margin-right: 0.5rem;
+                    }
+                }
+            }
+        }
+    }
+
 }
 
 
@@ -219,32 +267,34 @@
     .checkout-button {
         position: relative;
         transition: all 0.3s ease;
-        
+
         &.loading {
-          padding-left: 3rem;
-          cursor: not-allowed;
-          opacity: 0.8;
+            padding-left: 3rem;
+            cursor: not-allowed;
+            opacity: 0.8;
         }
-        
+
         .button-loader {
-          position: absolute;
-          left: 1rem;
-          top: 50%;
-          transform: translateY(-50%);
-          width: 1.5rem;
-          height: 1.5rem;
-          border: 3px solid rgba(255, 255, 255, 0.3);
-          border-radius: 50%;
-          border-top-color: white;
-          animation: spin 1s ease-in-out infinite;
-          
-          @keyframes spin {
-            to { transform: translateY(-50%) rotate(360deg); }
-          }
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1.5rem;
+            height: 1.5rem;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+
+            @keyframes spin {
+                to {
+                    transform: translateY(-50%) rotate(360deg);
+                }
+            }
         }
-      }
-  
-  
+    }
+
+
 }
 
 .order-summary-loading {
@@ -255,40 +305,56 @@
     height: 70vh;
     text-align: center;
     padding: 2rem;
-  
+
     .tenor-gif-embed {
-      max-width: 300px;
-      margin: 0 auto 2rem;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        max-width: 300px;
+        margin: 0 auto 2rem;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
-  
+
     h3 {
-      color: $azul-cambacua;
-      font-size: 1.4rem;
-      margin-top: 1.5rem;
-      font-weight: 500;
+        color: $azul-cambacua;
+        font-size: 1.4rem;
+        margin-top: 1.5rem;
+        font-weight: 500;
     }
-  }
-  
-  .order-summary-error {
+}
+
+.order-summary-error {
     text-align: center;
     padding: 3rem;
-    
-    button {
-      background: $naranja-cambacua;
-      color: white;
-      border: none;
-      padding: 0.8rem 1.5rem;
-      border-radius: 5px;
-      margin-top: 1rem;
-      cursor: pointer;
-      font-size: 1rem;
-    }
-  }
 
-  .checkout-total {
+    button {
+        background: $naranja-cambacua;
+        color: white;
+        border: none;
+        padding: 0.8rem 1.5rem;
+        border-radius: 5px;
+        margin-top: 1rem;
+        cursor: pointer;
+        font-size: 1rem;
+    }
+}
+
+.checkout-total {
     margin-top: 1.5rem;
     font-size: 1.2rem;
-  }
+}
+
+.action-button.whatsapp {
+    background-color: #25D366;
+    color: white;
+    margin-left: 1rem;
+    text-align: center;
+    text-decoration: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+
+    &:hover {
+        background-color: #1ebe5d;
+    }
+}

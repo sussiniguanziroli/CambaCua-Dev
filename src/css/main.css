@@ -1371,6 +1371,30 @@ html {
     color: #f38759;
     font-size: 1.25rem;
     font-weight: 500; }
+  .checkout-container .checkout-form-container form div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem; }
+    .checkout-container .checkout-form-container form div label {
+      font-weight: 500;
+      color: #2c2c2c; }
+    .checkout-container .checkout-form-container form div input {
+      font-size: 1rem;
+      padding: 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      transition: border-color 0.3s ease; }
+      .checkout-container .checkout-form-container form div input:focus {
+        border-color: #0b369c;
+        outline: none; }
+  .checkout-container .payment-method-container form div {
+    margin-bottom: 1rem; }
+    .checkout-container .payment-method-container form div label {
+      font-weight: 500;
+      color: #2c2c2c; }
+      .checkout-container .payment-method-container form div label input {
+        margin-right: 0.5rem; }
 
 .checkout-form-container,
 .payment-method-container,
@@ -1481,6 +1505,19 @@ html {
 .checkout-total {
   margin-top: 1.5rem;
   font-size: 1.2rem; }
+
+.action-button.whatsapp {
+  background-color: #25D366;
+  color: white;
+  margin-left: 1rem;
+  text-align: center;
+  text-decoration: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 5px;
+  font-size: 1rem;
+  transition: all 0.3s ease; }
+  .action-button.whatsapp:hover {
+    background-color: #1ebe5d; }
 
 .item-detail-loading {
   padding: 2rem;
