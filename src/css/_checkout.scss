@@ -358,3 +358,34 @@
         background-color: #1ebe5d;
     }
 }
+
+// boton para copiar alias
+
+.alias-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.copy-alias-button {
+    padding: 4px 10px;
+    font-size: 0.85rem;
+    background-color: #eee;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.copy-alias-button:hover {
+    background-color: #ddd;
+}
+
+.copy-alias-button.copied {
+    background-color: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
+}
+

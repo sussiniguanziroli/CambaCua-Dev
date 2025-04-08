@@ -9,34 +9,43 @@ const OrderSummary = () => {
     const [loading, setLoading] = useState(true);
     const [copied, setCopied] = useState(false);
     const navigate = useNavigate();
+    const [aliasCopied, setAliasCopied] = useState(false);
+
+
+    const copyAlias = () => {
+        navigator.clipboard.writeText("cambacuavet.mp");
+        setAliasCopied(true);
+        setTimeout(() => setAliasCopied(false), 2000);
+    };
+
 
     const generarMensajeWhatsApp = (order) => {
         const resumenURL = `https://www.cambacuavetshop.com.ar/order-summary/${order.id}`;
-    
+
         let mensaje = `*📦 Pedido Nº ${order.id}*\n\n`;
         mensaje += `¡Confirmo el pedido!\n\n`;
-    
+
         mensaje += `🔁 *Acceder nuevamente al resumen:*\n${resumenURL}\n\n`;
-    
+
         mensaje += `💳 *Método de Pago:* ${order.metodoPago}\n`;
         mensaje += `💰 *Total:* $${order.total}\n\n`;
-    
+
         mensaje += `👤 *Datos del Cliente*\n`;
         mensaje += `📍 Nombre: ${order.nombre}\n`;
         mensaje += `🏠 Dirección: ${order.direccion}\n`;
         if (order.telefono) mensaje += `📞 Teléfono: ${order.telefono}\n`;
         if (order.email) mensaje += `📧 Email: ${order.email}\n\n`;
-    
+
         mensaje += `🛒 *Productos*\n`;
         order.productos.forEach((item) => {
             mensaje += `• ${item.nombre} x${item.cantidad} - $${(item.precio * item.cantidad).toFixed(2)}\n`;
         });
-    
+
         mensaje += `\n📎 *Adjunto comprobante:*`;
-    
+
         return encodeURIComponent(mensaje);
     };
-    
+
 
     useEffect(() => {
         const fetchOrder = async () => {
@@ -132,6 +141,17 @@ const OrderSummary = () => {
                 </div>
             </div>
 
+            <div style={{
+                backgroundColor: '#e6f7ff',
+                border: '1px solid #91d5ff',
+                padding: '1rem',
+                borderRadius: '0.5rem',
+                marginBottom: '1rem',
+                color: '#0050b3',
+                fontSize: '1rem'
+            }}>
+                Puedes copiar este codigo y en la seccion de "Mis Compras", usarlo para buscar tu pedido, ver su estado o cancelarlo.          </div>
+
             <div className="order-status">
                 <span className={`status-badge ${order.estado.toLowerCase()}`}>
                     {order.estado}
@@ -182,9 +202,21 @@ const OrderSummary = () => {
                 <div className="order-section">
                     <h3>Información para Transferencia</h3>
                     <div className="order-detail">
-                        <strong>Alias MP:</strong>
-                        <span>cambacuavet.mp</span>
+                        <div className="alias-row">
+                            <div>
+                                <strong>Alias MP:</strong>
+                                <span> cambacuavet.mp</span>
+                            </div>
+                            <button
+                                onClick={copyAlias}
+                                className={`copy-alias-button ${aliasCopied ? 'copied' : ''}`}
+                            >
+                                {aliasCopied ? '✓ Copiado' : 'Copiar'}
+                            </button>
+                        </div>
                     </div>
+
+
                     <div className="order-detail">
                         <strong>Nombre:</strong>
                         <span>Maria Celeste Guanziroli Stefani</span>
