@@ -1,85 +1,158 @@
+// Estilos existentes (mejorados)
 .landing-dad {
-    @media (min-width: 768px) {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-    }
+    background: linear-gradient(to bottom, #f8f9fa, #e9f5ff);
+    min-height: 100vh;
+    padding-bottom: 2rem;
 }
 
 .landing-container {
-    padding: 16px;
+    padding: 2rem 1rem;
     text-align: center;
-    background-color: $main-white;
     font-family: "Poppins", sans-serif;
-    border: none;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .welcome-section {
-    margin-top: 16px;
-    padding-bottom: 6%;
-    border: none;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 16px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+
     h1 {
-        font-size: 24px;
-        margin: 16px 0;
+        font-size: 2.5rem;
         color: $azul-cambacua;
+        margin-bottom: 1rem;
+        font-weight: 700;
+        
+        .vet-name {
+            color: darken($azul-cambacua, 10%);
+        }
     }
 
-    h2 {
-        font-size: 1rem;
-        color: darken($azul-cambacua, 20%);
-        margin-bottom: 20px;
-        text-align: center;
+    .welcome-subtitle {
+        font-size: 1.5rem;
+        color: #555;
+        margin-bottom: 1.5rem;
+        font-weight: 500;
     }
 
+    .welcome-text {
+        font-size: 1.1rem;
+        color: #666;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+    }
 
     .explore-button {
         background-color: $azul-cambacua;
+        color: white;
+        padding: 12px 28px;
+        border-radius: 50px;
+        font-size: 1.1rem;
+        font-weight: 600;
         text-decoration: none;
-        color: $main-white;
-        padding: 12px 24px;
-        border: none;
-        border-radius: 8px;
-        font-size: 16px;
-        cursor: pointer;
-        font-family: "Raleway", sans-serif;
-        font-weight: 700;
-        transition: all .3s;
-    }
+        transition: all 0.3s ease;
+        display: inline-block;
+        border: 2px solid transparent;
 
-    .explore-button:hover {
-        background-color: $button-hover-cambacua;
+        &:hover {
+            background-color: $button-hover-cambacua;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
     }
 }
 
-@media (min-width: 1000px) {
-    
+// Nueva Sección de Promociones
+.promo-section {
+    margin: 3rem auto;
+    max-width: 1200px;
 
-    .landing-container {
-        padding: 32px;
+    .promo-title {
+        font-size: 1.8rem;
+        color: $azul-cambacua;
+        margin-bottom: 2rem;
     }
 
+    .promo-carousel {
+        display: flex;
+        gap: 1.5rem;
+        overflow-x: auto;
+        padding: 1rem 0;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+
+        &::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: $azul-cambacua;
+            border-radius: 10px;
+        }
+    }
+
+    .promo-card {
+        flex: 0 0 300px;
+        scroll-snap-align: start;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s;
+
+        &:hover {
+            transform: translateY(-5px);
+        }
+
+        img {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+        }
+
+        .promo-content {
+            padding: 1.2rem;
+            text-align: left;
+
+            h3 {
+                color: darken($azul-cambacua, 15%);
+                margin-bottom: 0.5rem;
+                font-size: 1.2rem;
+            }
+
+            p {
+                color: #666;
+                font-size: 0.95rem;
+                line-height: 1.4;
+            }
+        }
+    }
+}
+
+// Responsive
+@media (max-width: 768px) {
     .welcome-section {
-        
-
+        padding: 1.5rem;
         h1 {
-            font-size: 36px;
-            margin: 0 0 16px 0;
-        }
-
-        p {
-            font-size: 18px;
-        }
-
-        .explore-button {
-            font-size: 18px;
+            font-size: 2rem;
         }
     }
 
-    
+    .promo-section {
+        .promo-title {
+            font-size: 1.5rem;
+        }
+
+        .promo-carousel {
+            gap: 1rem;
+        }
+
+        .promo-card {
+            flex: 0 0 85%;
+        }
+    }
 }

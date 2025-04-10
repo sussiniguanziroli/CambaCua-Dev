@@ -449,64 +449,115 @@
   .button-comprar:hover {
     background-color: #63c063; }
 
-@media (min-width: 768px) {
-  .landing-dad {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center; } }
+.landing-dad {
+  background: linear-gradient(to bottom, #f8f9fa, #e9f5ff);
+  min-height: 100vh;
+  padding-bottom: 2rem; }
 
 .landing-container {
-  padding: 16px;
+  padding: 2rem 1rem;
   text-align: center;
-  background-color: #F5F5F5;
   font-family: "Poppins", sans-serif;
-  border: none; }
+  max-width: 1200px;
+  margin: 0 auto; }
 
 .welcome-section {
-  margin-top: 16px;
-  padding-bottom: 6%;
-  border: none;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 16px; }
+  margin: 2rem auto;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 800px; }
   .welcome-section h1 {
-    font-size: 24px;
-    margin: 16px 0;
-    color: #0b369c; }
-  .welcome-section h2 {
-    font-size: 1rem;
-    color: #04153d;
-    margin-bottom: 20px;
-    text-align: center; }
+    font-size: 2.5rem;
+    color: #0b369c;
+    margin-bottom: 1rem;
+    font-weight: 700; }
+    .welcome-section h1 .vet-name {
+      color: #08266c; }
+  .welcome-section .welcome-subtitle {
+    font-size: 1.5rem;
+    color: #555;
+    margin-bottom: 1.5rem;
+    font-weight: 500; }
+  .welcome-section .welcome-text {
+    font-size: 1.1rem;
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 2rem; }
   .welcome-section .explore-button {
     background-color: #0b369c;
+    color: white;
+    padding: 12px 28px;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 600;
     text-decoration: none;
-    color: #F5F5F5;
-    padding: 12px 24px;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    cursor: pointer;
-    font-family: "Raleway", sans-serif;
-    font-weight: 700;
-    transition: all .3s; }
-  .welcome-section .explore-button:hover {
-    background-color: #1d5aea; }
+    transition: all 0.3s ease;
+    display: inline-block;
+    border: 2px solid transparent; }
+    .welcome-section .explore-button:hover {
+      background-color: #1d5aea;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); }
 
-@media (min-width: 1000px) {
-  .landing-container {
-    padding: 32px; }
+.promo-section {
+  margin: 3rem auto;
+  max-width: 1200px; }
+  .promo-section .promo-title {
+    font-size: 1.8rem;
+    color: #0b369c;
+    margin-bottom: 2rem; }
+  .promo-section .promo-carousel {
+    display: flex;
+    gap: 1.5rem;
+    overflow-x: auto;
+    padding: 1rem 0;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch; }
+    .promo-section .promo-carousel::-webkit-scrollbar {
+      height: 8px; }
+    .promo-section .promo-carousel::-webkit-scrollbar-thumb {
+      background: #0b369c;
+      border-radius: 10px; }
+  .promo-section .promo-card {
+    flex: 0 0 300px;
+    scroll-snap-align: start;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s; }
+    .promo-section .promo-card:hover {
+      transform: translateY(-5px); }
+    .promo-section .promo-card img {
+      width: 100%;
+      height: 400px;
+      object-fit: cover; }
+    .promo-section .promo-card .promo-content {
+      padding: 1.2rem;
+      text-align: left; }
+      .promo-section .promo-card .promo-content h3 {
+        color: #061d55;
+        margin-bottom: 0.5rem;
+        font-size: 1.2rem; }
+      .promo-section .promo-card .promo-content p {
+        color: #666;
+        font-size: 0.95rem;
+        line-height: 1.4; }
 
-  .welcome-section h1 {
-    font-size: 36px;
-    margin: 0 0 16px 0; }
-  .welcome-section p {
-    font-size: 18px; }
-  .welcome-section .explore-button {
-    font-size: 18px; } }
+@media (max-width: 768px) {
+  .welcome-section {
+    padding: 1.5rem; }
+    .welcome-section h1 {
+      font-size: 2rem; }
+
+  .promo-section .promo-title {
+    font-size: 1.5rem; }
+  .promo-section .promo-carousel {
+    gap: 1rem; }
+  .promo-section .promo-card {
+    flex: 0 0 85%; } }
 .nav-bar {
   display: flex;
   justify-content: center;
@@ -670,19 +721,22 @@ html {
     font-size: 16px; } }
 .carousel {
   background-color: #F5F5F5;
-  border-radius: 15px;
   overflow: hidden;
-  margin: 2%; }
-  @media (min-width: 768px) {
+  margin: 0; }
+  @media (min-width: 1000px) {
     .carousel {
       width: 80%;
-      margin: 0; } }
+      margin: 2%;
+      border-radius: 15px; } }
   .carousel .carousel-item img {
     width: 100%;
     height: auto;
     max-height: 500px;
-    object-fit: cover;
-    border-radius: 15px; }
+    object-fit: cover; }
+    @media (min-width: 1000px) {
+      .carousel .carousel-item img {
+        border-radius: 15px;
+        max-height: 500px; } }
 
 .Accordion {
   font-size: 1.2rem; }

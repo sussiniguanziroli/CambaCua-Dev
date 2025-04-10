@@ -248,12 +248,6 @@ const OrderSummary = () => {
             </div>
 
             <div className="order-actions">
-                <button
-                    onClick={() => navigate('/')}
-                    className="action-button primary"
-                >
-                    Volver al Inicio
-                </button>
                 <a
                     href={`https://wa.me/543795048310?text=${generarMensajeWhatsApp(order)}`}
                     target="_blank"
