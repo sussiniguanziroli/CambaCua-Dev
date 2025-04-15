@@ -1,122 +1,180 @@
-// src/components/Carrito.jsx
-import React, { useEffect, useState } from 'react';
+import React from 'react'; // No se necesita useState/useEffect aquí ahora
 import { useCarrito } from '../context/CarritoContext';
 import { FaTrashAlt, FaArrowLeft, FaPlus, FaMinus } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify'; // Mantenemos Toastify para notificaciones de cantidad
 import 'react-toastify/dist/ReactToastify.css';
-import { doc, getDoc, getDocs, query } from 'firebase/firestore';
+import Swal from 'sweetalert2'; // Para confirmación de vaciar carrito
+import { doc, getDoc } from 'firebase/firestore'; // Solo necesitamos getDoc y doc
 import { db } from '../firebase/config';
 
 const Carrito = () => {
-    const [productos, setProductos] = useState([]);
-    const { calcularTotal, carrito, eliminarDelCarrito, actualizarCantidad, vaciarCarrito } = useCarrito();
+    // Obtenemos lo necesario del contexto
+    const { carrito, eliminarDelCarrito, actualizarCantidad, vaciarCarrito, calcularTotal } = useCarrito();
 
-    const notifyEliminar = () => toast.error("Producto Eliminado!");
-    const notifyVaciar = () => toast.error("Carrito Vacio!");
-
-    useEffect(() => {
-        const obtenerProductos = async () => {
-            try {
-                const q = query(collection(db, 'productos'), where('activo', '==', true));
-                const snapshot = await getDocs(q);
-                const productosFirebase = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-                setProductos(productosFirebase);
-                setFilteredProducts(productosFirebase);
-            } catch (error) {
-                console.error("Error obteniendo los productos: ", error);
-            }
-        };
-
-        obtenerProductos();
-    }, []);
-
-    useEffect(() => {
-        const fetchStock = async () => {
-            const stock = await obtenerStockDisponible(productos.id);
-            setStockActual(stock); // Puedes almacenar el stock en el estado local
-        };
-        fetchStock();
-    }, [productos.id]); // Consulta el stock cada vez que cambie el producto
-
-
+    // --- LÓGICA DE STOCK Y CANTIDAD (Simplificada) ---
     const obtenerStockDisponible = async (productoId) => {
-        // Aquí realizas la consulta a Firebase para obtener el stock
-        const productoRef = doc(db, 'productos', productoId);
-        const productoSnapshot = await getDoc(productoRef);
-        if (productoSnapshot.exists()) {
-            return productoSnapshot.data().stock;
-        } else {
-            return 0; // Si no existe, retornas stock 0
+        // Esta función se mantiene igual, se llama bajo demanda
+        try {
+            const productoRef = doc(db, 'productos', productoId);
+            const productoSnapshot = await getDoc(productoRef);
+            return productoSnapshot.exists() ? productoSnapshot.data().stock : 0;
+        } catch (error) {
+            console.error("Error obteniendo stock:", error);
+            toast.error("Error al verificar stock.");
+            return 0;
         }
     };
 
+    // Manejador de cambio de cantidad (directo, sin input event)
+    const handleCantidadChange = async (itemId, nuevaCantidad) => {
+        const cantidad = parseInt(nuevaCantidad, 10);
 
-    const handleCantidadChangeMobile = async (id, e) => {
-        const cantidad = parseInt(e.target.value, 10);
-        const stockDisponible = await obtenerStockDisponible(id); // Consulta del stock actual
-    
-        if (cantidad > stockDisponible) {
-            actualizarCantidad(id, stockDisponible);
-            toast.info(`Se ha alcanzado el máximo de productos disponibles (${stockDisponible})`);
-        } else if (cantidad > 0) {
-            actualizarCantidad(id, cantidad);
+        if (isNaN(cantidad) || cantidad <= 0) {
+            // Eliminar si la cantidad es 0 o inválida
+            eliminarDelCarrito(itemId);
+            toast.error("Producto eliminado");
         } else {
-            eliminarDelCarrito(id);
-            notifyEliminar();
+            // Verificar stock antes de actualizar
+            const stockDisponible = await obtenerStockDisponible(itemId);
+            if (cantidad > stockDisponible) {
+                actualizarCantidad(itemId, stockDisponible);
+                toast.info(`Máximo stock disponible: ${stockDisponible}`);
+            } else {
+                actualizarCantidad(itemId, cantidad);
+            }
         }
     };
 
+     // Manejador Input Cantidad (si se mantiene el input)
+     const handleInputChange = (itemId, event) => {
+          const valorInput = event.target.value;
+          // Validar si es número y mayor a 0 antes de llamar a handleCantidadChange
+          // O manejar la lógica directamente aquí
+          const cantidad = parseInt(valorInput, 10);
+          if (!isNaN(cantidad) && cantidad > 0) {
+               handleCantidadChange(itemId, cantidad); // Llama a la lógica principal
+          } else if (valorInput === "") {
+              // Permitir borrar el input, pero no actualizar a vacío/cero inmediatamente
+              // Quizás manejar en onBlur o con un botón "Actualizar"
+          } else if (!isNaN(cantidad) && cantidad <= 0) {
+             // Si escribe 0 o menos, eliminar item
+             eliminarDelCarrito(itemId);
+             toast.error("Producto eliminado");
+          }
+     };
 
+    // Manejador para Vaciar Carrito (con confirmación Swal)
+    const handleVaciarCarrito = () => {
+        Swal.fire({
+            title: '¿Vaciar Carrito?',
+            text: "Se eliminarán todos los productos.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#0b369c', // Azul Cambacua
+            cancelButtonColor: '#dc3545', // Rojo Peligro
+            confirmButtonText: 'Sí, vaciar',
+            cancelButtonText: 'Cancelar',
+            customClass: { popup: 'swal2-popup' } // Aplicar fuente Poppins
+        }).then((result) => {
+            if (result.isConfirmed) {
+                vaciarCarrito();
+                toast.error("Carrito vaciado");
+            }
+        });
+    };
 
-
+    // --- RENDER ---
     return (
-        <div className="carrito">
+        <div className="carrito-page"> {/* Clase contenedora de página */}
+             {/* Contenedor Toastify */}
+             <ToastContainer
+                 position="top-center" // Posición más centrada en móvil
+                 autoClose={2000}
+                 hideProgressBar
+                 newestOnTop={false}
+                 closeOnClick
+                 rtl={false}
+                 pauseOnFocusLoss
+                 draggable
+                 pauseOnHover
+                 theme="colored"
+            />
+
+            {/* Botón Volver */}
+            <Link className='boton-volver' to="/productos">
+                <FaArrowLeft /> <span>Volver a Productos</span>
+            </Link>
+
             <h1>Carrito de Compras</h1>
-            <ToastContainer
-                autoClose={1500} />
-            <Link className='boton-volver' to="/productos"><FaArrowLeft /> Atras</Link>
 
             {carrito.length === 0 ? (
-                <p className='carrito-vacio'>El carrito está vacío</p>
+                <div className="empty-cart-container">
+                     {/* Podrías añadir un ícono aquí */}
+                    <p className='carrito-vacio'>Tu carrito está vacío.</p>
+                    <Link to="/productos" className="boton-seguir-comprando">
+                        Ver Productos
+                    </Link>
+                </div>
             ) : (
-                <div>
-                    {carrito.map(item => (
-                        <div key={item.id} className="carrito-item">
-                            <div className='carrito-first-item'>
-
-                                <h2>{item.nombre}</h2>
-                                <img src={item.imagen} alt={item.nombre} />
-                            </div>
-                            <p>Precio: ${item.precio}</p>
-                            <div className='quantity-imput'>
-                                <button onClick={() => handleCantidadChangeMobile(item.id, { target: { value: item.cantidad - 1 } })}><FaMinus /></button>
-                                <input
-                                    type="number"
-                                    className="cantidad-input"
-                                    value={item.cantidad}
-                                    onChange={(e) => handleCantidadChangeMobile(item.id, e)}
-                                />
-                                <button onClick={() => handleCantidadChangeMobile(item.id, { target: { value: item.cantidad + 1 } })}><FaPlus /></button>
-                            </div>
-                            <div className='price-delete'>
-                                <p className="total-price">Subtotal: ${item.precio * item.cantidad}</p>
-                                <button className="eliminar-button" onClick={() => { eliminarDelCarrito(item.id); notifyEliminar(); }}>
-                                    <FaTrashAlt /> Eliminar
+                // Contenedor principal del contenido del carrito
+                <div className="carrito-content">
+                    {/* Lista de Items */}
+                    <div className="carrito-items-list">
+                        {carrito.map(item => (
+                            <div key={item.id} className="carrito-item">
+                                <img src={item.imagen} alt={item.nombre} className="item-image"/>
+                                <div className="item-details">
+                                    <h2 className="item-name">{item.nombre}</h2>
+                                    <p className="item-price">Precio: ${item.precio}</p>
+                                    {/* Controles de Cantidad */}
+                                    <div className="item-quantity">
+                                        <label htmlFor={`cantidad-${item.id}`}>Cantidad:</label>
+                                        <div className="quantity-controls">
+                                             <button onClick={() => handleCantidadChange(item.id, item.cantidad - 1)} aria-label="Restar uno">
+                                                <FaMinus />
+                                            </button>
+                                            {/* Input numérico */}
+                                            <input
+                                                id={`cantidad-${item.id}`}
+                                                type="number"
+                                                className="cantidad-input"
+                                                value={item.cantidad}
+                                                 // Usar onChange validado o onBlur para actualizar
+                                                 onChange={(e) => handleInputChange(item.id, e)}
+                                                aria-label="Cantidad"
+                                                min="1" // Mínimo 1 en el input HTML
+                                            />
+                                            <button onClick={() => handleCantidadChange(item.id, item.cantidad + 1)} aria-label="Sumar uno">
+                                                <FaPlus />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <p className="item-subtotal">Subtotal: <strong>${(item.precio * item.cantidad).toFixed(2)}</strong></p>
+                                </div>
+                                <button className="item-delete-button" onClick={() => eliminarDelCarrito(item.id)} aria-label={`Eliminar ${item.nombre}`}>
+                                    <FaTrashAlt />
                                 </button>
                             </div>
+                        ))}
+                    </div>
 
-                        </div>
-                    ))}
-                    <strong className='total-compra'>Total Compra: ${(calcularTotal()).toFixed(2)}</strong>
-                    <button className="vaciar-carrito-button" onClick={() => { vaciarCarrito(); notifyVaciar(); }} >Vaciar Carrito</button>
-                    <Link to="/checkout"><button className='carrito-button-comprar'>Continuar Compra</button></Link>
-
+                    {/* Resumen y Acciones */}
+                    <div className="carrito-summary">
+                         <div className="total-section">
+                             <span className="total-label">Total Compra:</span>
+                             <span className="total-amount">${(calcularTotal()).toFixed(2)}</span>
+                         </div>
+                         <div className="actions-section">
+                             <button className="vaciar-carrito-button" onClick={handleVaciarCarrito}>
+                                 Vaciar Carrito
+                             </button>
+                             <Link to="/checkout" className="checkout-link">
+                                 <button className='carrito-button-comprar'>Continuar Compra</button>
+                             </Link>
+                         </div>
+                     </div>
                 </div>
-
             )}
         </div>
     );

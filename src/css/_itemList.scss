@@ -1,100 +1,98 @@
-.item-list {
+// Variables asumidas
+$azul-cambacua: #0b369c;
+$button-hover-cambacua: #1d5aea;
+$main-white: #ffffff;
+$text-gray: #555555;
+$light-gray-bg: #f8f9fa;
+$border-color: #e0e0e0;
+$heading-color: #333333;
+
+.item-list-container .item-list { // Selector más específico
     display: grid;
-    gap: 8px; // Espacio entre los productos
-    padding: 1%;
+    gap: 1rem;
+    padding: 1rem;
+    position: relative; // Necesario para loader/no-results
     grid-template-columns: repeat(2, 1fr);
-    min-height: 50vh; // Asegura que el contenedor tenga una altura mínima
-    position: relative;
+
+    // --- FIX: Restaurar Altura Mínima ---
+    min-height: 350px; // Altura mínima para evitar colapso y solapamiento
+                      // Ajusta este valor si es necesario
+    // ------------------------------------
 }
 
-
-
-.loader,
-.no-results {
+// Estilos Loader y No-Results
+.item-list-container .loader,
+.item-list-container .no-results {
     position: absolute;
-    top: 50%;
-    left: 50%;
+    top: 50%; // Centrado verticalmente respecto al min-height
+    left: 50%; // Centrado horizontalmente
     transform: translate(-50%, -50%);
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    text-align: center; // Asegura que el texto esté centrado
-    margin: 2rem 0; // Espacio superior e inferior para separar del contenido
-
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+    // Añadir z-index por si acaso, aunque position:absolute debería bastar
+    z-index: 1;
 }
 
-.loader {
-    height: auto;
 
-}
 
-.no-results {
-    width: 80%;
-    color: $main-white;
-    margin-top: 2rem;
-    font-size: 1.2em;
-    background-color: $azul-cambacua;
-    border-radius: 1rem;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); // Añade una sombra sutil
+// Estilo "Sin Resultados" más sutil
+.item-list-container .no-results {
+    color: $text-gray;
+    background-color: $light-gray-bg;
+    border-radius: 10px;
+    padding: 2rem 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid $border-color;
 
     p {
-        margin: 1rem;
-        padding: 1rem;
+        margin: 0;
+        font-size: 1rem;
+        line-height: 1.5;
     }
 }
 
+// --- Media Queries para Columnas y Espaciado ---
 @media (min-width: 768px) {
-    .item-list {
-        grid-template-columns: repeat(3, 1fr); // 2 columnas en tablet
-        padding: 24px;
-        gap: 16px;
-
+    .item-list-container .item-list {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        padding: 1.5rem;
+        min-height: 400px; // Opcional: ajustar min-height en pantallas más grandes
     }
 }
 
 @media (min-width: 1024px) {
-    .item-list {
-        grid-template-columns: repeat(4, 1fr); // 4 columnas en escritorio
-        padding: 32px;
-        gap: 16px;
-
+    .item-list-container .item-list {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        padding: 2rem;
+        min-height: 450px; // Opcional: ajustar min-height en pantallas más grandes
     }
-
+     .item-list-container .no-results {
+         padding: 2.5rem 2rem;
+     }
 }
 
+// --- Paginación Estilo "Outlined" ---
 .pagination {
+    // ... (Estilos de paginación sin cambios respecto a la versión anterior) ...
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 20px;
+    margin: 2rem 0 1rem 0;
+    padding: 0 1rem;
 
     button {
-        background-color: #0b369c;
-        color: white;
-        border: none;
-        padding: 10px;
-        font-family: 'Poppins', sans-serif;
-        font-size: 16px;
-        cursor: pointer;
-        border-radius: 50%;
-        transition: background-color 0.3s ease;
-        margin: 0 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-
-        &:hover {
-            background-color: darken(#0b369c, 10%);
-        }
-
-        &:disabled {
-            background-color: #c4c4c4;
-            cursor: not-allowed;
-        }
+        background-color: transparent; color: $azul-cambacua; border: 1px solid $azul-cambacua; padding: 8px; font-family: 'Poppins', sans-serif; cursor: pointer; border-radius: 50%; transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.1s ease; margin: 0 8px; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px;
+        &:hover { background-color: $azul-cambacua; color: $main-white; border-color: $azul-cambacua; transform: scale(1.05); }
+        &:active { transform: scale(0.95); }
+        &:disabled { background-color: transparent; color: $border-color; border-color: $border-color; cursor: not-allowed; transform: none; svg { color: $border-color;} }
+        svg { width: 20px; height: 20px; transition: color 0.2s ease; }
     }
-
-    span {
-        font-family: 'Poppins', sans-serif;
-        font-size: 16px;
-    }
+    span { font-family: 'Poppins', sans-serif; font-size: 0.95rem; color: $text-gray; margin: 0 8px; }
 }

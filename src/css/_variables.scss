@@ -48,6 +48,7 @@ $secondary-color: #ffffff;
 $background-color: #f5f7fa;
 $border-color: #d1d5db;
 $hover-color: #e2e8f0;
+$light-gray-bg: #f9f9f9;
 $focus-color: rgba(11, 54, 156, 0.1);
 
 // Variables de color (mantenemos las mismas para consistencia)
@@ -57,3 +58,6 @@ $background-color: #f5f7fa;
 $border-color: #d1d5db;
 $hover-color: #e2e8f0;
 $focus-color: rgba(11, 54, 156, 0.1);
+$border-color: #e0e0e0; // Un gris un poco más suave para bordes
+$success-color: #28a745; // Verde para stock disponible
+$danger-color: #dc3545;
