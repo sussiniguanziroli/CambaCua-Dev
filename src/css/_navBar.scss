@@ -1,39 +1,48 @@
+// Variables asumidas
+$azul-cambacua: #0b369c;
+$main-white: #ffffff;
+$text-gray: #dddddd; // No se usa ahora para el color base
+$heading-color: #ffffff;
+
+// Estilos NavBar para ESCRITORIO (sobre fondo azul)
 .nav-bar {
     display: flex;
     justify-content: center;
     align-items: center;
-  
-    .nav-div {
-      margin: 0 15px;
-  
-      .nav-button {
+    gap: 0.8rem;
+
+
+
+    .nav-button {
+        display: inline-block;
         text-decoration: none;
+        // *** Color base: BLANCO y opacidad completa ***
         color: $main-white;
-        font-weight: bold;
-        padding: 10px 20px;
-        border-radius: 1rem;
-        transition: background-color 0.3s, color 0.3s;
-  
-        &.active {
-          background-color: $button-hover-cambacua;
-          color: $main-white;
-        }
-  
+        opacity: 1;
+        font-weight: 500;
+        font-size: 0.95rem;
+        // *** Padding ajustado a header de 1rem vertical ***
+        padding: 0.4rem 0.6rem; // Un poco más de padding para balance
+        border-radius: 16px;
+        transition: background-color 0.2s ease, color 0.2s ease, transform 0.1s ease; // Añadir transform
+        border: none; // Quitar borde transparente, no necesario
+
+        // Estado Hover
         &:hover {
-          background-color: $button-hover-cambacua;
-          color: $main-white;
+            // Mantener texto blanco, añadir fondo sutil y quizás escalar un poco
+            color: $main-white;
+            background-color: rgba(255, 255, 255, 0.1); // Fondo blanco sutil en hover
+            transform: scale(1.03); // Opcional: ligero scale en hover
         }
-      }
+
+        // Estado Activo
+        &.active {
+            color: $main-white;
+            font-weight: 600; // Más peso
+            background-color: rgba(255, 255, 255, 0.15); // Fondo sutil más intenso que hover
+            transform: none; // Sin scale en activo
+        }
     }
   }
-  
-  @media (max-width: 768px) {
-    .nav-bar {
-      flex-direction: column;
-  
-      .nav-div {
-        margin: 5px 0;
-      }
-    }
-  }
-  
+
+  // --- Sin Media Query Móvil ---

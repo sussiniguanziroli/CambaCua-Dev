@@ -1,30 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react'; // Eliminamos useState y useEffect si no hay efecto scroll
 import NavBar from './NavBar';
-import Menu from '../Menu';
+import Menu from '../Menu'; // Mantenemos el menú móvil
+import { Link } from 'react-router-dom';
 
 const Header = () => {
-    const [scrolled, setScrolled] = useState(false);
+  // Sin lógica de scroll aquí
 
-    useEffect(() => {
-        const handleScroll = () => {
-          if (window.scrollY > 70) {
-            setScrolled(true); // Se activa cuando el usuario ha hecho scroll hacia abajo
-          } else {
-            setScrolled(false); // Se desactiva cuando el usuario vuelve hacia arriba
-          }
-        };
-    
-        window.addEventListener('scroll', handleScroll);
-    
-        return () => {
-          window.removeEventListener('scroll', handleScroll);
-        };
-      }, []);
   return (
     <>
       <Menu />
-      <header className={`header ${scrolled ? 'scrolled' : ''}`}>
-        <div className='header-logo'></div>
+      {/* Header para Desktop (se ocultará en móvil vía CSS) */}
+      <header className='header'> {/* Sin clase 'scrolled' */}
+        <Link to="/" className='header-logo-link' aria-label="Ir a la página de inicio">
+             <div className='header-logo'></div>
+        </Link>
         <NavBar />
       </header>
     </>

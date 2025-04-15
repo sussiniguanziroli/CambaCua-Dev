@@ -1,51 +1,44 @@
+// Variables asumidas
+$azul-cambacua: #0b369c;
+$main-white: #ffffff;
+$border-color: #e0e0e0;
+
 .header {
-    position: -webkit-sticky; // Compatibilidad con Safari
     position: sticky;
-    top: 0; // Siempre pegado en la parte superior al hacer scroll
+    top: 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 2vh 4vw; // Usar unidades relativas para el padding
+    // *** Padding vertical LIGERAMENTE aumentado para acomodar logo más grande ***
+    padding: 1rem 3vw;
     background-color: $azul-cambacua;
-    box-shadow: 0 0.5vh 1vh rgba(0, 0, 0, 0.1);
-    margin-bottom: 1%;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
     z-index: 2000;
-    transition: background-color 0.3s ease-in-out, padding 0.3s ease-in-out;
+    transition: padding 0.3s ease;
+
+    .header-logo-link {
+        display: inline-block;
+        text-decoration: none;
+        flex-shrink: 0;
+        // Añadir un max-height relativo al padding del header para seguridad
+        max-height: calc(100% - 0.5rem); // Previene que el logo sea más alto que el header
+    }
+
     .header-logo {
-        width: 15vw; // Ancho relativo al viewport
-        height: 5vw; // Altura relativa al viewport
-        max-width: 100%; // Limitar el tamaño máximo
-        max-height: 100%;
-        background-image: url('https://i.ibb.co/fMb1dQS/camba-cua-logo-nobg.png'); // Placeholder para el logo
-        background-size: cover;
-        background-position: center;
+         // *** Dimensiones del logo AUMENTADAS ***
+        width: 200px;  // Ajusta este ancho si la proporción es diferente
+        height: 50px;  // Altura aumentada
+        background-image: url('https://i.ibb.co/fMb1dQS/camba-cua-logo-nobg.png');
+        background-size: contain;
+        background-position: center left;
         background-repeat: no-repeat;
     }
-    &.scrolled {
-        background-color: $azul-cambacua;
-        padding: .1rem 1rem;
-        img {
-            width: 8%;
-            height: 100%;
-        }
-        .searchbox {
-            display: none;
-        }
-    }
 
-}
+} // Fin .header
 
+// Ocultar este header en pantallas móviles
 @media (max-width: 768px) {
     .header {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 3vh 4vw;
         display: none;
-
-        .header-logo {
-            width: 15vw;
-            height: 15vw;
-            margin-bottom: 2vh;
-        }
     }
 }
