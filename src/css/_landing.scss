@@ -3,6 +3,9 @@
     background: linear-gradient(to bottom, #f8f9fa, #e9f5ff);
     min-height: 100vh;
     padding-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .landing-container {
