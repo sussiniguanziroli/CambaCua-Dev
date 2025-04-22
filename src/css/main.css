@@ -2397,7 +2397,7 @@ html {
 
 .order-details-container {
   max-width: 800px;
-  margin: 2rem auto;
+  margin: 3rem auto;
   padding: 2rem;
   background-color: #ffffff;
   border-radius: 12px;
@@ -2448,7 +2448,10 @@ html {
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  position: relative;
+  overflow: hidden;
 }
 .order-details-container .order-search-section .search-input-group .search-button:hover {
   background-color: #1d5aea;
@@ -2456,6 +2459,25 @@ html {
 .order-details-container .order-search-section .search-input-group .search-button:disabled {
   background-color: #9ca3af;
   cursor: not-allowed;
+}
+.order-details-container .order-search-section .search-input-group .search-button:active {
+  transform: scale(0.98);
+}
+.order-details-container .order-search-section .search-input-group .search-button:after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%, -50%);
+  transform-origin: 50% 50%;
+}
+.order-details-container .order-search-section .search-input-group .search-button:focus:not(:active)::after {
+  animation: ripple 0.6s ease-out;
 }
 .order-details-container .order-search-section .search-input-group .search-button .spinner {
   width: 16px;
@@ -2490,6 +2512,7 @@ html {
   align-items: center;
   gap: 10px;
   margin-top: 0.5rem;
+  flex-wrap: wrap;
 }
 .order-details-container .order-summary .order-header .order-id-section p {
   margin: 0;
@@ -2507,6 +2530,7 @@ html {
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.9rem;
+  display: inline-block;
 }
 .order-details-container .order-summary .order-status .status-badge.pendiente {
   background-color: #ffedd5;
@@ -2663,28 +2687,91 @@ html {
     transform: scale(1);
   }
 }
-/* Responsive */
+@keyframes ripple {
+  0% {
+    transform: scale(0, 0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(20, 20);
+    opacity: 0;
+  }
+}
+/* Responsive Styles */
 @media (max-width: 768px) {
   .order-details-container {
     padding: 1.5rem;
+    margin: 1rem auto;
+    border-radius: 0;
+    box-shadow: none;
+    max-width: 100%;
+  }
+  .order-details-container .order-search-section {
+    margin-bottom: 1.5rem;
+  }
+  .order-details-container .order-search-section h2 {
+    font-size: 1.5rem;
   }
   .order-details-container .order-search-section .search-input-group {
     flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 100%;
+  }
+  .order-details-container .order-search-section .search-input-group .search-input {
+    width: 100%;
+    padding: 0.9rem 1rem;
+  }
+  .order-details-container .order-search-section .search-input-group .search-button {
+    width: 100%;
+    padding: 0.9rem;
+  }
+  .order-details-container .order-summary {
+    padding: 1rem;
+  }
+  .order-details-container .order-summary .order-header h3 {
+    font-size: 1.3rem;
   }
   .order-details-container .order-summary .order-products .product-item {
     flex-direction: column;
     align-items: flex-start;
+    padding: 1rem 0;
   }
   .order-details-container .order-summary .order-products .product-item .product-image {
+    width: 80px;
+    height: 80px;
     margin-bottom: 1rem;
-    margin-right: 0;
   }
   .order-details-container .order-summary .order-products .product-item .product-subtotal {
-    text-align: left;
-    margin-top: 1rem;
     width: 100%;
-    padding-top: 1rem;
-    border-top: 1px dashed #e5e7eb;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    text-align: left;
+  }
+}
+@media (max-width: 375px) {
+  .order-details-container {
+    padding: 1rem;
+  }
+  .order-details-container .order-search-section h2 {
+    font-size: 1.3rem;
+  }
+  .order-details-container .order-search-section p {
+    font-size: 0.9rem;
+  }
+  .order-details-container .order-summary .order-section {
+    padding: 1rem;
+  }
+  .order-details-container .order-summary .order-section .order-detail {
+    flex-direction: column;
+  }
+  .order-details-container .order-summary .order-section .order-detail strong {
+    min-width: auto;
+    margin-bottom: 0.2rem;
+  }
+  .order-details-container .order-summary .copy-button {
+    width: 100%;
+    justify-content: center;
   }
 }
 .swal2-popup .cancelation-detail {
