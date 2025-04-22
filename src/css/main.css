@@ -1752,6 +1752,7 @@ html {
   font-size: 0.95rem;
   line-height: 1.6;
   margin-bottom: 1.5rem;
+  white-space: pre-line;
 }
 .modal .modal-content .modal-body-column .modal-body .product-price {
   font-size: 1.4rem;
