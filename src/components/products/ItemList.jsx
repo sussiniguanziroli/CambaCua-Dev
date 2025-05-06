@@ -6,7 +6,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 
-const ITEMS_PER_PAGE = 8; // Número de productos por página
+const ITEMS_PER_PAGE = 20; // Número de productos por página
 
 const ItemList = ({ productos, searchTerm, selectedCategory, selectedSubcategory }) => {
     const [currentPage, setCurrentPage] = useState(1);
