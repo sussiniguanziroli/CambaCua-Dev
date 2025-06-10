@@ -8,6 +8,28 @@ $danger-color: #dc3545;
 $success-color: #28a745;
 $heading-color: #333333;
 
+@keyframes shimmer {
+    0% {
+        background-position: -468px 0;
+    }
+    100% {
+        background-position: 468px 0;
+    }
+}
+
+.shimmer-bg {
+    animation-duration: 1.2s;
+    animation-fill-mode: forwards;
+    animation-iteration-count: infinite;
+    animation-name: shimmer;
+    animation-timing-function: linear;
+    background: #f6f7f8;
+    background: linear-gradient(to right, #eeeeee 8%, #dddddd 18%, #eeeeee 33%);
+    background-size: 800px 104px;
+    position: relative;
+}
+
+
 .landing-dad {
     display: flex;
     flex-direction: column;
@@ -59,8 +81,8 @@ $heading-color: #333333;
         }
     }
 
-    .shop-by-pet-section {
-        margin: 2rem auto;
+    .shop-by-category-section {
+        margin: 2rem auto 3rem;
         padding: 0 1rem;
 
         h2 {
@@ -70,50 +92,58 @@ $heading-color: #333333;
             font-weight: 600;
         }
 
-        .pet-options {
+        .category-options {
             display: flex;
             justify-content: center;
-            gap: 1rem;
+            gap: 1.5rem;
+            flex-wrap: wrap;
         }
 
-        .pet-card {
+        .category-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
             background: white;
-            padding: 1.5rem 1rem;
-            border-radius: 15px;
+            padding: 1rem 2rem;
+            border-radius: 12px;
             text-decoration: none;
-            color: #333;
-            width: 140px;
+            color: $azul-cambacua;
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border: 2px solid $azul-cambacua;
 
-            .pet-icon {
-                font-size: 3rem;
-                color: $azul-cambacua;
-                margin-bottom: 0.75rem;
-            }
-
-            h3 {
-                font-size: 1.2rem;
-                font-weight: 600;
+            .category-icon {
+                font-size: 1.5rem;
             }
 
             &:hover {
                 transform: translateY(-5px);
                 box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+                background-color: lighten($azul-cambacua, 55%);
             }
         }
     }
 
     .product-carousel-section {
         margin: 2.5rem 0;
-
-        h2 {
-            font-size: 1.5rem;
+        
+        .product-carousel-title {
+            text-decoration: none;
             color: $azul-cambacua;
-            margin-bottom: 1.5rem;
-            text-align: left;
-            padding-left: 1rem;
-            font-weight: 600;
+            h2 {
+                font-size: 1.5rem;
+                color: $azul-cambacua;
+                margin-bottom: 1.5rem;
+                text-align: left;
+                padding-left: 1rem;
+                font-weight: 600;
+                transition: color 0.3s;
+                 &:hover{
+                   color: darken($azul-cambacua, 15%);
+                }
+            }
         }
 
         .product-carousel-provider {
@@ -131,6 +161,28 @@ $heading-color: #333333;
         }
     }
 
+    .slider-loader {
+        .title-placeholder {
+            height: 30px;
+            width: 250px;
+            margin-bottom: 1.5rem;
+            margin-left: 1rem;
+            border-radius: 8px;
+        }
+        .cards-placeholder {
+            display: flex;
+            gap: 1rem;
+            padding: 0 0.5rem;
+            overflow: hidden;
+        }
+        .card-placeholder {
+            min-width: calc(100% / 1.3 - 1rem);
+            height: 350px;
+            border-radius: 10px;
+        }
+    }
+
+
     .product-card {
         background-color: $main-white;
         border-radius: 10px;
@@ -142,6 +194,7 @@ $heading-color: #333333;
         height: 100%;
         transition: transform 0.25s ease, box-shadow 0.25s ease;
         border: 1px solid transparent;
+        text-decoration: none;
 
         &:hover {
             transform: translateY(-4px);
@@ -172,6 +225,7 @@ $heading-color: #333333;
         flex-grow: 1;
         padding: 1rem;
         text-align: start;
+        color: #333;
     }
 
     .product-category {
@@ -216,7 +270,7 @@ $heading-color: #333333;
         text-decoration: none;
 
         &:hover {
-            background-color: $button-hover-cambacua;
+            background-color: darken($azul-cambacua, 10%);
         }
         &:active {
             transform: scale(0.98);
@@ -231,17 +285,12 @@ $heading-color: #333333;
             .welcome-subtitle { font-size: 1.5rem; }
         }
 
-        .shop-by-pet-section {
+        .shop-by-category-section {
             h2 { font-size: 2rem; }
-            .pet-options { gap: 2rem; }
-            .pet-card {
-                width: 200px;
-                padding: 2rem;
-            }
         }
 
         .product-carousel-section {
-            h2 {
+            .product-carousel-title h2 {
                 font-size: 2rem;
                 padding-left: 0;
                 text-align: center;
@@ -287,5 +336,15 @@ $heading-color: #333333;
                 &.right { right: -10px; }
             }
         }
+
+         .slider-loader {
+            .title-placeholder {
+                margin-left: auto;
+                margin-right: auto;
+            }
+            .card-placeholder {
+                min-width: calc(25% - 1rem);
+            }
+         }
     }
 }

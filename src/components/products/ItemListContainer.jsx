@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { db } from '../../firebase/config';
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 import ItemList from './ItemList';
-import { FiSearch } from 'react-icons/fi'; // Importamos el icono de búsqueda
-import { Link } from 'react-router-dom'; // Importar Link para la navegación
-import { FaMinus, FaPlus, FaShoppingCart, FaTimes, FaTrashAlt } from 'react-icons/fa'; // Ejemplo de ícono
+import { FiSearch } from 'react-icons/fi';
+import { Link } from 'react-router-dom';
+import { FaMinus, FaPlus, FaShoppingCart, FaTimes, FaTrashAlt } from 'react-icons/fa';
 import { CarritoProvider, useCarrito } from '../../context/CarritoContext';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Carrito from '../Carrito';
 
-
-
-
+function useQuery() {
+    return new URLSearchParams(useLocation().search);
+}
 
 const ItemListContainer = () => {
     const { calcularTotal, carrito, eliminarDelCarrito, actualizarCantidad, vaciarCarrito } = useCarrito(CarritoProvider);
@@ -20,10 +21,23 @@ const ItemListContainer = () => {
     const [filteredProducts, setFilteredProducts] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [categories, setCategories] = useState([]);
+    
+    const location = useLocation();
+    const queryParams = useQuery();
     const [selectedCategory, setSelectedCategory] = useState('');
-    const [selectedSubcategory, setSelectedSubcategory] = useState(''); // Nuevo estado para subcategoría
+    const [selectedSubcategory, setSelectedSubcategory] = useState('');
+    
+    const [isMenuHidden, setIsMenuHidden] = useState(true);
+    
+    useEffect(() => {
+        const newParams = new URLSearchParams(location.search);
+        const categoryFromUrl = newParams.get('categoria') || '';
+        const subcategoryFromUrl = newParams.get('subcategoria') || '';
+        setSelectedCategory(categoryFromUrl);
+        setSelectedSubcategory(subcategoryFromUrl);
+    }, [location.search]);
 
-    // Obtener productos desde Firebase
+
     useEffect(() => {
         const obtenerProductos = async () => {
             try {
@@ -34,7 +48,6 @@ const ItemListContainer = () => {
                     ...doc.data()
                 }));
                 setProductos(productosFirebase);
-                setFilteredProducts(productosFirebase);
             } catch (error) {
                 console.error("Error obteniendo los productos: ", error);
             }
@@ -43,7 +56,6 @@ const ItemListContainer = () => {
         obtenerProductos();
     }, []);
 
-    // Obtener categorías desde Firebase
     useEffect(() => {
         const obtenerCategorias = async () => {
             try {
@@ -61,20 +73,17 @@ const ItemListContainer = () => {
         obtenerCategorias();
     }, []);
 
-    const productosConStock = productos.filter(producto => producto.stock > 0);
-    const productosSinStock = productos.filter(producto => producto.stock === 0);
-
-    // Combina los productos con stock al principio y los sin stock al final.
-    const productosOrdenados = [...productosConStock, ...productosSinStock];
-
-    // Filtrar productos basado en categoría, subcategoría y búsqueda
     useEffect(() => {
+        const productosConStock = productos.filter(producto => producto.stock > 0);
+        const productosSinStock = productos.filter(producto => producto.stock === 0);
+        const productosOrdenados = [...productosConStock, ...productosSinStock];
+
         let filtered = productosOrdenados;
 
         if (selectedCategory) {
             filtered = filtered.filter(producto => producto.categoryAdress === selectedCategory);
         }
-
+        
         if (selectedSubcategory) {
             filtered = filtered.filter(producto => producto.subcategoria === selectedSubcategory);
         }
@@ -82,16 +91,17 @@ const ItemListContainer = () => {
         if (searchTerm) {
             filtered = filtered.filter(producto =>
                 producto.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                producto.descripcion.toLowerCase().includes(searchTerm.toLowerCase())
+                (producto.descripcion && producto.descripcion.toLowerCase().includes(searchTerm.toLowerCase()))
             );
         }
 
         setFilteredProducts(filtered);
     }, [searchTerm, selectedCategory, selectedSubcategory, productos]);
 
-    //FUNCION PARA MENU FACHERISIMO EN DEKTOP
-
-    const [isMenuHidden, setIsMenuHidden] = useState(true);
+    const handleCategoryClick = (categoryAdress) => {
+        setSelectedCategory(categoryAdress);
+        setSelectedSubcategory(''); 
+    };
 
     const toggleMenuFachaCarrito = () => {
         setIsMenuHidden(!isMenuHidden);
@@ -101,37 +111,16 @@ const ItemListContainer = () => {
         setIsMenuHidden(true);
     };
 
-
-
-    //TRAIGO ACA LA LOGICA DEL CARRITO PARA NO MANOSEAR MUCHO
-
-    //traigo productos
-
-    useEffect(() => {
-        const fetchStock = async () => {
-            const stock = await obtenerStockDisponible(productos.id);
-            setStockActual(stock); // Puedes almacenar el stock en el estado local
-        };
-        fetchStock();
-    }, [productos.id]); // Consulta el stock cada vez que cambie el producto
-    
-
     const obtenerStockDisponible = async (productoId) => {
-        // Aquí realizas la consulta a Firebase para obtener el stock
         const productoRef = doc(db, 'productos', productoId);
         const productoSnapshot = await getDoc(productoRef);
-        if (productoSnapshot.exists()) {
-            return productoSnapshot.data().stock;
-        } else {
-            return 0; // Si no existe, retornas stock 0
-        }
+        return productoSnapshot.exists() ? productoSnapshot.data().stock : 0;
     };
-    
 
     const handleCantidadChangeDesktop = async (id, e) => {
         const cantidad = parseInt(e.target.value, 10);
-        const stockDisponible = await obtenerStockDisponible(id); // Consulta del stock actual
-    
+        const stockDisponible = await obtenerStockDisponible(id);
+
         if (cantidad > stockDisponible) {
             actualizarCantidad(id, stockDisponible);
             toast.info(`Se ha alcanzado el máximo de productos disponibles (${stockDisponible})`);
@@ -145,25 +134,21 @@ const ItemListContainer = () => {
 
     const notifyEliminar = () => toast.error("Producto Eliminado!");
     const notifyVaciar = () => toast.error("Carrito Vacio!");
-    
+
+    const currentCategoryData = categories.find(cat => cat.adress === selectedCategory);
+    const showSubcategories = currentCategoryData && currentCategoryData.subcategorias && currentCategoryData.subcategorias.length > 0;
 
     return (
         <div className='item-list-container'>
             <div className='item-list-container-controls'>
                 <h1>Productos</h1>
 
-                {/* Botón de Carrito DESKTOP*/}
                 <div className='carrito-button-container hiddenInMobile'>
-
                     <button onClick={toggleMenuFachaCarrito} className='carrito-button'><FaShoppingCart />
                         <strong>{carrito.length}</strong>
                     </button>
-
                 </div>
 
-               
-
-                {/* Menú Lateral */}
                 <div className={`carrito-menu-desk ${isMenuHidden ? 'hidden' : 'visible'}`}>
                     <button className='close-menu-button' onClick={closeMenu}>
                         <FaTimes />
@@ -176,13 +161,9 @@ const ItemListContainer = () => {
                             {carrito.map(item => (
                                 <div key={item.id} className="carrito-item-desk">
                                     <div className='carrito-first-item'>
-
-
                                         <img src={item.imagen} alt={item.nombre} />
-
                                         <h2>{item.nombre}</h2>
                                     </div>
-
                                     <p>Precio: ${item.precio}</p>
                                     <div className="cantidad-control">
                                         <button onClick={() => handleCantidadChangeDesktop(item.id, { target: { value: item.cantidad - 1 } })}><FaMinus /></button>
@@ -199,19 +180,15 @@ const ItemListContainer = () => {
                                             <FaTrashAlt />Eliminar
                                         </button>
                                     </div>
-
                                 </div>
                             ))}
                             <strong className='total-compra'>Total Compra: ${(calcularTotal()).toFixed(2)}</strong>
                             <button className='button-vaciar' onClick={() => { vaciarCarrito(); notifyVaciar() }}>Vaciar Carrito</button>
                             <Link to="/checkout"><button className='button-comprar'>Continuar Compra</button></Link>
                         </div>
-
                     )}
                 </div>
 
-
-                {/* Botón de Carrito MOBILE*/}
                 <div className='carrito-button-container hiddenInDesktop'>
                     <Link className='cart-link' to="/carrito">
                         <button className='carrito-button'><FaShoppingCart />
@@ -220,7 +197,6 @@ const ItemListContainer = () => {
                     </Link>
                 </div>
 
-                {/* Barra de búsqueda */}
                 <div className="search-container">
                     <input
                         type="text"
@@ -232,41 +208,44 @@ const ItemListContainer = () => {
                     />
                     <FiSearch className="search-icon" />
                 </div>
-                <div className='search-container'>
-                    {/* Filtro de categorías */}
-                    <select className='menu-categorias'
-                        value={selectedCategory}
-                        onChange={(e) => {
-                            setSelectedCategory(e.target.value);
-                            setSelectedSubcategory(''); // Reiniciar subcategoría cuando se cambia la categoría
-                        }}
+
+                <div className="category-filters">
+                    <button
+                        className={`filter-button ${selectedCategory === '' ? 'active' : ''}`}
+                        onClick={() => handleCategoryClick('')}
                     >
-                        <option value="">Todas las categorías</option>
-                        {categories.map(category => (
-                            <option key={category.id} value={category.adress}>
-                                {category.nombre}
-                            </option>
-                        ))}
-                    </select>
-
-                    {/* Filtro de subcategorías */}
-                    {selectedCategory && (
-                        <select className='menu-subcategorias'
-                            value={selectedSubcategory}
-                            onChange={(e) => setSelectedSubcategory(e.target.value)}
+                        Ver Todos
+                    </button>
+                    {categories.map(category => (
+                        <button
+                            key={category.id}
+                            className={`filter-button ${selectedCategory === category.adress ? 'active' : ''}`}
+                            onClick={() => handleCategoryClick(category.adress)}
                         >
-                            <option value="">Todas las subcategorías</option>
-                            {categories.find(category => category.adress === selectedCategory)
-                                ?.subcategorias.map(subcat => (
-                                    <option key={subcat} value={subcat}>
-                                        {subcat}
-                                    </option>
-                                ))}
-                        </select>
-                    )}
+                            {category.nombre}
+                        </button>
+                    ))}
                 </div>
-
-
+                
+                {showSubcategories && (
+                    <div className="subcategory-filters">
+                         <button
+                            className={`filter-button-sub ${selectedSubcategory === '' ? 'active' : ''}`}
+                            onClick={() => setSelectedSubcategory('')}
+                        >
+                            Todas
+                        </button>
+                        {currentCategoryData.subcategorias.map(subcat => (
+                             <button
+                                key={subcat}
+                                className={`filter-button-sub ${selectedSubcategory === subcat ? 'active' : ''}`}
+                                onClick={() => setSelectedSubcategory(subcat)}
+                            >
+                                {subcat}
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
 
             <ItemList

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Carrousel from './Carrousel';
 import { NavLink } from 'react-router-dom';
-import { FaDog, FaCat, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import {
   CarouselProvider,
   Slider,
@@ -10,43 +9,20 @@ import {
   ButtonNext
 } from 'pure-react-carousel';
 import 'pure-react-carousel/dist/react-carousel.es.css';
-
-const topSellers = [
-    { id: 1, name: 'Alimento Balanceado VitalCan para Perros Medianos y Grandes', category: 'Perros', price: '$25.000', image: 'https://i.ibb.co/n7ZJxqh/alimento-perro.jpg' },
-    { id: 2, name: 'Pipeta Antipulgas Power para Perros', category: 'Perros', price: '$8.500', image: 'https://i.ibb.co/Y0d7Sg8/pipeta-perro.jpg' },
-    { id: 3, name: 'Alimento Húmedo Royal Canin para Gatos', category: 'Gatos', price: '$5.200', image: 'https://i.ibb.co/3WqjVwZ/alimento-gato.jpg' },
-    { id: 4, name: 'Rascador de Cartón para Gatos', category: 'Gatos', price: '$12.000', image: 'https://i.ibb.co/T1H8brB/rascador-gato.jpg' },
-    { id: 5, name: 'Juguete Pelota Resistente', category: 'Perros', price: '$6.800', image: 'https://i.ibb.co/hK5J8Lp/juguete-perro.jpg' },
-    { id: 6, name: 'Cama Antiestrés Mediana', category: 'Perros', price: '$35.000', image: 'https://i.ibb.co/9V0gV3f/cama-perro.jpg' }
-
-];
-
-const dogFood = [
-    { id: 11, name: 'Royal Canin Medium Adult', category: 'Perros', price: '$28.500', image: 'https://i.ibb.co/n7ZJxqh/alimento-perro.jpg' },
-    { id: 12, name: 'Eukanuba Adult Small Breed', category: 'Perros', price: '$26.300', image: 'https://i.ibb.co/JqjT6hR/snacks-perro.jpg' },
-];
-
-const catFood = [
-    { id: 13, name: 'Pro Plan Cat Adult', category: 'Gatos', price: '$22.000', image: 'https://i.ibb.co/3WqjVwZ/alimento-gato.jpg' },
-    { id: 14, name: 'Excellent Gato Adulto', category: 'Gatos', price: '$19.800', image: 'https://i.ibb.co/P9tWcKy/fuente-gato.jpg' },
-];
-
-const accessories = [
-    { id: 15, name: 'Collar de Cuero Premium', category: 'Accesorios', price: '$15.300', image: 'https://i.ibb.co/GvxDsTj/collar-perro.jpg' },
-    { id: 16, name: 'Juguete Interactivo para Gato', category: 'Accesorios', price: '$9.900', image: 'https://i.ibb.co/yQW23D2/juguete-gato.jpg' },
-    { id: 17, name: 'Rascador Torre para Gato', category: 'Accesorios', price: '$45.000', image: 'https://i.ibb.co/T1H8brB/rascador-gato.jpg' },
-];
+import { db } from '../firebase/config';
+import { collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { FaChevronLeft, FaChevronRight, FaBone, FaSyringe, FaSoap } from 'react-icons/fa';
 
 
 const ProductCard = ({ product }) => (
     <div className="product-card">
         <NavLink to={`/producto/${product.id}`} className="image-container">
-            <img className="product-image" src={product.image} alt={product.name} />
+            <img className="product-image" src={product.imagen} alt={product.nombre} />
         </NavLink>
         <div className="product-info">
-            <p className='product-category'>{product.category}</p>
-            <h3 className="product-name">{product.name}</h3>
-            <strong className="product-price">{product.price}</strong>
+            <p className='product-category'>{product.categoria}</p>
+            <h3 className="product-name">{product.nombre}</h3>
+            <strong className="product-price">${product.precio}</strong>
             <NavLink to={`/producto/${product.id}`} className="add-to-cart-button">
                 Ver Producto
             </NavLink>
@@ -63,29 +39,21 @@ const ProductSlider = ({ products }) => {
         const handleResize = () => {
             const width = window.innerWidth;
             if (width < 480) {
-                setVisibleSlides(1.3);
-                setStep(1);
-                setNaturalSlideHeight(180);
+                setVisibleSlides(1.3); setStep(1); setNaturalSlideHeight(180);
             } else if (width < 768) {
-                setVisibleSlides(2.3);
-                setStep(2);
-                setNaturalSlideHeight(170);
+                setVisibleSlides(2.3); setStep(2); setNaturalSlideHeight(170);
             } else if (width < 1024) {
-                setVisibleSlides(3);
-                setStep(2);
-                setNaturalSlideHeight(160);
+                setVisibleSlides(3); setStep(2); setNaturalSlideHeight(160);
             } else {
-                setVisibleSlides(4);
-                setStep(3);
-                setNaturalSlideHeight(160);
+                setVisibleSlides(4); setStep(3); setNaturalSlideHeight(160);
             }
         };
-
         window.addEventListener('resize', handleResize);
         handleResize();
-
         return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    if (!products || products.length === 0) return null;
 
     return (
         <CarouselProvider
@@ -111,8 +79,76 @@ const ProductSlider = ({ products }) => {
     );
 };
 
+const SliderLoader = () => (
+    <div className="product-carousel-section slider-loader">
+        <div className="title-placeholder shimmer-bg"></div>
+        <div className="cards-placeholder">
+            <div className="card-placeholder shimmer-bg"></div>
+            <div className="card-placeholder shimmer-bg"></div>
+            <div className="card-placeholder shimmer-bg"></div>
+            <div className="card-placeholder shimmer-bg"></div>
+        </div>
+    </div>
+);
 
 const Landing = () => {
+    const [sliders, setSliders] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchCategoriesAndProducts = async () => {
+            setIsLoading(true);
+            try {
+                const categoriesRef = collection(db, 'categories');
+                const categoriesSnapshot = await getDocs(categoriesRef);
+                const categoriesList = categoriesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                const productsRef = collection(db, 'productos');
+                const newSliders = [];
+
+                const topSellersQuery = query(productsRef, where('destacado', '==', true), where('activo', '==', true), limit(10));
+                const topSellersSnapshot = await getDocs(topSellersQuery);
+                let topSellersList = topSellersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                if (topSellersList.length === 0) {
+                    const fallbackQuery = query(productsRef, where('activo', '==', true), limit(10));
+                    const fallbackSnapshot = await getDocs(fallbackQuery);
+                    topSellersList = fallbackSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                }
+                
+                if (topSellersList.length > 0) {
+                    newSliders.push({
+                        title: 'Los Más Vendidos',
+                        link: '/productos',
+                        products: topSellersList
+                    });
+                }
+
+                for (const category of categoriesList) {
+                    const productsQuery = query(productsRef, where('categoryAdress', '==', category.adress), where('activo', '==', true), limit(10));
+                    const productsSnapshot = await getDocs(productsQuery);
+                    const productList = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                    if (productList.length > 0) {
+                        newSliders.push({
+                            title: category.nombre,
+                            link: `/productos?categoria=${category.adress}`,
+                            products: productList
+                        });
+                    }
+                }
+                
+                setSliders(newSliders);
+            } catch (error) {
+                console.error("Error fetching landing page data:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchCategoriesAndProducts();
+    }, []);
+
     return (
         <div className='landing-dad'>
             <Carrousel />
@@ -124,39 +160,38 @@ const Landing = () => {
                     <p className="welcome-text">Descubre nuestra tienda virtual, donde tu peludo encontrará todo lo que necesita 🐶🐱</p>
                 </section>
 
-                <section className="shop-by-pet-section">
-                    <h2>Comprar por Mascota</h2>
-                    <div className="pet-options">
-                        <NavLink to="/productos?categoria=perros" className="pet-card">
-                            <FaDog className="pet-icon" />
-                            <h3>Perros</h3>
+                <section className="shop-by-category-section">
+                    <h2>Categorías Principales</h2>
+                    <div className="category-options">
+                        <NavLink to="/productos?categoria=alimentos" className="category-button">
+                            <FaBone className="category-icon" />
+                            Alimentos
                         </NavLink>
-                        <NavLink to="/productos?categoria=gatos" className="pet-card">
-                            <FaCat className="pet-icon" />
-                            <h3>Gatos</h3>
+                        <NavLink to="/productos?categoria=medicamentos" className="category-button">
+                            <FaSyringe className="category-icon" />
+                            Medicamentos
+                        </NavLink>
+                        <NavLink to="/productos?categoria=higiene" className="category-button">
+                            <FaSoap className="category-icon" />
+                            Higiene
                         </NavLink>
                     </div>
                 </section>
-
-                <section className="product-carousel-section">
-                    <h2>Los Más Vendidos</h2>
-                    <ProductSlider products={topSellers} />
-                </section>
-
-                <section className="product-carousel-section">
-                    <h2>Alimentos para Perros</h2>
-                    <ProductSlider products={dogFood} />
-                </section>
-
-                <section className="product-carousel-section">
-                    <h2>Alimentos para Gatos</h2>
-                    <ProductSlider products={catFood} />
-                </section>
                 
-                <section className="product-carousel-section">
-                    <h2>Juguetes y Accesorios</h2>
-                    <ProductSlider products={accessories} />
-                </section>
+                {isLoading ? (
+                    <>
+                        <SliderLoader />
+                        <SliderLoader />
+                        <SliderLoader />
+                    </>
+                ) : (
+                    sliders.map(slider => (
+                         <section key={slider.title} className="product-carousel-section">
+                            <NavLink to={slider.link} className="product-carousel-title"><h2>{slider.title}</h2></NavLink>
+                            <ProductSlider products={slider.products} />
+                        </section>
+                    ))
+                )}
             </div>
         </div>
     );
