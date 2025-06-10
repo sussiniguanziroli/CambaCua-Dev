@@ -530,140 +530,257 @@
 }
 
 .landing-dad {
-  background: linear-gradient(to bottom, #f8f9fa, #e9f5ff);
-  min-height: 100vh;
-  padding-bottom: 2rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
-}
-
-.landing-container {
-  padding: 2rem 1rem;
-  text-align: center;
+  background: linear-gradient(to bottom, #f8f9fa, #e9f5ff);
+  min-height: 100vh;
+  padding-bottom: 2rem;
   font-family: "Poppins", sans-serif;
+  overflow-x: hidden;
+}
+.landing-dad .landing-container {
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
+  padding: 0 1rem;
+  text-align: center;
 }
-
-.welcome-section {
+.landing-dad .welcome-section {
+  max-width: 800px;
   margin: 2rem auto;
-  padding: 2rem;
+  padding: 1.5rem;
   background: rgba(255, 255, 255, 0.9);
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  max-width: 800px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
-.welcome-section h1 {
-  font-size: 2.5rem;
+.landing-dad .welcome-section h1 {
+  font-size: 2rem;
   color: #0b369c;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   font-weight: 700;
 }
-.welcome-section h1 .vet-name {
+.landing-dad .welcome-section h1 .vet-name {
   color: rgb(7.6407185629, 37.5089820359, 108.3592814371);
 }
-.welcome-section .welcome-subtitle {
-  font-size: 1.5rem;
+.landing-dad .welcome-section .welcome-subtitle {
+  font-size: 1.1rem;
   color: #555;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   font-weight: 500;
 }
-.welcome-section .welcome-text {
-  font-size: 1.1rem;
+.landing-dad .welcome-section .welcome-text {
+  font-size: 1rem;
   color: #666;
   line-height: 1.6;
-  margin-bottom: 2rem;
 }
-.welcome-section .explore-button {
-  background-color: #0b369c;
-  color: white;
-  padding: 12px 28px;
-  border-radius: 50px;
+.landing-dad .shop-by-pet-section {
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+.landing-dad .shop-by-pet-section h2 {
+  font-size: 1.5rem;
+  color: #0b369c;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+.landing-dad .shop-by-pet-section .pet-options {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+.landing-dad .shop-by-pet-section .pet-card {
+  background: white;
+  padding: 1.5rem 1rem;
+  border-radius: 15px;
+  text-decoration: none;
+  color: #333;
+  width: 140px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.landing-dad .shop-by-pet-section .pet-card .pet-icon {
+  font-size: 3rem;
+  color: #0b369c;
+  margin-bottom: 0.75rem;
+}
+.landing-dad .shop-by-pet-section .pet-card h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+.landing-dad .shop-by-pet-section .pet-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12);
+}
+.landing-dad .product-carousel-section {
+  margin: 2.5rem 0;
+}
+.landing-dad .product-carousel-section h2 {
+  font-size: 1.5rem;
+  color: #0b369c;
+  margin-bottom: 1.5rem;
+  text-align: left;
+  padding-left: 1rem;
+  font-weight: 600;
+}
+.landing-dad .product-carousel-section .product-carousel-provider {
+  position: relative;
+  margin: 0 -0.5rem;
+  padding: 0 0.5rem;
+}
+.landing-dad .product-carousel-section .carousel__slide {
+  padding: 0 0.5rem;
+}
+.landing-dad .product-carousel-section .carousel-arrow-prod {
+  display: none;
+}
+.landing-dad .product-card {
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+  height: 100%;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  border: 1px solid transparent;
+}
+.landing-dad .product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+.landing-dad .image-container {
+  width: 100%;
+  display: block;
+  overflow: hidden;
+  aspect-ratio: 1/1;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  background-color: #f8f9fa;
+}
+.landing-dad .product-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.landing-dad .product-info {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  padding: 1rem;
+  text-align: start;
+}
+.landing-dad .product-category {
+  font-size: 0.8rem;
+  color: #555555;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.landing-dad .product-name {
+  font-size: 1rem;
+  margin: 0 0 0.5rem 0;
+  font-weight: 600;
+  color: #333333;
+  line-height: 1.4;
+  height: 2.8em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.landing-dad .product-price {
   font-size: 1.1rem;
   font-weight: 600;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  display: inline-block;
-  border: 2px solid transparent;
+  color: #333333;
+  margin-bottom: 1rem;
 }
-.welcome-section .explore-button:hover {
-  background-color: #1d5aea;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.promo-section {
-  margin: 3rem auto;
-  max-width: 1200px;
-}
-.promo-section .promo-title {
-  font-size: 1.8rem;
-  color: #0b369c;
-  margin-bottom: 2rem;
-}
-.promo-section .promo-carousel {
-  display: flex;
-  gap: 1.5rem;
-  overflow-x: auto;
-  padding: 1rem 0;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-}
-.promo-section .promo-carousel::-webkit-scrollbar {
-  height: 8px;
-}
-.promo-section .promo-carousel::-webkit-scrollbar-thumb {
-  background: #0b369c;
-  border-radius: 10px;
-}
-.promo-section .promo-card {
-  flex: 0 0 300px;
-  scroll-snap-align: start;
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s;
-}
-.promo-section .promo-card:hover {
-  transform: translateY(-5px);
-}
-.promo-section .promo-card img {
+.landing-dad .add-to-cart-button {
+  background-color: #0b369c;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
   width: 100%;
-  height: 400px;
-  object-fit: cover;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  margin-top: auto;
+  text-align: center;
+  text-decoration: none;
 }
-.promo-section .promo-card .promo-content {
-  padding: 1.2rem;
-  text-align: left;
+.landing-dad .add-to-cart-button:hover {
+  background-color: #1d5aea;
 }
-.promo-section .promo-card .promo-content h3 {
-  color: rgb(5.9610778443, 29.2634730539, 84.5389221557);
-  margin-bottom: 0.5rem;
-  font-size: 1.2rem;
-}
-.promo-section .promo-card .promo-content p {
-  color: #666;
-  font-size: 0.95rem;
-  line-height: 1.4;
+.landing-dad .add-to-cart-button:active {
+  transform: scale(0.98);
 }
 
-@media (max-width: 768px) {
-  .welcome-section {
-    padding: 1.5rem;
+@media (min-width: 768px) {
+  .landing-dad .welcome-section h1 {
+    font-size: 2.5rem;
   }
-  .welcome-section h1 {
-    font-size: 2rem;
-  }
-  .promo-section .promo-title {
+  .landing-dad .welcome-section .welcome-subtitle {
     font-size: 1.5rem;
   }
-  .promo-section .promo-carousel {
-    gap: 1rem;
+  .landing-dad .shop-by-pet-section h2 {
+    font-size: 2rem;
   }
-  .promo-section .promo-card {
-    flex: 0 0 85%;
+  .landing-dad .shop-by-pet-section .pet-options {
+    gap: 2rem;
+  }
+  .landing-dad .shop-by-pet-section .pet-card {
+    width: 200px;
+    padding: 2rem;
+  }
+  .landing-dad .product-carousel-section h2 {
+    font-size: 2rem;
+    padding-left: 0;
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .landing-dad .product-carousel-section .product-carousel-provider {
+    padding: 0 40px;
+    margin: 0 auto;
+  }
+  .landing-dad .product-carousel-section .carousel-arrow-prod {
+    display: flex;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: white;
+    color: #0b369c;
+    border: 1px solid #ddd;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    width: 45px;
+    height: 45px;
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  .landing-dad .product-carousel-section .carousel-arrow-prod:hover {
+    background-color: #0b369c;
+    color: white;
+    border-color: #0b369c;
+  }
+  .landing-dad .product-carousel-section .carousel-arrow-prod:disabled {
+    opacity: 0.4;
+    cursor: default;
+    background-color: #eee;
+    color: #aaa;
+    border-color: #ddd;
+  }
+  .landing-dad .product-carousel-section .carousel-arrow-prod.left {
+    left: -10px;
+  }
+  .landing-dad .product-carousel-section .carousel-arrow-prod.right {
+    right: -10px;
   }
 }
 .nav-bar {
@@ -858,32 +975,97 @@ html {
     font-size: 16px;
   }
 }
-.carousel {
-  background-color: #ffffff;
+.main-carousel-wrapper {
+  position: relative;
+  width: 60%;
+  max-width: 1200px;
+  margin: 2rem auto;
+  border-radius: 15px;
   overflow: hidden;
-  margin: 0;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
-@media (min-width: 1000px) {
-  .carousel {
-    align-self: center;
-    width: 80%;
-    margin: 2%;
-    border-radius: 15px;
-  }
-}
-.carousel .carousel-item img {
-  width: 100%;
-  height: auto;
-  max-height: 500px;
-  object-fit: cover;
-}
-@media (min-width: 1000px) {
-  .carousel .carousel-item img {
-    border-radius: 15px;
-    max-height: 500px;
-  }
+.main-carousel-wrapper .carousel__inner-slide {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
+.carousel-image {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+}
+
+.carousel-arrow-main {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.4);
+  color: white;
+  border: none;
+  padding: 0.8rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  width: 45px;
+  height: 45px;
+  z-index: 10;
+}
+.carousel-arrow-main:hover {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+.carousel-arrow-main:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.carousel-arrow-main.left {
+  left: 15px;
+}
+.carousel-arrow-main.right {
+  right: 15px;
+}
+
+.carousel-dots-main {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  z-index: 10;
+}
+.carousel-dots-main .carousel__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.6);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.carousel-dots-main .carousel__dot--selected {
+  background-color: white;
+}
+
+@media (max-width: 768px) {
+  .main-carousel-wrapper {
+    width: 100%;
+    margin: 1rem 0;
+    border-radius: 0;
+  }
+  .carousel-arrow-main {
+    font-size: 1rem;
+    width: 35px;
+    height: 35px;
+    padding: 0.5rem;
+  }
+}
 .Accordion {
   font-size: 1.2rem;
 }

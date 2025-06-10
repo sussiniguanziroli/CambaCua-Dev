@@ -1,161 +1,291 @@
-// Estilos existentes (mejorados)
+$azul-cambacua: #0b369c;
+$button-hover-cambacua: #1d5aea;
+$main-white: #ffffff;
+$text-gray: #555555;
+$light-gray-bg: #f8f9fa;
+$border-color: #e0e0e0;
+$danger-color: #dc3545;
+$success-color: #28a745;
+$heading-color: #333333;
+
 .landing-dad {
-    background: linear-gradient(to bottom, #f8f9fa, #e9f5ff);
-    min-height: 100vh;
-    padding-bottom: 2rem;
     display: flex;
     flex-direction: column;
     justify-content: center;
-}
-
-.landing-container {
-    padding: 2rem 1rem;
-    text-align: center;
+    background: linear-gradient(to bottom, #f8f9fa, #e9f5ff);
+    min-height: 100vh;
+    padding-bottom: 2rem;
     font-family: "Poppins", sans-serif;
-    max-width: 1200px;
-    margin: 0 auto;
-}
+    overflow-x: hidden;
 
-.welcome-section {
-    margin: 2rem auto;
-    padding: 2rem;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    max-width: 800px;
-
-    h1 {
-        font-size: 2.5rem;
-        color: $azul-cambacua;
-        margin-bottom: 1rem;
-        font-weight: 700;
-        
-        .vet-name {
-            color: darken($azul-cambacua, 10%);
-        }
+    .landing-container {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+        text-align: center;
     }
 
-    .welcome-subtitle {
-        font-size: 1.5rem;
-        color: #555;
-        margin-bottom: 1.5rem;
-        font-weight: 500;
-    }
-
-    .welcome-text {
-        font-size: 1.1rem;
-        color: #666;
-        line-height: 1.6;
-        margin-bottom: 2rem;
-    }
-
-    .explore-button {
-        background-color: $azul-cambacua;
-        color: white;
-        padding: 12px 28px;
-        border-radius: 50px;
-        font-size: 1.1rem;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        display: inline-block;
-        border: 2px solid transparent;
-
-        &:hover {
-            background-color: $button-hover-cambacua;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-        }
-    }
-}
-
-// Nueva Sección de Promociones
-.promo-section {
-    margin: 3rem auto;
-    max-width: 1200px;
-
-    .promo-title {
-        font-size: 1.8rem;
-        color: $azul-cambacua;
-        margin-bottom: 2rem;
-    }
-
-    .promo-carousel {
-        display: flex;
-        gap: 1.5rem;
-        overflow-x: auto;
-        padding: 1rem 0;
-        scroll-snap-type: x mandatory;
-        -webkit-overflow-scrolling: touch;
-
-        &::-webkit-scrollbar {
-            height: 8px;
-        }
-
-        &::-webkit-scrollbar-thumb {
-            background: $azul-cambacua;
-            border-radius: 10px;
-        }
-    }
-
-    .promo-card {
-        flex: 0 0 300px;
-        scroll-snap-align: start;
-        background: white;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s;
-
-        &:hover {
-            transform: translateY(-5px);
-        }
-
-        img {
-            width: 100%;
-            height: 400px;
-            object-fit: cover;
-        }
-
-        .promo-content {
-            padding: 1.2rem;
-            text-align: left;
-
-            h3 {
-                color: darken($azul-cambacua, 15%);
-                margin-bottom: 0.5rem;
-                font-size: 1.2rem;
-            }
-
-            p {
-                color: #666;
-                font-size: 0.95rem;
-                line-height: 1.4;
-            }
-        }
-    }
-}
-
-// Responsive
-@media (max-width: 768px) {
     .welcome-section {
+        max-width: 800px;
+        margin: 2rem auto;
         padding: 1.5rem;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
         h1 {
             font-size: 2rem;
+            color: $azul-cambacua;
+            margin-bottom: 0.75rem;
+            font-weight: 700;
+
+            .vet-name {
+                color: darken($azul-cambacua, 10%);
+            }
+        }
+
+        .welcome-subtitle {
+            font-size: 1.1rem;
+            color: #555;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .welcome-text {
+            font-size: 1rem;
+            color: #666;
+            line-height: 1.6;
         }
     }
 
-    .promo-section {
-        .promo-title {
+    .shop-by-pet-section {
+        margin: 2rem auto;
+        padding: 0 1rem;
+
+        h2 {
             font-size: 1.5rem;
+            color: $azul-cambacua;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
         }
 
-        .promo-carousel {
+        .pet-options {
+            display: flex;
+            justify-content: center;
             gap: 1rem;
         }
 
-        .promo-card {
-            flex: 0 0 85%;
+        .pet-card {
+            background: white;
+            padding: 1.5rem 1rem;
+            border-radius: 15px;
+            text-decoration: none;
+            color: #333;
+            width: 140px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+            .pet-icon {
+                font-size: 3rem;
+                color: $azul-cambacua;
+                margin-bottom: 0.75rem;
+            }
+
+            h3 {
+                font-size: 1.2rem;
+                font-weight: 600;
+            }
+
+            &:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+            }
+        }
+    }
+
+    .product-carousel-section {
+        margin: 2.5rem 0;
+
+        h2 {
+            font-size: 1.5rem;
+            color: $azul-cambacua;
+            margin-bottom: 1.5rem;
+            text-align: left;
+            padding-left: 1rem;
+            font-weight: 600;
+        }
+
+        .product-carousel-provider {
+            position: relative;
+            margin: 0 -0.5rem;
+            padding: 0 0.5rem;
+        }
+
+        .carousel__slide {
+            padding: 0 0.5rem;
+        }
+
+        .carousel-arrow-prod {
+            display: none;
+        }
+    }
+
+    .product-card {
+        background-color: $main-white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        box-sizing: border-box;
+        height: 100%;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        border: 1px solid transparent;
+
+        &:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+    }
+
+    .image-container {
+        width: 100%;
+        display: block;
+        overflow: hidden;
+        aspect-ratio: 1 / 1;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+        background-color: $light-gray-bg;
+    }
+
+    .product-image {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .product-info {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        padding: 1rem;
+        text-align: start;
+    }
+
+    .product-category {
+        font-size: 0.8rem;
+        color: $text-gray;
+        margin-bottom: 0.25rem;
+        text-transform: uppercase;
+        font-weight: 500;
+    }
+
+    .product-name {
+        font-size: 1rem;
+        margin: 0 0 0.5rem 0;
+        font-weight: 600;
+        color: $heading-color;
+        line-height: 1.4;
+        height: 2.8em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .product-price {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: $heading-color;
+        margin-bottom: 1rem;
+    }
+
+    .add-to-cart-button {
+        background-color: $azul-cambacua;
+        color: $main-white;
+        border: none;
+        border-radius: 6px;
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        width: 100%;
+        transition: background-color 0.2s ease, transform 0.1s ease;
+        margin-top: auto;
+        text-align: center;
+        text-decoration: none;
+
+        &:hover {
+            background-color: $button-hover-cambacua;
+        }
+        &:active {
+            transform: scale(0.98);
+        }
+    }
+}
+
+@media (min-width: 768px) {
+    .landing-dad {
+        .welcome-section {
+            h1 { font-size: 2.5rem; }
+            .welcome-subtitle { font-size: 1.5rem; }
+        }
+
+        .shop-by-pet-section {
+            h2 { font-size: 2rem; }
+            .pet-options { gap: 2rem; }
+            .pet-card {
+                width: 200px;
+                padding: 2rem;
+            }
+        }
+
+        .product-carousel-section {
+            h2 {
+                font-size: 2rem;
+                padding-left: 0;
+                text-align: center;
+                 margin-bottom: 2rem;
+            }
+            .product-carousel-provider {
+                padding: 0 40px;
+                margin: 0 auto;
+            }
+            .carousel-arrow-prod {
+                display: flex;
+                position: absolute;
+                top: 50%;
+                transform: translateY(-50%);
+                background-color: white;
+                color: $azul-cambacua;
+                border: 1px solid #ddd;
+                padding: 0.5rem;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                font-size: 1.5rem;
+                width: 45px;
+                height: 45px;
+                z-index: 10;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+
+                &:hover {
+                    background-color: $azul-cambacua;
+                    color: white;
+                    border-color: $azul-cambacua;
+                }
+                &:disabled {
+                    opacity: 0.4;
+                    cursor: default;
+                    background-color: #eee;
+                    color: #aaa;
+                    border-color: #ddd;
+                }
+                &.left { left: -10px; }
+                &.right { right: -10px; }
+            }
         }
     }
 }
