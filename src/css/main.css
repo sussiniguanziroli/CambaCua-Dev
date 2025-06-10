@@ -655,6 +655,65 @@
   height: 350px;
   border-radius: 10px;
 }
+.landing-dad .promo-section {
+  background-color: #e9f5ff;
+  padding: 3rem 0;
+  margin-top: 2rem;
+  width: 100%;
+}
+.landing-dad .promo-section .promo-title {
+  font-size: 1.8rem;
+  color: #0b369c;
+  text-align: center;
+  margin-bottom: 2rem;
+  font-weight: 700;
+  padding: 0 1rem;
+}
+.landing-dad .promo-section .promo-carousel {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  gap: 1.5rem;
+  padding: 0 1rem 1.5rem 1rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.landing-dad .promo-section .promo-carousel::-webkit-scrollbar {
+  display: none;
+}
+.landing-dad .promo-section .promo-card {
+  flex: 0 0 85%;
+  scroll-snap-align: start;
+  background-color: #ffffff;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+}
+.landing-dad .promo-section .promo-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+.landing-dad .promo-section .promo-card .promo-content {
+  padding: 1.5rem;
+  text-align: left;
+}
+.landing-dad .promo-section .promo-card .promo-content h3 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #333333;
+  margin: 0 0 0.5rem 0;
+}
+.landing-dad .promo-section .promo-card .promo-content p {
+  font-size: 1rem;
+  color: #555555;
+  line-height: 1.6;
+}
 .landing-dad .product-card {
   background-color: #ffffff;
   border-radius: 10px;
@@ -797,6 +856,29 @@
   }
   .landing-dad .product-carousel-section .carousel-arrow-prod.right {
     right: -10px;
+  }
+  .landing-dad .promo-section {
+    padding: 4rem 1rem;
+  }
+  .landing-dad .promo-section .promo-title {
+    font-size: 2.2rem;
+    margin-bottom: 3rem;
+  }
+  .landing-dad .promo-section .promo-carousel {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0;
+    overflow-x: hidden;
+  }
+  .landing-dad .promo-section .promo-card {
+    flex: auto;
+    width: auto;
+  }
+  .landing-dad .promo-section .promo-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
   }
   .landing-dad .slider-loader .title-placeholder {
     margin-left: auto;
