@@ -11,7 +11,36 @@ $heading-color: #ffffff;
     align-items: center;
     gap: 0.8rem;
 
+// New styles for the auth section
+.auth-links {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: $main-white;
+}
 
+.welcome-user {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.auth-button-logout, .auth-button-login {
+    background-color: transparent;
+    color: $main-white;
+    border: 1px solid $main-white;
+    padding: 0.4rem 1rem;
+    border-radius: 16px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    
+    &:hover {
+        background-color: $main-white;
+        color: $azul-cambacua;
+    }
+}
 
     .nav-button {
         display: inline-block;

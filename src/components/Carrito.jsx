@@ -1,20 +1,42 @@
-import React from 'react'; // No se necesita useState/useEffect aquí ahora
+import React from 'react';
 import { useCarrito } from '../context/CarritoContext';
+import { useAuth } from '../context/AuthContext'; // Import useAuth
 import { FaTrashAlt, FaArrowLeft, FaPlus, FaMinus } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
-import { ToastContainer, toast } from 'react-toastify'; // Mantenemos Toastify para notificaciones de cantidad
+import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Swal from 'sweetalert2'; // Para confirmación de vaciar carrito
-import { doc, getDoc } from 'firebase/firestore'; // Solo necesitamos getDoc y doc
+import Swal from 'sweetalert2';
+import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 
 const Carrito = () => {
-    // Obtenemos lo necesario del contexto
     const { carrito, eliminarDelCarrito, actualizarCantidad, vaciarCarrito, calcularTotal } = useCarrito();
+    const { currentUser } = useAuth(); // Get current user
+    const navigate = useNavigate(); // Get navigate function
 
-    // --- LÓGICA DE STOCK Y CANTIDAD (Simplificada) ---
+    const handleContinuarCompra = () => {
+        if (!currentUser) {
+            Swal.fire({
+                title: 'Inicio de Sesión Requerido',
+                text: 'Para continuar con la compra, por favor inicia sesión o crea una cuenta.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Iniciar Sesión',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#0b369c',
+                cancelButtonColor: '#aaa'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    navigate('/auth');
+                }
+            });
+        } else {
+            navigate('/checkout');
+        }
+    };
+    
+    // ... (rest of your functions: obtenerStockDisponible, handleCantidadChange, etc. remain the same)
     const obtenerStockDisponible = async (productoId) => {
-        // Esta función se mantiene igual, se llama bajo demanda
         try {
             const productoRef = doc(db, 'productos', productoId);
             const productoSnapshot = await getDoc(productoRef);
@@ -26,16 +48,12 @@ const Carrito = () => {
         }
     };
 
-    // Manejador de cambio de cantidad (directo, sin input event)
     const handleCantidadChange = async (itemId, nuevaCantidad) => {
         const cantidad = parseInt(nuevaCantidad, 10);
-
         if (isNaN(cantidad) || cantidad <= 0) {
-            // Eliminar si la cantidad es 0 o inválida
             eliminarDelCarrito(itemId);
             toast.error("Producto eliminado");
         } else {
-            // Verificar stock antes de actualizar
             const stockDisponible = await obtenerStockDisponible(itemId);
             if (cantidad > stockDisponible) {
                 actualizarCantidad(itemId, stockDisponible);
@@ -46,36 +64,30 @@ const Carrito = () => {
         }
     };
 
-     // Manejador Input Cantidad (si se mantiene el input)
-     const handleInputChange = (itemId, event) => {
-          const valorInput = event.target.value;
-          // Validar si es número y mayor a 0 antes de llamar a handleCantidadChange
-          // O manejar la lógica directamente aquí
-          const cantidad = parseInt(valorInput, 10);
-          if (!isNaN(cantidad) && cantidad > 0) {
-               handleCantidadChange(itemId, cantidad); // Llama a la lógica principal
-          } else if (valorInput === "") {
-              // Permitir borrar el input, pero no actualizar a vacío/cero inmediatamente
-              // Quizás manejar en onBlur o con un botón "Actualizar"
-          } else if (!isNaN(cantidad) && cantidad <= 0) {
-             // Si escribe 0 o menos, eliminar item
-             eliminarDelCarrito(itemId);
-             toast.error("Producto eliminado");
-          }
-     };
+    const handleInputChange = (itemId, event) => {
+        const valorInput = event.target.value;
+        const cantidad = parseInt(valorInput, 10);
+        if (!isNaN(cantidad) && cantidad > 0) {
+            handleCantidadChange(itemId, cantidad);
+        } else if (valorInput === "") {
+            // No action needed on empty input
+        } else if (!isNaN(cantidad) && cantidad <= 0) {
+            eliminarDelCarrito(itemId);
+            toast.error("Producto eliminado");
+        }
+    };
 
-    // Manejador para Vaciar Carrito (con confirmación Swal)
     const handleVaciarCarrito = () => {
         Swal.fire({
             title: '¿Vaciar Carrito?',
             text: "Se eliminarán todos los productos.",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#0b369c', // Azul Cambacua
-            cancelButtonColor: '#dc3545', // Rojo Peligro
+            confirmButtonColor: '#0b369c',
+            cancelButtonColor: '#dc3545',
             confirmButtonText: 'Sí, vaciar',
             cancelButtonText: 'Cancelar',
-            customClass: { popup: 'swal2-popup' } // Aplicar fuente Poppins
+            customClass: { popup: 'swal2-popup' }
         }).then((result) => {
             if (result.isConfirmed) {
                 vaciarCarrito();
@@ -84,12 +96,10 @@ const Carrito = () => {
         });
     };
 
-    // --- RENDER ---
     return (
-        <div className="carrito-page"> {/* Clase contenedora de página */}
-             {/* Contenedor Toastify */}
-             <ToastContainer
-                 position="top-center" // Posición más centrada en móvil
+        <div className="carrito-page">
+            <ToastContainer
+                 position="top-center"
                  autoClose={2000}
                  hideProgressBar
                  newestOnTop={false}
@@ -100,26 +110,19 @@ const Carrito = () => {
                  pauseOnHover
                  theme="colored"
             />
-
-            {/* Botón Volver */}
             <Link className='boton-volver' to="/productos">
                 <FaArrowLeft /> <span>Volver a Productos</span>
             </Link>
-
             <h1>Carrito de Compras</h1>
-
             {carrito.length === 0 ? (
                 <div className="empty-cart-container">
-                     {/* Podrías añadir un ícono aquí */}
                     <p className='carrito-vacio'>Tu carrito está vacío.</p>
                     <Link to="/productos" className="boton-seguir-comprando">
                         Ver Productos
                     </Link>
                 </div>
             ) : (
-                // Contenedor principal del contenido del carrito
                 <div className="carrito-content">
-                    {/* Lista de Items */}
                     <div className="carrito-items-list">
                         {carrito.map(item => (
                             <div key={item.id} className="carrito-item">
@@ -127,23 +130,20 @@ const Carrito = () => {
                                 <div className="item-details">
                                     <h2 className="item-name">{item.nombre}</h2>
                                     <p className="item-price">Precio: ${item.precio}</p>
-                                    {/* Controles de Cantidad */}
                                     <div className="item-quantity">
                                         <label htmlFor={`cantidad-${item.id}`}>Cantidad:</label>
                                         <div className="quantity-controls">
                                              <button onClick={() => handleCantidadChange(item.id, item.cantidad - 1)} aria-label="Restar uno">
                                                 <FaMinus />
                                             </button>
-                                            {/* Input numérico */}
                                             <input
                                                 id={`cantidad-${item.id}`}
                                                 type="number"
                                                 className="cantidad-input"
                                                 value={item.cantidad}
-                                                 // Usar onChange validado o onBlur para actualizar
                                                  onChange={(e) => handleInputChange(item.id, e)}
                                                 aria-label="Cantidad"
-                                                min="1" // Mínimo 1 en el input HTML
+                                                min="1"
                                             />
                                             <button onClick={() => handleCantidadChange(item.id, item.cantidad + 1)} aria-label="Sumar uno">
                                                 <FaPlus />
@@ -158,8 +158,6 @@ const Carrito = () => {
                             </div>
                         ))}
                     </div>
-
-                    {/* Resumen y Acciones */}
                     <div className="carrito-summary">
                          <div className="total-section">
                              <span className="total-label">Total Compra:</span>
@@ -169,9 +167,9 @@ const Carrito = () => {
                              <button className="vaciar-carrito-button" onClick={handleVaciarCarrito}>
                                  Vaciar Carrito
                              </button>
-                             <Link to="/checkout" className="checkout-link">
-                                 <button className='carrito-button-comprar'>Continuar Compra</button>
-                             </Link>
+                             <button className='carrito-button-comprar' onClick={handleContinuarCompra}>
+                                 Continuar Compra
+                             </button>
                          </div>
                      </div>
                 </div>

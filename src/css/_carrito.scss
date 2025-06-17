@@ -93,11 +93,11 @@ $heading-color: #343a40;
             display: flex; flex-direction: column; gap: 0.6rem; flex-grow: 1; // Aumentar gap
 
             .item-name {
-                font-size: 1.1rem; font-weight: 600; color: $azul-cambacua; margin: 0; line-height: 1.4; // Nombre en AZUL
+                font-size: 1.3rem; font-weight: 600; color: $azul-cambacua; margin: 0; line-height: 1.4; // Nombre en AZUL
             }
 
             .item-price {
-                font-size: 0.95rem; color: $text-gray; margin: 0; // Ligeramente más grande
+                font-size: 1.05rem; color: $text-gray; margin: 0; // Ligeramente más grande
             }
 
             .item-quantity {
@@ -146,7 +146,7 @@ $heading-color: #343a40;
              }
 
             .item-subtotal {
-                font-size: 1rem; color: $heading-color; margin: 0; margin-top: 0.75rem; // Más espacio antes subtotal
+                font-size: 1.08rem; color: $heading-color; margin: 0; margin-top: 0.75rem; // Más espacio antes subtotal
                 strong { font-weight: 600; }
             }
         }

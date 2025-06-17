@@ -1,13 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 
 const CheckoutForm = ({ onNext }) => {
+    const { currentUser } = useAuth();
     const [formData, setFormData] = useState({
         nombre: '',
         telefono: '',
-        email: '',
         direccion: '',
         dni: ''
     });
+
+    useEffect(() => {
+        if (currentUser) {
+            setFormData(prevData => ({
+                ...prevData,
+                nombre: currentUser.displayName || prevData.nombre
+            }));
+        }
+    }, [currentUser]);
 
     const handleChange = (e) => {
         setFormData({
@@ -47,19 +57,6 @@ const CheckoutForm = ({ onNext }) => {
                         value={formData.telefono}
                         onChange={handleChange}
                         placeholder="Ej: 1123456789"
-                        required
-                    />
-                </div>
-
-                <div>
-                    <label htmlFor="email">Correo Electrónico</label>
-                    <input
-                        type="email"
-                        name="email"
-                        id="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        placeholder="Ej: correo@ejemplo.com"
                         required
                     />
                 </div>

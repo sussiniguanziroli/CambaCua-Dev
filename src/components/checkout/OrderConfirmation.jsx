@@ -3,76 +3,77 @@ import { collection, addDoc, Timestamp, writeBatch, doc, getDoc } from 'firebase
 import { db } from '../../firebase/config';
 import Swal from 'sweetalert2';
 import { useCarrito } from '../../context/CarritoContext';
+import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const OrderConfirmation = ({ formData, paymentMethod }) => {
     const { carrito, calcularTotal, vaciarCarrito } = useCarrito();
+    const { currentUser } = useAuth();
     const navigate = useNavigate();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
-        if (paymentMethod === 'Transferencia Bancaria') {
+        if (!currentUser) {
             Swal.fire({
-                title: 'Pago por Transferencia',
-                text: 'Al confirmar el pedido se te brindarán los datos bancarios para realizar la transferencia.',
-                icon: 'info',
-                confirmButtonText: 'Entendido',
-                confirmButtonColor: '#3085d6'
+                title: 'Necesitas iniciar sesión',
+                text: 'Para finalizar la compra, por favor inicia sesión o crea una cuenta.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ir a Iniciar Sesión',
+                cancelButtonText: 'Volver',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    navigate('/auth');
+                } else {
+                    navigate('/carrito');
+                }
             });
         }
-    }, [paymentMethod]);
-
-    const verificarYActualizarStock = async () => {
-        const batch = writeBatch(db);
-        let stockDisponible = true;
-
-        for (const item of carrito) {
-            const productoRef = doc(db, 'productos', item.id);
-            const productoSnap = await getDoc(productoRef);
-
-            if (productoSnap.exists()) {
-                const productoData = productoSnap.data();
-                const stockActual = productoData.stock;
-
-                if (item.cantidad > stockActual) {
-                    stockDisponible = false;
-                    break;
-                } else {
-                    batch.update(productoRef, {
-                        stock: stockActual - item.cantidad
-                    });
-                }
-            } else {
-                stockDisponible = false;
-                break;
-            }
-        }
-
-        if (stockDisponible) {
-            await batch.commit();
-        }
-
-        return stockDisponible;
-    };
+    }, [currentUser, navigate]);
 
     const handleConfirmOrder = async () => {
-        if (isSubmitting) return;
+        if (isSubmitting || !currentUser) return;
         setIsSubmitting(true);
 
+        const verificarYActualizarStock = async () => {
+            const batch = writeBatch(db);
+            let stockDisponible = true;
+    
+            for (const item of carrito) {
+                const productoRef = doc(db, 'productos', item.id);
+                const productoSnap = await getDoc(productoRef);
+    
+                if (productoSnap.exists()) {
+                    const stockActual = productoSnap.data().stock;
+                    if (item.cantidad > stockActual) {
+                        stockDisponible = false;
+                        Swal.fire('Stock insuficiente', `No hay suficiente stock para ${item.nombre}.`, 'error');
+                        break;
+                    }
+                    batch.update(productoRef, { stock: stockActual - item.cantidad });
+                } else {
+                    stockDisponible = false;
+                    Swal.fire('Producto no encontrado', `El producto ${item.nombre} no fue encontrado.`, 'error');
+                    break;
+                }
+            }
+    
+            if (stockDisponible) {
+                await batch.commit();
+            }
+            return stockDisponible;
+        };
+        
         try {
-            const stockDisponible = await verificarYActualizarStock();
-
-            if (!stockDisponible) {
+            const stockOk = await verificarYActualizarStock();
+            if (!stockOk) {
                 setIsSubmitting(false);
-                Swal.fire({
-                    title: "Stock insuficiente",
-                    text: "Lo sentimos, no hay suficiente stock para uno o más productos en tu carrito.",
-                    icon: "error"
-                });
                 return;
             }
 
             const pedido = {
+                userId: currentUser.uid,
+                email: currentUser.email,
                 ...formData,
                 productos: carrito,
                 total: calcularTotal(),
@@ -105,15 +106,11 @@ const OrderConfirmation = ({ formData, paymentMethod }) => {
         }
     };
 
-    
-
     return (
         <div className="order-confirmation-container">
             <h2>Confirmar Pedido</h2>
-
-
-
-            <section>
+            <div className="order-summary-details">
+                <h3>Resumen de la Compra</h3>
                 <div className="checkout-items">
                     {carrito.map(item => (
                         <div key={item.id} className="checkout-item">
@@ -131,17 +128,17 @@ const OrderConfirmation = ({ formData, paymentMethod }) => {
                         </div>
                     ))}
                 </div>
-
                 <div className="checkout-total">
                     <h2>Total: ${calcularTotal()}</h2>
-                    <h2>Datos de Envio:</h2>
                 </div>
-            </section>
-            <p>Nombre: {formData.nombre}</p>
-            <p>Dirección: {formData.direccion}</p>
-            <p>Total: ${calcularTotal()}</p>
 
-            {/* ⚠️ Cartel informativo sobre el costo del envío */}
+                <h3>Datos de Envío</h3>
+                <p><strong>Nombre:</strong> {formData.nombre}</p>
+                <p><strong>Dirección:</strong> {formData.direccion}</p>
+                <p><strong>Email de contacto:</strong> {currentUser?.email}</p>
+                 <p><strong>Teléfono:</strong> {formData.telefono}</p>
+            </div>
+
             <div style={{
                 backgroundColor: '#fff9e6',
                 border: '1px solid #ffe58f',
@@ -167,30 +164,14 @@ const OrderConfirmation = ({ formData, paymentMethod }) => {
                     Al confirmar el pedido, se te brindarán los datos bancarios para realizar la transferencia.
                 </div>
             )}
-
             <div className="payment-buttons">
-                <button
-                    onClick={() => navigate(-1)}
-                    className="checkout-button"
-                    disabled={isSubmitting}
-                >
+                <button onClick={() => navigate(-1)} className="checkout-button" disabled={isSubmitting}>
                     Volver
                 </button>
-
-                <button
-                    onClick={handleConfirmOrder}
-                    className={`checkout-button ${isSubmitting ? 'loading' : ''}`}
-                    disabled={isSubmitting}
-                >
-                    {isSubmitting ? (
-                        <span className="button-loader"></span>
-                    ) : (
-                        "Confirmar Pedido"
-                    )}
+                <button onClick={handleConfirmOrder} className={`checkout-button ${isSubmitting ? 'loading' : ''}`} disabled={isSubmitting || !currentUser}>
+                    {isSubmitting ? <span className="button-loader"></span> : "Confirmar Pedido"}
                 </button>
             </div>
-
-            
         </div>
     );
 };

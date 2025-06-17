@@ -1,24 +1,42 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 const NavBar = () => {
+  const { currentUser, logout } = useAuth();
+  const navigate = useNavigate();
+
   const getNavLinkClass = ({ isActive }) => {
     return isActive ? 'nav-button active' : 'nav-button';
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/auth');
+    } catch (error) {
+      console.error("Failed to log out", error);
+    }
+  };
+
+
   return (
     <nav className='nav-bar'>
-      <div className='nav-div'>
+      <div className='nav-links'>
         <NavLink className={getNavLinkClass} to="/">Inicio</NavLink>
-      </div>
-      <div className='nav-div'>
         <NavLink className={getNavLinkClass} to="/productos">Tienda</NavLink>
-      </div>
-      <div className='nav-div'>
         <NavLink className={getNavLinkClass} to="/contacto">Contacto</NavLink>
-      </div>
-      <div className='nav-div'>
         <NavLink className={getNavLinkClass} to="/miscompras">Mis Compras</NavLink>
+      </div>
+      <div className='auth-links'>
+        {currentUser ? (
+          <>
+            <span className='welcome-user'>Hola, {currentUser.displayName}</span>
+            <button onClick={handleLogout} className='auth-button-logout'>Salir</button>
+          </>
+        ) : (
+          <NavLink className='auth-button-login' to="/auth">Ingresar</NavLink>
+        )}
       </div>
     </nav>
   );

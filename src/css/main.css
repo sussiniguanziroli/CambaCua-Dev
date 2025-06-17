@@ -260,9 +260,6 @@
 .carrito-button-container:hover {
   border: 1px solid #0b369c;
 }
-.carrito-button-container .cart-link {
-  text-decoration: none;
-}
 .carrito-button-container .carrito-button {
   background-color: inherit;
   appearance: none;
@@ -503,6 +500,55 @@
   background-color: rgb(99, 192, 99);
 }
 
+.floating-cart-link {
+  display: none;
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  width: 65px;
+  height: 65px;
+  background-color: #0b369c;
+  color: #ffffff;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  z-index: 1000;
+  text-decoration: none;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.floating-cart-link svg {
+  font-size: 1.8rem;
+}
+.floating-cart-link:hover {
+  transform: scale(1.1);
+}
+
+.cart-item-count {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  background-color: #dc3545;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+}
+
+@media (max-width: 1023px) {
+  .floating-cart-link {
+    display: flex;
+  }
+  .hiddenInMobile {
+    display: none !important;
+  }
+}
 @keyframes shimmer {
   0% {
     background-position: -468px 0;
@@ -762,7 +808,7 @@
   font-weight: 500;
 }
 .landing-dad .product-name {
-  font-size: 1rem;
+  font-size: 1.2rem;
   margin: 0 0 0.5rem 0;
   font-weight: 600;
   color: #333333;
@@ -894,6 +940,32 @@
   align-items: center;
   gap: 0.8rem;
 }
+.nav-bar .auth-links {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: #ffffff;
+}
+.nav-bar .welcome-user {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.nav-bar .auth-button-logout, .nav-bar .auth-button-login {
+  background-color: transparent;
+  color: #ffffff;
+  border: 1px solid #ffffff;
+  padding: 0.4rem 1rem;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.nav-bar .auth-button-logout:hover, .nav-bar .auth-button-login:hover {
+  background-color: #ffffff;
+  color: #0b369c;
+}
 .nav-bar .nav-button {
   display: inline-block;
   text-decoration: none;
@@ -928,6 +1000,49 @@
   align-items: center;
   padding: 1em;
   z-index: 6;
+}
+
+.menu-profile-section {
+  padding: 1.5rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.75rem;
+}
+
+.menu-profile-icon {
+  font-size: 3.5rem;
+  color: #fff;
+  margin-bottom: 0.5rem;
+}
+
+.menu-profile-email {
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.menu-logout-button, .menu-login-button {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 1px solid #fff;
+  border-radius: 20px;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.menu-logout-button:hover, .menu-login-button:hover {
+  background-color: #fff;
+  color: #0b369c;
 }
 
 .menu-logo-camba {
@@ -1654,14 +1769,14 @@ html {
   flex-grow: 1;
 }
 .carrito-page .carrito-item .item-details .item-name {
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   font-weight: 600;
   color: #0b369c;
   margin: 0;
   line-height: 1.4;
 }
 .carrito-page .carrito-item .item-details .item-price {
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   color: #6c757d;
   margin: 0;
 }
@@ -1729,7 +1844,7 @@ html {
   box-shadow: 0 0 0 3px rgba(11, 54, 156, 0.15);
 }
 .carrito-page .carrito-item .item-details .item-subtotal {
-  font-size: 1rem;
+  font-size: 1.08rem;
   color: #343a40;
   margin: 0;
   margin-top: 0.75rem;
@@ -3319,6 +3434,150 @@ html {
     flex-direction: column;
   }
 }
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 85vh;
+  padding: 2rem 1rem;
+  background-color: #f8f9fa;
+  font-family: "Poppins", sans-serif;
+}
+.auth-container .auth-form-wrapper {
+  width: 100%;
+  max-width: 420px;
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+@media (min-width: 480px) {
+  .auth-container .auth-form-wrapper {
+    padding: 2.5rem;
+  }
+}
+.auth-container .auth-form-wrapper h2 {
+  color: #343a40;
+  font-weight: 600;
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+}
+.auth-container .auth-form-wrapper .auth-error {
+  color: #d9534f;
+  background-color: #f2dede;
+  border: 1px solid #ebccd1;
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+.auth-container .auth-form-wrapper form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  text-align: left;
+}
+.auth-container .auth-form-wrapper form .form-group {
+  display: flex;
+  flex-direction: column;
+}
+.auth-container .auth-form-wrapper form .form-group label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #555;
+  margin-bottom: 0.5rem;
+}
+.auth-container .auth-form-wrapper form .form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.auth-container .auth-form-wrapper form .form-group input:focus {
+  outline: none;
+  border-color: #0b369c;
+  box-shadow: 0 0 0 3px rgba(11, 54, 156, 0.15);
+}
+.auth-container .auth-form-wrapper .auth-button {
+  width: 100%;
+  padding: 0.8rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #0b369c;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  margin-top: 0.5rem;
+}
+.auth-container .auth-form-wrapper .auth-button:hover {
+  background-color: #1d5aea;
+}
+.auth-container .auth-form-wrapper .auth-button:active {
+  transform: scale(0.98);
+}
+.auth-container .auth-form-wrapper .auth-button:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+}
+.auth-container .auth-form-wrapper .separator {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: #555;
+  margin: 1.5rem 0;
+}
+.auth-container .auth-form-wrapper .separator::before, .auth-container .auth-form-wrapper .separator::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #dee2e6;
+}
+.auth-container .auth-form-wrapper .separator span {
+  padding: 0 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.auth-container .auth-form-wrapper .google-button {
+  width: 100%;
+  padding: 0.8rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #444;
+  background-color: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+.auth-container .auth-form-wrapper .google-button .google-icon {
+  font-size: 1.2rem;
+}
+.auth-container .auth-form-wrapper .google-button:hover {
+  background-color: #f5f5f5;
+  border-color: #ccc;
+}
+.auth-container .auth-form-wrapper .auth-toggle-button {
+  background: none;
+  border: none;
+  color: #0b369c;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 1.5rem;
+  padding: 0.5rem;
+}
+.auth-container .auth-form-wrapper .auth-toggle-button:hover {
+  text-decoration: underline;
+}
+
 @media (min-width: 768px) {
   .hiddenInDesktop {
     display: none;

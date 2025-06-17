@@ -50,7 +50,7 @@ const ProductSlider = ({ products }) => {
       if (width < 480) {
         setVisibleSlides(1.3);
         setStep(1);
-        setNaturalSlideHeight(180);
+        setNaturalSlideHeight(130);
       } else if (width < 768) {
         setVisibleSlides(2.3);
         setStep(2);

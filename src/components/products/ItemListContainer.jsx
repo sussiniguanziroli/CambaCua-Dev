@@ -9,7 +9,6 @@ import { FaMinus, FaPlus, FaShoppingCart, FaTimes, FaTrashAlt } from 'react-icon
 import { CarritoProvider, useCarrito } from '../../context/CarritoContext';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Carrito from '../Carrito';
 
 function useQuery() {
     return new URLSearchParams(useLocation().search);
@@ -187,14 +186,6 @@ const ItemListContainer = () => {
                             <Link to="/checkout"><button className='button-comprar'>Continuar Compra</button></Link>
                         </div>
                     )}
-                </div>
-
-                <div className='carrito-button-container hiddenInDesktop'>
-                    <Link className='cart-link' to="/carrito">
-                        <button className='carrito-button'><FaShoppingCart />
-                            <strong>{carrito.length}</strong>
-                        </button>
-                    </Link>
                 </div>
 
                 <div className="search-container">
