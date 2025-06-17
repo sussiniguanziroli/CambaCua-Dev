@@ -5,11 +5,11 @@ const {log, error} = require("firebase-functions/logger");
 
 initializeApp();
 
-// --- Function 1: Fires when a NEW order is created ---
+// --- Function 1: Fires when a NEW order is created in 'pedidos' ---
 exports.onordercreate = onDocumentCreated("pedidos/{pedidoId}", async (event) => {
     const snapshot = event.data;
     if (!snapshot) {
-        log("No data associated with the event");
+        log("No data associated with the event on create");
         return;
     }
     const orderData = snapshot.data();
@@ -22,12 +22,10 @@ exports.onordercreate = onDocumentCreated("pedidos/{pedidoId}", async (event) =>
     }
 
     const emailSubject = `🎉 Tu pedido #${orderId} ha sido confirmado`;
-    const emailText = `¡Hola ${orderData.nombre}! Hemos recibido y confirmado tu pedido. Te notificaremos nuevamente cuando el estado de tu pedido cambie. Puedes ver el resumen de tu compra en cualquier momento.`;
     const emailHtml = `
       <p>¡Hola ${orderData.nombre}!</p>
       <p>Hemos recibido y confirmado tu pedido <strong>#${orderId}</strong>.</p>
       <p>Te notificaremos nuevamente cuando el estado de tu pedido cambie.</p>
-      <p>Puedes ver el resumen de tu compra en cualquier momento.</p>
       <p>¡Gracias por elegirnos!</p>
     `;
 
@@ -36,7 +34,6 @@ exports.onordercreate = onDocumentCreated("pedidos/{pedidoId}", async (event) =>
             to: [customerEmail],
             message: {
                 subject: emailSubject,
-                text: emailText,
                 html: emailHtml,
             },
         });
@@ -46,10 +43,10 @@ exports.onordercreate = onDocumentCreated("pedidos/{pedidoId}", async (event) =>
     }
 });
 
-// --- Function 2: Fires when an EXISTING order is updated ---
+// --- Function 2: Fires for status UPDATES within the 'pedidos' collection ---
 exports.onorderstatusupdate = onDocumentUpdated("pedidos/{pedidoId}", async (event) => {
     if (!event.data) {
-        log("No data associated with the event");
+        log("No data associated with the update event");
         return;
     }
     const oldData = event.data.before.data();
@@ -75,16 +72,10 @@ exports.onorderstatusupdate = onDocumentUpdated("pedidos/{pedidoId}", async (eve
             emailSubject = `✅ Tu pedido #${orderId} ha sido pagado`;
             emailHtml = `<p>¡Hola ${newData.nombre}!</p><p>Te confirmamos que hemos recibido el pago de tu pedido <strong>#${orderId}</strong>. Pronto comenzaremos a prepararlo.</p>`;
             break;
-        case "Enviado":
-            emailSubject = `🚚 Tu pedido #${orderId} está en camino`;
-            emailHtml = `<p>¡Hola ${newData.nombre}!</p><p>Tu pedido <strong>#${orderId}</strong> ya fue despachado y está en camino a tu domicilio.</p>`;
-            break;
-        case "Completado":
-            emailSubject = `🎉 Tu pedido #${orderId} ha sido completado`;
-            emailHtml = `<p>¡Hola ${newData.nombre}!</p><p>Esperamos que disfrutes tu compra. ¡Gracias por elegirnos!</p>`;
-            break;
+        // NOTE: We remove "Completado" and "Enviado" from here if they trigger a move.
+        // We will now handle the "Enviado" status in the new function as well.
         default:
-            log("Status changed to", newData.estado, "- no email configured for this status.");
+            log("Status changed to", newData.estado, "- no email configured for this status in this function.");
             return;
     }
 
@@ -99,5 +90,44 @@ exports.onorderstatusupdate = onDocumentUpdated("pedidos/{pedidoId}", async (eve
         log("Status update email document created successfully for:", customerEmail);
     } catch (err) {
         error("Error creating status update email document:", err);
+    }
+});
+
+
+// --- Function 3: Fires when a NEW order is created in 'pedidos_completados' ---
+exports.onordercomplete = onDocumentCreated("pedidos_completados/{pedidoId}", async (event) => {
+    const snapshot = event.data;
+    if (!snapshot) {
+        log("No data associated with the 'completado' event");
+        return;
+    }
+    const orderData = snapshot.data();
+    const orderId = event.params.pedidoId;
+
+    const customerEmail = orderData.email;
+    if (!customerEmail) {
+        error("No email found for completed order:", orderId);
+        return;
+    }
+
+    // This function now handles the final "sent" message.
+    const emailSubject = `🚚 ¡Tu pedido #${orderId} está en camino!`;
+    const emailHtml = `
+      <p>¡Hola ${orderData.nombre}!</p>
+      <p><strong>El pedido ya salió para tu dirección! En breve llega.</strong></p>
+      <p>¡Gracias por tu compra!</p>
+    `;
+
+    try {
+        await getFirestore().collection("mail").add({
+            to: [customerEmail],
+            message: {
+                subject: emailSubject,
+                html: emailHtml,
+            },
+        });
+        log("Completed/Sent email document created successfully for:", customerEmail);
+    } catch (err) {
+        error("Error creating completed/sent email document:", err);
     }
 });
