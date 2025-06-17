@@ -5,6 +5,17 @@ const {log, error} = require("firebase-functions/logger");
 
 initializeApp();
 
+// --- Helper function to find data from multiple possible keys ---
+const findValue = (dataObject, possibleKeys) => {
+  for (const key of possibleKeys) {
+    if (dataObject[key]) {
+      return dataObject[key];
+    }
+  }
+  return null;
+};
+
+
 // --- Function 1: Fires when a NEW order is created in 'pedidos' ---
 exports.onordercreate = onDocumentCreated("pedidos/{pedidoId}", async (event) => {
     const snapshot = event.data;
@@ -15,15 +26,17 @@ exports.onordercreate = onDocumentCreated("pedidos/{pedidoId}", async (event) =>
     const orderData = snapshot.data();
     const orderId = event.params.pedidoId;
 
-    const customerEmail = orderData.email;
+    const customerEmail = findValue(orderData, ["email", "customerEmail"]);
+    const customerName = findValue(orderData, ["nombre", "name", "customerName"]) || "Cliente";
+
     if (!customerEmail) {
-        error("No email found for new order:", orderId);
+        error("Could not find a valid email field in new order:", orderId, "Data:", orderData);
         return;
     }
 
     const emailSubject = `🎉 Tu pedido #${orderId} ha sido confirmado`;
     const emailHtml = `
-      <p>¡Hola ${orderData.nombre}!</p>
+      <p>¡Hola ${customerName}!</p>
       <p>Hemos recibido y confirmado tu pedido <strong>#${orderId}</strong>.</p>
       <p>Te notificaremos nuevamente cuando el estado de tu pedido cambie.</p>
       <p>¡Gracias por elegirnos!</p>
@@ -57,10 +70,12 @@ exports.onorderstatusupdate = onDocumentUpdated("pedidos/{pedidoId}", async (eve
         log("Status not changed for order", orderId, "- not sending email.");
         return;
     }
+    
+    const customerEmail = findValue(newData, ["email", "customerEmail"]);
+    const customerName = findValue(newData, ["nombre", "name", "customerName"]) || "Cliente";
 
-    const customerEmail = newData.email;
     if (!customerEmail) {
-        error("No email found for updated order:", orderId);
+        error("Could not find a valid email field in updated order:", orderId, "Data:", newData);
         return;
     }
 
@@ -70,10 +85,8 @@ exports.onorderstatusupdate = onDocumentUpdated("pedidos/{pedidoId}", async (eve
     switch (newData.estado) {
         case "Pagado":
             emailSubject = `✅ Tu pedido #${orderId} ha sido pagado`;
-            emailHtml = `<p>¡Hola ${newData.nombre}!</p><p>Te confirmamos que hemos recibido el pago de tu pedido <strong>#${orderId}</strong>. Pronto comenzaremos a prepararlo.</p>`;
+            emailHtml = `<p>¡Hola ${customerName}!</p><p>Te confirmamos que hemos recibido el pago de tu pedido <strong>#${orderId}</strong>. Pronto comenzaremos a prepararlo.</p>`;
             break;
-        // NOTE: We remove "Completado" and "Enviado" from here if they trigger a move.
-        // We will now handle the "Enviado" status in the new function as well.
         default:
             log("Status changed to", newData.estado, "- no email configured for this status in this function.");
             return;
@@ -104,16 +117,17 @@ exports.onordercomplete = onDocumentCreated("pedidos_completados/{pedidoId}", as
     const orderData = snapshot.data();
     const orderId = event.params.pedidoId;
 
-    const customerEmail = orderData.email;
+    const customerEmail = findValue(orderData, ["email", "customerEmail"]);
+    const customerName = findValue(orderData, ["nombre", "name", "customerName"]) || "Cliente";
+
     if (!customerEmail) {
-        error("No email found for completed order:", orderId);
+        error("Could not find a valid email field in completed order:", orderId, "Data:", orderData);
         return;
     }
 
-    // This function now handles the final "sent" message.
     const emailSubject = `🚚 ¡Tu pedido #${orderId} está en camino!`;
     const emailHtml = `
-      <p>¡Hola ${orderData.nombre}!</p>
+      <p>¡Hola ${customerName}!</p>
       <p><strong>El pedido ya salió para tu dirección! En breve llega.</strong></p>
       <p>¡Gracias por tu compra!</p>
     `;
