@@ -93,7 +93,7 @@ const OrderDetails = () => {
     }, [allOrders, searchTerm, sortOption]);
 
     if (loading) {
-        return <div className="order-details-container"><div className="loader">Cargando tus compras...</div></div>;
+        return <div className="order-details-container"><div className='css-loader'></div><h5 className="loader">Cargando tus compras...</h5></div>;
     }
 
     if (error) {
