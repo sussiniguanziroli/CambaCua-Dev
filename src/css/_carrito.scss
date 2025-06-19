@@ -25,6 +25,7 @@ $heading-color: #343a40;
 
 // Contenedor General de la Página del Carrito
 .carrito-page {
+    width: 100%;
     font-family: "Poppins", sans-serif;
     max-width: 900px;
     margin: 1rem auto;
@@ -50,6 +51,7 @@ $heading-color: #343a40;
 
     // Contenedor Carrito Vacío
     .empty-cart-container {
+        width: 100%;
         text-align: center; padding: 4rem 1rem; border: 1px dashed $border-color; border-radius: 8px; background-color: $light-gray-bg;
         .carrito-vacio { font-size: 1.2rem; color: $text-gray; margin-top: 0; margin-bottom: 1.5rem; }
         .boton-seguir-comprando { display: inline-block; background-color: $azul-cambacua; color: $main-white; padding: 0.8rem 1.8rem; border-radius: 6px; text-decoration: none; font-weight: 500; transition: background-color 0.2s ease; font-size: 1rem; // Botón más grande

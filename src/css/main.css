@@ -1648,6 +1648,7 @@ html {
   }
 }
 .carrito-page {
+  width: 100%;
   font-family: "Poppins", sans-serif;
   max-width: 900px;
   margin: 1rem auto;
@@ -1692,6 +1693,7 @@ html {
   font-size: 1.7rem;
 }
 .carrito-page .empty-cart-container {
+  width: 100%;
   text-align: center;
   padding: 4rem 1rem;
   border: 1px dashed #dee2e6;
