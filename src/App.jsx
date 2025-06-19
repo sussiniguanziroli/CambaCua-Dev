@@ -15,7 +15,7 @@ import OrderDetails from "./components/OrderDetails.jsx";
 import OrderSummary from "./components/checkout/OrderSummary.jsx";
 import FloatingCartButton from "./components/carrito/FloatingCartButton.jsx";
 import AuthPage from "./components/auth/AuthPage.jsx";
-import ProtectedRoute from "./components/Auth/ProtectedRoute.jsx";
+import ProtectedRoute from "./components/auth/ProtectedRoute.jsx";
 
 function App() {
   return (
