@@ -7,7 +7,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 1em;
-    z-index: 6;
+    z-index: 11;
 }
 
 .menu-profile-section {
@@ -71,7 +71,7 @@
     align-items: flex-start;
     justify-content: space-between;
     cursor: pointer;
-    z-index: 6;
+    z-index: 11;
 }
 
 .burger-bar {
@@ -79,14 +79,14 @@
     height: 0.5em;
     background-color: $main-white;
     border-radius: 0.5em;
-    z-index: 4;
+    z-index: 11;
 }
 
 .menu {
     width: 50%;
     height: 100vh;
     background-color: $azul-cambacua;
-    z-index: 6;
+    z-index: 11;
     position: fixed;
     
     transition: all 0.3s;

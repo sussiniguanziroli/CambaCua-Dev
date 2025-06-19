@@ -5,32 +5,24 @@ const {log, error} = require("firebase-functions/logger");
 
 initializeApp();
 
-// --- Helper function to find data from multiple possible keys ---
-const findValue = (dataObject, possibleKeys) => {
-  for (const key of possibleKeys) {
-    if (dataObject[key]) {
-      return dataObject[key];
-    }
-  }
-  return null;
-};
-
-
 // --- Function 1: Fires when a NEW order is created in 'pedidos' ---
 exports.onordercreate = onDocumentCreated("pedidos/{pedidoId}", async (event) => {
+    log("Function 'onordercreate' triggered for orderId:", event.params.pedidoId);
     const snapshot = event.data;
     if (!snapshot) {
-        log("No data associated with the event on create");
+        log("No data associated with the event on create. Exiting.");
         return;
     }
     const orderData = snapshot.data();
     const orderId = event.params.pedidoId;
+    
+    log("New order data:", orderData);
 
-    const customerEmail = findValue(orderData, ["email", "customerEmail"]);
-    const customerName = findValue(orderData, ["nombre", "name", "customerName"]) || "Cliente";
+    const customerEmail = orderData.email;
+    const customerName = orderData.nombre || "Cliente";
 
     if (!customerEmail) {
-        error("Could not find a valid email field in new order:", orderId, "Data:", orderData);
+        error("Could not find 'email' field in new order:", orderId);
         return;
     }
 
@@ -58,8 +50,9 @@ exports.onordercreate = onDocumentCreated("pedidos/{pedidoId}", async (event) =>
 
 // --- Function 2: Fires for status UPDATES within the 'pedidos' collection ---
 exports.onorderstatusupdate = onDocumentUpdated("pedidos/{pedidoId}", async (event) => {
+    log("Function 'onorderstatusupdate' triggered for orderId:", event.params.pedidoId);
     if (!event.data) {
-        log("No data associated with the update event");
+        log("No data associated with the update event. Exiting.");
         return;
     }
     const oldData = event.data.before.data();
@@ -71,11 +64,13 @@ exports.onorderstatusupdate = onDocumentUpdated("pedidos/{pedidoId}", async (eve
         return;
     }
     
-    const customerEmail = findValue(newData, ["email", "customerEmail"]);
-    const customerName = findValue(newData, ["nombre", "name", "customerName"]) || "Cliente";
+    log("Order data updated. New data:", newData);
+
+    const customerEmail = newData.email;
+    const customerName = newData.nombre || "Cliente";
 
     if (!customerEmail) {
-        error("Could not find a valid email field in updated order:", orderId, "Data:", newData);
+        error("Could not find 'email' field in updated order:", orderId);
         return;
     }
 
@@ -109,19 +104,22 @@ exports.onorderstatusupdate = onDocumentUpdated("pedidos/{pedidoId}", async (eve
 
 // --- Function 3: Fires when a NEW order is created in 'pedidos_completados' ---
 exports.onordercomplete = onDocumentCreated("pedidos_completados/{pedidoId}", async (event) => {
+    log("Function 'onordercomplete' triggered for orderId:", event.params.pedidoId);
     const snapshot = event.data;
     if (!snapshot) {
-        log("No data associated with the 'completado' event");
+        log("No data associated with the 'completado' event. Exiting.");
         return;
     }
     const orderData = snapshot.data();
     const orderId = event.params.pedidoId;
 
-    const customerEmail = findValue(orderData, ["email", "customerEmail"]);
-    const customerName = findValue(orderData, ["nombre", "name", "customerName"]) || "Cliente";
+    log("Completed order data:", orderData);
+    
+    const customerEmail = orderData.email;
+    const customerName = orderData.nombre || "Cliente";
 
     if (!customerEmail) {
-        error("Could not find a valid email field in completed order:", orderId, "Data:", orderData);
+        error("Could not find 'email' field in completed order:", orderId);
         return;
     }
 

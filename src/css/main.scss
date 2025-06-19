@@ -65,7 +65,12 @@
     /* IE y Edge antiguos */
 }
 
-
+.app-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
 
 body {
     background-color: $main-white;

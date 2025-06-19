@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { useNavigate, useParams } from 'react-router-dom';
+import { FaArrowLeft } from 'react-icons/fa'; // Import the back icon
 
 const OrderSummary = () => {
     const { orderId } = useParams();
@@ -50,7 +51,6 @@ const OrderSummary = () => {
     useEffect(() => {
         const fetchOrder = async () => {
             try {
-                // Buscar primero en 'pedidos'
                 const pedidosRef = doc(db, 'pedidos', orderId);
                 const pedidosSnap = await getDoc(pedidosRef);
 
@@ -59,16 +59,14 @@ const OrderSummary = () => {
                     return;
                 }
 
-                // Si no está en 'pedidos', buscar en 'pedidos_completados'
                 const completadosRef = doc(db, 'pedidos_completados', orderId);
                 const completadosSnap = await getDoc(completadosRef);
 
                 if (completadosSnap.exists()) {
-                    processOrderData(completadosSnap, true);
+                    processOrderData(completadosSnap);
                     return;
                 }
 
-                // Si no está en ninguna colección
                 setOrder(null);
 
             } catch (error) {
@@ -78,7 +76,7 @@ const OrderSummary = () => {
             }
         };
 
-        const processOrderData = (docSnap, isCompleted = false) => {
+        const processOrderData = (docSnap) => {
             const orderData = docSnap.data();
             setOrder({
                 id: docSnap.id,
@@ -90,7 +88,7 @@ const OrderSummary = () => {
                     hour: '2-digit',
                     minute: '2-digit'
                 }),
-                estado: isCompleted ? 'Completado' : orderData.estado
+                estado: orderData.estado
             });
         };
 
@@ -128,6 +126,12 @@ const OrderSummary = () => {
 
     return (
         <div className="order-summary-container">
+            <div className="summary-actions-header">
+                 <button onClick={() => navigate(-1)} className="summary-back-button">
+                    <FaArrowLeft /> Volver
+                </button>
+            </div>
+           
             <div className="order-header">
                 <h2>Resumen de tu Pedido</h2>
                 <div className="order-id-section">
@@ -166,7 +170,7 @@ const OrderSummary = () => {
                 </div>
                 <div className="order-detail">
                     <strong>Total:</strong>
-                    <span>${order.total}</span>
+                    <span>${order.total.toFixed(2)}</span>
                 </div>
                 <div className="order-detail">
                     <strong>Método de Pago:</strong>
@@ -187,7 +191,7 @@ const OrderSummary = () => {
                             <div className="product-info">
                                 <h4>{item.nombre}</h4>
                                 <div className="product-meta">
-                                    <span>${item.precio} c/u</span>
+                                    <span>${item.precio.toFixed(2)} c/u</span>
                                     <span>Cant: {item.cantidad}</span>
                                 </div>
                             </div>

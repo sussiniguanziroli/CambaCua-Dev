@@ -1,259 +1,147 @@
-import React, { useState } from 'react';
-import { doc, getDoc, updateDoc, deleteDoc, setDoc } from 'firebase/firestore';
+import React, { useState, useEffect, useMemo } from 'react';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebase/config';
-import Swal from 'sweetalert2';
+import { useAuth } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
+import { FaSearch, FaSortAmountDown, FaSortAmountUp } from 'react-icons/fa';
 
+const OrderHistoryItem = ({ order }) => (
+    <div className="order-history-item">
+        <div className="order-info">
+            <span className="order-id">Pedido #{order.id.substring(0, 8)}...</span>
+            <span className="order-date">{order.fecha}</span>
+        </div>
+        <div className="order-details-right">
+            <span className="order-total">${order.total.toFixed(2)}</span>
+            <span className={`status-badge ${order.estado.toLowerCase()}`}>{order.estado}</span>
+            <Link to={`/order-summary/${order.id}`} className="details-link">Ver Detalles</Link>
+        </div>
+    </div>
+);
 
 const OrderDetails = () => {
-  const [trackingCode, setTrackingCode] = useState('');
-  const [order, setOrder] = useState(null);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [copied, setCopied] = useState(false);
+    const { currentUser } = useAuth();
+    const [allOrders, setAllOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [sortOption, setSortOption] = useState('date-desc');
 
-  const handleInputChange = (e) => {
-    setTrackingCode(e.target.value);
-    setError('');
-  };
+    useEffect(() => {
+        if (!currentUser) {
+            setLoading(false);
+            return;
+        }
 
-  const fetchOrderDetails = async () => {
-    if (!trackingCode.trim()) {
-      setError('Por favor ingresa un código de seguimiento');
-      return;
-    }
+        const fetchOrders = async () => {
+            setLoading(true);
+            setError('');
+            try {
+                const q1 = query(collection(db, "pedidos"), where("userId", "==", currentUser.uid));
+                const q2 = query(collection(db, "pedidos_completados"), where("userId", "==", currentUser.uid));
 
-    setLoading(true);
-    setError('');
+                const [pedidosSnap, completadosSnap] = await Promise.all([
+                    getDocs(q1),
+                    getDocs(q2)
+                ]);
 
-    try {
-      // Buscar primero en pedidos activos
-      const orderRef = doc(db, 'pedidos', trackingCode);
-      const orderSnap = await getDoc(orderRef);
+                const fetchedOrders = [];
+                pedidosSnap.forEach(doc => fetchedOrders.push({ id: doc.id, ...doc.data() }));
+                completadosSnap.forEach(doc => fetchedOrders.push({ id: doc.id, ...doc.data() }));
 
-      if (orderSnap.exists()) {
-        processOrderData(orderSnap);
-        return;
-      }
+                const formattedOrders = fetchedOrders.map(order => ({
+                    ...order,
+                    fecha: new Date(order.fecha.seconds * 1000)
+                }));
+                
+                setAllOrders(formattedOrders);
 
-      // Si no está en pedidos activos, buscar en completados
-      const completedRef = doc(db, 'pedidos_completados', trackingCode);
-      const completedSnap = await getDoc(completedRef);
+            } catch (err) {
+                console.error("Error fetching user orders:", err);
+                setError('No se pudieron cargar tus compras. Inténtalo de nuevo.');
+            } finally {
+                setLoading(false);
+            }
+        };
 
-      if (completedSnap.exists()) {
-        processOrderData(completedSnap, true);
-        return;
-      }
+        fetchOrders();
+    }, [currentUser]);
 
-      setError('No se encontró ningún pedido con ese código');
-      setOrder(null);
-    } catch (err) {
-      console.error("Error fetching order:", err);
-      setError('Error al buscar el pedido. Intenta nuevamente.');
-    } finally {
-      setLoading(false);
-    }
-  };
+    const filteredAndSortedOrders = useMemo(() => {
+        let orders = [...allOrders];
 
-  const processOrderData = (docSnap, isCompleted = false) => {
-    const orderData = docSnap.data();
-    setOrder({
-      id: docSnap.id,
-      ...orderData,
-      fecha: new Date(orderData.fecha.seconds * 1000).toLocaleDateString('es-ES', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      }),
-      estado: isCompleted ? 'Completado' : orderData.estado
-    });
-  };
+        if (searchTerm) {
+            orders = orders.filter(order => order.id.toLowerCase().includes(searchTerm.toLowerCase()));
+        }
 
-  const copyOrderId = () => {
-    navigator.clipboard.writeText(trackingCode);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleCancelOrder = async () => {
-    if (!order || order.estado !== 'Pendiente') {
-      setError('Solo puedes cancelar pedidos en estado "Pendiente"');
-      return;
-    }
-  
-    const { isConfirmed } = await Swal.fire({
-      title: '¿Cancelar pedido?',
-      text: `¿Estás seguro que deseas cancelar el pedido #${order.id.substring(0, 8)}? Esta acción no se puede deshacer.`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Sí, cancelar',
-      cancelButtonText: 'No, volver',
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6'
-    });
-  
-    if (!isConfirmed) return;
-  
-    try {
-      // Crear objeto con datos extendidos para la cancelación
-      const canceledOrderData = {
-        ...order,
-        estado: 'Cancelado',
-        fechaCancelacion: new Date(),
-        canceladoPor: 'cliente', // Diferenciador clave
-        motivoCancelacion: 'Cancelado por el cliente desde el portal',
-        fechaOriginal: order.fecha, // Conservamos la fecha original
-        // Mantenemos todos los productos y datos originales
-        productos: order.productos.map(p => ({...p})),
-        metodoPago: order.metodoPago,
-        total: order.total
-      };
-  
-      // 1. Mover a pedidos_completados con todos los datos
-      await setDoc(doc(db, 'pedidos_completados', order.id), canceledOrderData);
-  
-      // 2. Eliminar de pedidos activos
-      await deleteDoc(doc(db, 'pedidos', order.id));
-  
-      // 3. Actualizar estado local
-      setOrder(prev => ({
-        ...prev,
-        estado: 'Cancelado',
-        // Mantenemos todos los datos pero actualizamos el estado
-        ...canceledOrderData
-      }));
-  
-      Swal.fire({
-        title: '¡Pedido cancelado!',
-        html: `
-          <div>
-            <p>El pedido ha sido cancelado exitosamente</p>
-            <p class="cancelation-detail">Cancelación realizada por el cliente</p>
-          </div>
-        `,
-        icon: 'success',
-        confirmButtonText: 'Entendido'
-      });
-    } catch (err) {
-      console.error("Error canceling order:", err);
-      Swal.fire({
-        title: 'Error',
-        text: 'No se pudo cancelar el pedido',
-        icon: 'error',
-        confirmButtonText: 'Entendido'
-      });
-    }
-  };
-
-  return (
-    <div className="order-details-container">
-      <div className="order-search-section">
-        <h2>Consulta tu Pedido</h2>
-        <p>Ingresa tu código de seguimiento para ver el estado de tu pedido</p>
+        orders.sort((a, b) => {
+            switch (sortOption) {
+                case 'date-asc':
+                    return a.fecha - b.fecha;
+                case 'total-desc':
+                    return b.total - a.total;
+                case 'total-asc':
+                    return a.total - b.total;
+                case 'date-desc':
+                default:
+                    return b.fecha - a.fecha;
+            }
+        });
         
-        <div className="search-input-group">
-          <input
-            type="text"
-            placeholder="Ej: ABC123XYZ"
-            value={trackingCode}
-            onChange={handleInputChange}
-            className="search-input"
-          />
-          <button 
-            onClick={fetchOrderDetails} 
-            disabled={loading || !trackingCode}
-            className="search-button"
-          >
-            {loading ? (
-              <>
-                <span className="spinner"></span>
-                Buscando...
-              </>
-            ) : 'Buscar Pedido'}
-          </button>
-        </div>
+        return orders.map(order => ({...order, fecha: order.fecha.toLocaleDateString('es-AR')}));
 
-        {error && <p className="error-message">{error}</p>}
-      </div>
+    }, [allOrders, searchTerm, sortOption]);
 
-      {order && (
-        <div className="order-summary">
-          <div className="order-header">
-            <h3>Resumen del Pedido</h3>
-            <div className="order-id-section">
-              <p>Número: <strong>{order.id}</strong></p>
-              <button
-                onClick={copyOrderId}
-                className={`copy-button ${copied ? 'copied' : ''}`}
-              >
-                {copied ? '✓ Copiado!' : 'Copiar Código'}
-              </button>
+    if (loading) {
+        return <div className="order-details-container"><div className="loader">Cargando tus compras...</div></div>;
+    }
+
+    if (error) {
+        return <div className="order-details-container"><p className="error-message">{error}</p></div>;
+    }
+
+    return (
+        <div className="order-details-container my-purchases-container">
+            <div className="my-purchases-header">
+                <h2>Mis Compras</h2>
+                <p>Aquí encontrarás el historial de todos tus pedidos.</p>
             </div>
-          </div>
 
-          <div className="order-status">
-            <span className={`status-badge ${order.estado.toLowerCase()}`}>
-              {order.estado}
-            </span>
-          </div>
-
-          <div className="order-section">
-            <h4>Detalles del Pedido</h4>
-            <div className="order-detail">
-              <strong>Fecha:</strong>
-              <span>{order.fecha}</span>
-            </div>
-            <div className="order-detail">
-              <strong>Total:</strong>
-              <span>${order.total.toFixed(2)}</span>
-            </div>
-            <div className="order-detail">
-              <strong>Método de Pago:</strong>
-              <span>{order.metodoPago}</span>
-            </div>
-          </div>
-
-          <div className="order-section">
-            <h4>Productos</h4>
-            <div className="order-products">
-              {order.productos.map((item, index) => (
-                <div key={index} className="product-item">
-                  <img 
-                    src={item.imagen} 
-                    alt={item.nombre} 
-                    className="product-image"
-                    loading="lazy"
-                  />
-                  <div className="product-info">
-                    <h5>{item.nombre}</h5>
-                    <div className="product-meta">
-                      <span>${item.precio.toFixed(2)} c/u</span>
-                      <span>Cant: {item.cantidad}</span>
-                    </div>
-                  </div>
-                  <div className="product-subtotal">
-                    ${(item.precio * item.cantidad).toFixed(2)}
-                  </div>
+            <div className="controls-bar">
+                <div className="search-control">
+                    <FaSearch />
+                    <input
+                        type="text"
+                        placeholder="Buscar por N° de pedido..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
                 </div>
-              ))}
+                <div className="sort-control">
+                    <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
+                        <option value="date-desc">Más Recientes</option>
+                        <option value="date-asc">Más Antiguas</option>
+                        <option value="total-desc">Mayor Total</option>
+                        <option value="total-asc">Menor Total</option>
+                    </select>
+                </div>
             </div>
-          </div>
 
-          {order.estado === 'Pendiente' && (
-            <div className="order-actions">
-              <button 
-                onClick={handleCancelOrder}
-                className="cancel-button"
-              >
-                Cancelar Pedido
-              </button>
+            <div className="order-history-list">
+                {filteredAndSortedOrders.length > 0 ? (
+                    filteredAndSortedOrders.map(order => <OrderHistoryItem key={order.id} order={order} />)
+                ) : (
+                    <div className="no-orders-found">
+                        {searchTerm 
+                            ? <p>No se encontraron pedidos que coincidan con tu búsqueda.</p>
+                            : <p>Aún no has realizado ninguna compra.</p>
+                        }
+                        <Link to="/productos" className="shop-now-button">Ir a la Tienda</Link>
+                    </div>
+                )}
             </div>
-          )}
         </div>
-      )}
-    </div>
-  );
+    );
 };
 
 export default OrderDetails;

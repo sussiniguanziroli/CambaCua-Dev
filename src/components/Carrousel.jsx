@@ -21,7 +21,7 @@ const Carrousel = () => {
     <div className="main-carousel-wrapper">
       <CarouselProvider
         naturalSlideWidth={100}
-        naturalSlideHeight={36} // Ajusta esta altura para que se vea bien
+        naturalSlideHeight={38} // Ajusta esta altura para que se vea bien
         totalSlides={slides.length}
         isPlaying={true}
         interval={5000}

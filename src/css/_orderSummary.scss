@@ -7,6 +7,31 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   font-family: 'Poppins', sans-serif;
 
+  .summary-actions-header {
+    display: flex;
+    margin-bottom: 1.5rem;
+  }
+
+  .summary-back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: transparent;
+    color: #0b369c;
+    border: 1px solid transparent;
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: #f3f4f6;
+      border-color: #e5e7eb;
+    }
+  }
+
   .order-header {
     text-align: center;
     margin-bottom: 1.5rem;
@@ -51,10 +76,12 @@
         background-color: #ffedd5;
         color: #9a3412;
       }
+
       &.completado {
         background-color: #dcfce7;
         color: #166534;
       }
+
       &.cancelado {
         background-color: #fee2e2;
         color: #991b1b;
@@ -226,8 +253,13 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .order-summary-error {
