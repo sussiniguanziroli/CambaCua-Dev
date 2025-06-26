@@ -6,11 +6,67 @@
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   font-family: 'Poppins', sans-serif;
+  position: relative; // Needed for positioning the menu
 
   .summary-actions-header {
     display: flex;
+    justify-content: space-between; // Align items
+    align-items: center;
     margin-bottom: 1.5rem;
   }
+  
+  .order-options-menu {
+    position: relative;
+    
+    .options-button {
+      background: transparent;
+      border: none;
+      font-size: 1.25rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #4b5563;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: #f3f4f6;
+      }
+    }
+
+    .options-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background-color: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      z-index: 10;
+      overflow: hidden;
+      min-width: 180px;
+
+      .cancel-button {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 0.75rem 1rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 0.95rem;
+        color: #ef4444;
+        transition: background-color 0.2s ease;
+
+        &:hover {
+          background-color: #fef2f2;
+        }
+      }
+    }
+  }
+
 
   .summary-back-button {
     display: inline-flex;

@@ -4,6 +4,7 @@
     margin: 0 auto;
     margin-bottom: 1.5rem;
     padding: 2rem;
+    width: 100%;
     background-color: $secondary-color;
     border-radius: 1rem;
     box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
@@ -168,7 +169,32 @@
     }
 
     .checkout-form-container {
+        max-width: 60rem;
+        width: 100%;
+
+
         form {
+
+            // Styles the input field created by the new Google component
+            .address-input-style {
+                width: 100%;
+                font-size: 1rem;
+                padding: 0.75rem;
+                border: 1px solid #ced4da; // Use your form's border color
+                border-radius: 0.5rem; // Use your form's border-radius
+                transition: border-color 0.3s ease;
+
+                &:focus {
+                    border-color: #0b369c; // Use your form's focus color
+                    outline: none;
+                }
+            }
+
+            // Ensures the dropdown list appears on top of everything
+            .pac-container {
+                z-index: 10000 !important;
+            }
+
             div {
                 display: flex;
                 flex-direction: column;
@@ -198,7 +224,28 @@
     }
 
     .payment-method-container {
+
         form {
+            .payment-option {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                margin-bottom: 1rem;
+
+                &.disabled {
+                    label {
+                        color: #9ca3af;
+                        cursor: not-allowed;
+                    }
+                }
+
+                .disabled-reason {
+                    font-size: 0.8rem;
+                    color: #6b7280;
+                    font-style: italic;
+                }
+            }
+
             div {
                 margin-bottom: 1rem;
 
@@ -389,3 +436,166 @@
     border-color: #c3e6cb;
 }
 
+.info-banner {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+    border: 1px solid;
+
+    &.info-banner-warning {
+        background-color: #fffbeb;
+        border-color: #fde68a;
+        color: #b45309;
+    }
+
+    &.info-banner-info {
+        background-color: #eff6ff;
+        border-color: #bfdbfe;
+        color: #1e40af;
+    }
+
+    &.info-banner-email {
+        background-color: #f0fdf4;
+        border-color: #bbf7d0;
+        color: #15803d;
+    }
+}
+
+.delivery-calculator-container {
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+
+    h4 {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #111827;
+        margin-top: 0;
+        margin-bottom: 1rem;
+    }
+
+    .delivery-address-info {
+        margin-bottom: 1rem;
+
+        p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        strong {
+            font-size: 1rem;
+            color: #374151;
+        }
+    }
+
+    .calculate-button {
+        width: 100%;
+        padding: 0.75rem;
+        font-size: 1rem;
+        font-weight: 500;
+        background-color: #0b369c;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+
+        &:hover {
+            background-color: #1d5aea;
+        }
+
+        &:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+    }
+
+    .button-loader-small {
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid rgba(255, 255, 255, 0.5);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    .delivery-cost-result {
+        margin-top: 1rem;
+        padding: 1rem;
+        background-color: #eef2ff;
+        border-radius: 6px;
+        text-align: center;
+
+        p {
+            margin: 0;
+            color: #4338ca;
+            font-weight: 500;
+        }
+
+        span {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4338ca;
+        }
+    }
+
+    .delivery-error {
+        margin-top: 1rem;
+        color: #ef4444;
+        font-size: 0.9rem;
+        text-align: center;
+    }
+}
+
+.order-total-summary {
+    margin-top: 2rem;
+    border-top: 2px solid #686a6e;
+    padding-top: 1.5rem;
+
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+        font-size: 1rem;
+
+        span:first-child {
+            color: #4b5563;
+        }
+
+        span:last-child {
+            font-weight: 600;
+            color: #111827;
+        }
+    }
+
+    .grand-total {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px dashed #5c5e61;
+        font-size: 1.25rem;
+
+        span {
+            font-weight: 700;
+            color: #0b369c;
+        }
+    }
+}
+
+.checkout-button.secondary {
+    background-color: #e5e7eb;
+    color: #374151;
+
+    &:hover {
+        background-color: #d1d5db;
+    }
+}

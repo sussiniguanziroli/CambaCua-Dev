@@ -4,22 +4,23 @@ import PaymentMethod from './PaymentMethod';
 import OrderConfirmation from './OrderConfirmation';
 
 const Checkout = () => {
-    const [currentStep, setCurrentStep] = useState(1); // Controla el paso del proceso
-    const [formData, setFormData] = useState(null); // Almacena los datos del formulario
-    const [paymentMethod, setPaymentMethod] = useState(''); // Almacena el método de pago
+    const [currentStep, setCurrentStep] = useState(1);
+    const [formData, setFormData] = useState(null);
+    const [paymentMethod, setPaymentMethod] = useState('');
+    const [deliveryCost, setDeliveryCost] = useState(0);
 
     const handleNextStep = (data) => {
         if (currentStep === 1) {
-            setFormData(data);  // Guarda los datos del formulario en el primer paso
+            setFormData(data);
         }
         if (currentStep === 2) {
-            setPaymentMethod(data);  // Guarda el método de pago en el segundo paso
+            setPaymentMethod(data);
         }
-        setCurrentStep(currentStep + 1); // Avanza al siguiente paso
+        setCurrentStep(currentStep + 1);
     };
 
     const handlePreviousStep = () => {
-        setCurrentStep(currentStep - 1); // Vuelve al paso anterior
+        setCurrentStep(currentStep - 1);
     };
 
     return (
@@ -30,6 +31,8 @@ const Checkout = () => {
                 <OrderConfirmation
                     formData={formData}
                     paymentMethod={paymentMethod}
+                    deliveryCost={deliveryCost}
+                    setDeliveryCost={setDeliveryCost}
                 />
             )}
         </div>

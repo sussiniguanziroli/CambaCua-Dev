@@ -2214,6 +2214,7 @@ html {
   margin: 0 auto;
   margin-bottom: 1.5rem;
   padding: 2rem;
+  width: 100%;
   background-color: #ffffff;
   border-radius: 1rem;
   box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
@@ -2365,6 +2366,25 @@ html {
   font-size: 1.25rem;
   font-weight: 500;
 }
+.checkout-container .checkout-form-container {
+  max-width: 60rem;
+  width: 100%;
+}
+.checkout-container .checkout-form-container form .address-input-style {
+  width: 100%;
+  font-size: 1rem;
+  padding: 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 0.5rem;
+  transition: border-color 0.3s ease;
+}
+.checkout-container .checkout-form-container form .address-input-style:focus {
+  border-color: #0b369c;
+  outline: none;
+}
+.checkout-container .checkout-form-container form .pac-container {
+  z-index: 10000 !important;
+}
 .checkout-container .checkout-form-container form div {
   display: flex;
   flex-direction: column;
@@ -2385,6 +2405,21 @@ html {
 .checkout-container .checkout-form-container form div input:focus {
   border-color: #0b369c;
   outline: none;
+}
+.checkout-container .payment-method-container form .payment-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.checkout-container .payment-method-container form .payment-option.disabled label {
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+.checkout-container .payment-method-container form .payment-option .disabled-reason {
+  font-size: 0.8rem;
+  color: #6b7280;
+  font-style: italic;
 }
 .checkout-container .payment-method-container form div {
   margin-bottom: 1rem;
@@ -2566,6 +2601,149 @@ html {
   background-color: #d4edda;
   color: #155724;
   border-color: #c3e6cb;
+}
+
+.info-banner {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+  border: 1px solid;
+}
+.info-banner.info-banner-warning {
+  background-color: #fffbeb;
+  border-color: #fde68a;
+  color: #b45309;
+}
+.info-banner.info-banner-info {
+  background-color: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1e40af;
+}
+.info-banner.info-banner-email {
+  background-color: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #15803d;
+}
+
+.delivery-calculator-container {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+.delivery-calculator-container h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #111827;
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+.delivery-calculator-container .delivery-address-info {
+  margin-bottom: 1rem;
+}
+.delivery-calculator-container .delivery-address-info p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+.delivery-calculator-container .delivery-address-info strong {
+  font-size: 1rem;
+  color: #374151;
+}
+.delivery-calculator-container .calculate-button {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: 500;
+  background-color: #0b369c;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.delivery-calculator-container .calculate-button:hover {
+  background-color: #1d5aea;
+}
+.delivery-calculator-container .calculate-button:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+.delivery-calculator-container .button-loader-small {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+.delivery-calculator-container .delivery-cost-result {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #eef2ff;
+  border-radius: 6px;
+  text-align: center;
+}
+.delivery-calculator-container .delivery-cost-result p {
+  margin: 0;
+  color: #4338ca;
+  font-weight: 500;
+}
+.delivery-calculator-container .delivery-cost-result span {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #4338ca;
+}
+.delivery-calculator-container .delivery-error {
+  margin-top: 1rem;
+  color: #ef4444;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.order-total-summary {
+  margin-top: 2rem;
+  border-top: 2px solid #686a6e;
+  padding-top: 1.5rem;
+}
+.order-total-summary .total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+}
+.order-total-summary .total-row span:first-child {
+  color: #4b5563;
+}
+.order-total-summary .total-row span:last-child {
+  font-weight: 600;
+  color: #111827;
+}
+.order-total-summary .grand-total {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed #5c5e61;
+  font-size: 1.25rem;
+}
+.order-total-summary .grand-total span {
+  font-weight: 700;
+  color: #0b369c;
+}
+
+.checkout-button.secondary {
+  background-color: #e5e7eb;
+  color: #374151;
+}
+.checkout-button.secondary:hover {
+  background-color: #d1d5db;
 }
 
 .item-detail-loading {
@@ -3017,10 +3195,59 @@ html {
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   font-family: "Poppins", sans-serif;
+  position: relative;
 }
 .order-summary-container .summary-actions-header {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 1.5rem;
+}
+.order-summary-container .order-options-menu {
+  position: relative;
+}
+.order-summary-container .order-options-menu .options-button {
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4b5563;
+  transition: background-color 0.2s ease;
+}
+.order-summary-container .order-options-menu .options-button:hover {
+  background-color: #f3f4f6;
+}
+.order-summary-container .order-options-menu .options-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  overflow: hidden;
+  min-width: 180px;
+}
+.order-summary-container .order-options-menu .options-dropdown .cancel-button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #ef4444;
+  transition: background-color 0.2s ease;
+}
+.order-summary-container .order-options-menu .options-dropdown .cancel-button:hover {
+  background-color: #fef2f2;
 }
 .order-summary-container .summary-back-button {
   display: inline-flex;

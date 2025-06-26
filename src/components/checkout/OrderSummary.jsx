@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, writeBatch, setDoc, deleteDoc, increment } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { useNavigate, useParams } from 'react-router-dom';
-import { FaArrowLeft } from 'react-icons/fa'; // Import the back icon
+import { FaArrowLeft, FaEllipsisV } from 'react-icons/fa';
+import Swal from 'sweetalert2';
 
 const OrderSummary = () => {
     const { orderId } = useParams();
@@ -11,7 +12,7 @@ const OrderSummary = () => {
     const [copied, setCopied] = useState(false);
     const navigate = useNavigate();
     const [aliasCopied, setAliasCopied] = useState(false);
-
+    const [menuOpen, setMenuOpen] = useState(false);
 
     const copyAlias = () => {
         navigator.clipboard.writeText("cambacuavet.mp");
@@ -19,77 +20,143 @@ const OrderSummary = () => {
         setTimeout(() => setAliasCopied(false), 2000);
     };
 
-
     const generarMensajeWhatsApp = (order) => {
         const resumenURL = `https://www.cambacuavetshop.com.ar/order-summary/${order.id}`;
-
         let mensaje = `*📦 Pedido Nº ${order.id}*\n\n`;
-        mensaje += `¡Confirmo el pedido!\n\n`;
-
-        mensaje += `🔁 *Acceder nuevamente al resumen:*\n${resumenURL}\n\n`;
-
-        mensaje += `💳 *Método de Pago:* ${order.metodoPago}\n`;
-        mensaje += `💰 *Total:* $${order.total}\n\n`;
-
-        mensaje += `👤 *Datos del Cliente*\n`;
-        mensaje += `📍 Nombre: ${order.nombre}\n`;
-        mensaje += `🏠 Dirección: ${order.direccion}\n`;
-        if (order.telefono) mensaje += `📞 Teléfono: ${order.telefono}\n`;
-        if (order.email) mensaje += `📧 Email: ${order.email}\n\n`;
-
-        mensaje += `🛒 *Productos*\n`;
-        order.productos.forEach((item) => {
-            mensaje += `• ${item.nombre} x${item.cantidad} - $${(item.precio * item.cantidad).toFixed(2)}\n`;
-        });
-
-        mensaje += `\n📎 *Adjunto comprobante:*`;
+        mensaje += `¡Hola! Confirmo mi pedido.\n\n`;
+        mensaje += `*Total Productos:* $${order.total.toLocaleString('es-AR')}\n`;
+        if (order.costoEnvio > 0) {
+            mensaje += `*Costo de Envío:* $${order.costoEnvio.toLocaleString('es-AR')} (Se abona al repartidor)\n`;
+        }
+        mensaje += `*Método de Pago (Productos):* ${order.metodoPago}\n\n`;
+        mensaje += `*Mis Datos:*\n`;
+        mensaje += `Nombre: ${order.nombre}\n`;
+        mensaje += `Dirección: ${order.direccion}\n`;
+        if (order.indicaciones) mensaje += `Indicaciones: ${order.indicaciones}\n\n`;
+        mensaje += `*Resumen del Pedido en la web:*\n${resumenURL}\n\n`;
+        mensaje += `Adjunto mi comprobante de pago:`;
 
         return encodeURIComponent(mensaje);
     };
 
+    const handleCancelOrder = async () => {
+        setMenuOpen(false);
+
+        if (order.estado !== 'Pendiente' && order.estado !== 'Pagado') {
+            Swal.fire('No se puede cancelar', 'Este pedido ya ha sido procesado o cancelado.', 'info');
+            return;
+        }
+
+        const result = await Swal.fire({
+            title: '¿Estás seguro de que quieres cancelar?',
+            html: `<p>Esta acción no se puede deshacer. Los productos del pedido serán devueltos al stock.</p><p>Recibirás una notificación por correo sobre el estado de tu cancelación.</p>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, cancelar el pedido',
+            cancelButtonText: 'No, conservar mi pedido',
+            reverseButtons: true
+        });
+
+        if (!result.isConfirmed) return;
+
+        const { value: reason } = await Swal.fire({
+            title: 'Motivo de la cancelación',
+            input: 'textarea',
+            inputLabel: 'Tu opinión nos ayuda a mejorar. ¿Por qué cancelas tu pedido?',
+            inputPlaceholder: 'Ej: Me equivoqué de producto, ya no lo necesito...',
+            showCancelButton: true,
+            confirmButtonText: 'Confirmar cancelación',
+            cancelButtonText: 'Volver atrás',
+            inputValidator: (value) => {
+                if (!value) {
+                    return '¡Es necesario que escribas un motivo para continuar!';
+                }
+            }
+        });
+
+        if (reason) {
+            Swal.fire({
+                title: 'Procesando cancelación...',
+                text: 'Por favor, espera un momento.',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading(),
+            });
+
+            try {
+                const batch = writeBatch(db);
+                const originalOrderRef = doc(db, 'pedidos', orderId);
+                const originalOrderSnap = await getDoc(originalOrderRef);
+
+                if (!originalOrderSnap.exists()) {
+                    throw new Error("El pedido ya no se encuentra en la lista de pendientes. Puede que ya haya sido procesado por un administrador.");
+                }
+
+                order.productos.forEach(item => {
+                    const productRef = doc(db, 'productos', item.id);
+                    batch.update(productRef, { stock: increment(item.cantidad) });
+                });
+
+                const cancelledOrderRef = doc(db, 'pedidos_completados', orderId);
+                const orderDataToCancel = originalOrderSnap.data();
+                const cancelledOrderData = {
+                    ...orderDataToCancel,
+                    estado: 'Cancelado',
+                    canceladoPor: 'cliente',
+                    motivoCancelacion: reason,
+                    fechaCancelacion: new Date()
+                };
+
+                batch.set(cancelledOrderRef, cancelledOrderData);
+                batch.delete(originalOrderRef);
+
+                await batch.commit();
+
+                Swal.fire('¡Pedido Cancelado!', 'Tu pedido ha sido cancelado con éxito. El stock ha sido restaurado.', 'success');
+                
+                setOrder(prev => ({ ...prev, estado: 'Cancelado', motivoCancelacion: reason }));
+
+            } catch (error) {
+                console.error("Error al cancelar el pedido:", error);
+                Swal.fire('Error', `Hubo un problema al cancelar tu pedido: ${error.message}`, 'error');
+            }
+        }
+    };
 
     useEffect(() => {
         const fetchOrder = async () => {
+            setLoading(true);
             try {
-                const pedidosRef = doc(db, 'pedidos', orderId);
-                const pedidosSnap = await getDoc(pedidosRef);
+                const docRefs = [
+                    doc(db, 'pedidos', orderId),
+                    doc(db, 'pedidos_completados', orderId),
+                ];
 
-                if (pedidosSnap.exists()) {
-                    processOrderData(pedidosSnap);
-                    return;
+                let orderData = null;
+                for (const ref of docRefs) {
+                    const docSnap = await getDoc(ref);
+                    if (docSnap.exists()) {
+                        orderData = { id: docSnap.id, ...docSnap.data() };
+                        break;
+                    }
                 }
 
-                const completadosRef = doc(db, 'pedidos_completados', orderId);
-                const completadosSnap = await getDoc(completadosRef);
-
-                if (completadosSnap.exists()) {
-                    processOrderData(completadosSnap);
-                    return;
+                if (orderData) {
+                    setOrder({
+                        ...orderData,
+                        fecha: new Date(orderData.fecha.seconds * 1000).toLocaleDateString('es-ES', {
+                            day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                        }),
+                    });
+                } else {
+                    setOrder(null);
                 }
-
-                setOrder(null);
-
             } catch (error) {
                 console.error("Error fetching order:", error);
             } finally {
                 setLoading(false);
             }
-        };
-
-        const processOrderData = (docSnap) => {
-            const orderData = docSnap.data();
-            setOrder({
-                id: docSnap.id,
-                ...orderData,
-                fecha: new Date(orderData.fecha.seconds * 1000).toLocaleDateString('es-ES', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                }),
-                estado: orderData.estado
-            });
         };
 
         fetchOrder();
@@ -114,10 +181,7 @@ const OrderSummary = () => {
         return (
             <div className="order-summary-error">
                 <h2>Pedido no encontrado</h2>
-                <button
-                    onClick={() => navigate('/')}
-                    className="back-button"
-                >
+                <button onClick={() => navigate('/')} className="back-button">
                     Volver al inicio
                 </button>
             </div>
@@ -127,40 +191,53 @@ const OrderSummary = () => {
     return (
         <div className="order-summary-container">
             <div className="summary-actions-header">
-                 <button onClick={() => navigate(-1)} className="summary-back-button">
+                <button onClick={() => navigate(-1)} className="summary-back-button">
                     <FaArrowLeft /> Volver
                 </button>
+                {order && (order.estado === 'Pendiente' || order.estado === 'Pagado') && (
+                    <div className="order-options-menu">
+                        <button onClick={() => setMenuOpen(!menuOpen)} className="options-button">
+                            <FaEllipsisV />
+                        </button>
+                        {menuOpen && (
+                            <div className="options-dropdown">
+                                <button onClick={handleCancelOrder} className="cancel-button">
+                                    Cancelar Pedido
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
-           
+
             <div className="order-header">
                 <h2>Resumen de tu Pedido</h2>
                 <div className="order-id-section">
                     <p>Número: <strong>{order.id}</strong></p>
-                    <button
-                        onClick={copyOrderId}
-                        className={`copy-button ${copied ? 'copied' : ''}`}
-                    >
+                    <button onClick={copyOrderId} className={`copy-button ${copied ? 'copied' : ''}`}>
                         {copied ? '✓ Copiado!' : 'Copiar Código'}
                     </button>
                 </div>
             </div>
 
-            <div style={{
-                backgroundColor: '#e6f7ff',
-                border: '1px solid #91d5ff',
-                padding: '1rem',
-                borderRadius: '0.5rem',
-                marginBottom: '1rem',
-                color: '#0050b3',
-                fontSize: '1rem'
-            }}>
-                Puedes copiar este codigo y en la seccion de "Mis Compras", usarlo para buscar tu pedido, ver su estado o cancelarlo.          </div>
+            <div className="info-banner info-banner-info">
+                Puedes copiar este código y en la sección de "Mis Compras", usarlo para buscar tu pedido y ver su estado.
+            </div>
 
             <div className="order-status">
-                <span className={`status-badge ${order.estado.toLowerCase()}`}>
+                <span className={`status-badge ${order.estado?.toLowerCase()}`}>
                     {order.estado}
                 </span>
             </div>
+
+            {order.motivoCancelacion && (
+                 <div className="order-section">
+                    <h3>Motivo de Cancelación</h3>
+                    <div className="order-detail">
+                       <span>{order.motivoCancelacion}</span>
+                    </div>
+                </div>
+            )}
 
             <div className="order-section">
                 <h3>Detalles del Pedido</h3>
@@ -169,25 +246,33 @@ const OrderSummary = () => {
                     <span>{order.fecha}</span>
                 </div>
                 <div className="order-detail">
-                    <strong>Total:</strong>
-                    <span>${order.total.toFixed(2)}</span>
+                    <strong>Total Productos:</strong>
+                    <span>${order.total.toLocaleString('es-AR')}</span>
                 </div>
+                {order.costoEnvio > 0 && (
+                     <div className="order-detail">
+                        <strong>Costo Envío:</strong>
+                        <span>${order.costoEnvio.toLocaleString('es-AR')}</span>
+                    </div>
+                )}
                 <div className="order-detail">
                     <strong>Método de Pago:</strong>
                     <span>{order.metodoPago}</span>
                 </div>
             </div>
+            
+             {order.costoEnvio > 0 && (
+                <div className="delivery-cost-final-notice">
+                    <p>El costo del envío se abona en efectivo o transferencia directamente al repartidor al momento de la entrega.</p>
+                </div>
+            )}
 
             <div className="order-section">
                 <h3>Productos</h3>
                 <div className="order-products">
                     {order.productos.map((item, index) => (
                         <div key={index} className="product-item">
-                            <img
-                                src={item.imagen}
-                                alt={item.nombre}
-                                className="product-image"
-                            />
+                            <img src={item.imagen} alt={item.nombre} className="product-image"/>
                             <div className="product-info">
                                 <h4>{item.nombre}</h4>
                                 <div className="product-meta">
@@ -202,7 +287,8 @@ const OrderSummary = () => {
                     ))}
                 </div>
             </div>
-            {order.metodoPago === 'Transferencia Bancaria' && (
+
+            {order.metodoPago === 'Transferencia Bancaria' && order.estado !== 'Cancelado' && (
                 <div className="order-section">
                     <h3>Información para Transferencia</h3>
                     <div className="order-detail">
@@ -211,22 +297,18 @@ const OrderSummary = () => {
                                 <strong>Alias MP:</strong>
                                 <span> cambacuavet.mp</span>
                             </div>
-                            <button
-                                onClick={copyAlias}
-                                className={`copy-alias-button ${aliasCopied ? 'copied' : ''}`}
-                            >
+                            <button onClick={copyAlias} className={`copy-alias-button ${aliasCopied ? 'copied' : ''}`}>
                                 {aliasCopied ? '✓ Copiado' : 'Copiar'}
                             </button>
                         </div>
                     </div>
-
-
                     <div className="order-detail">
                         <strong>Nombre:</strong>
                         <span>Maria Celeste Guanziroli Stefani</span>
                     </div>
                 </div>
             )}
+
             <div className="order-section">
                 <h3>Datos de Envío</h3>
                 <div className="order-detail">
@@ -237,6 +319,12 @@ const OrderSummary = () => {
                     <strong>Dirección:</strong>
                     <span>{order.direccion}</span>
                 </div>
+                 {order.indicaciones && (
+                    <div className="order-detail">
+                        <strong>Indicaciones:</strong>
+                        <span>{order.indicaciones}</span>
+                    </div>
+                )}
                 {order.telefono && (
                     <div className="order-detail">
                         <strong>Teléfono:</strong>
@@ -252,15 +340,11 @@ const OrderSummary = () => {
             </div>
 
             <div className="order-actions">
-                <a
-                    href={`https://wa.me/543795048310?text=${generarMensajeWhatsApp(order)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="action-button whatsapp"
-                >
-                    Ir a WhatsApp para Enviar Comprobante
-                </a>
-
+                {order.estado !== 'Cancelado' && (
+                     <a href={`https://wa.me/543795048310?text=${generarMensajeWhatsApp(order)}`} target="_blank" rel="noopener noreferrer" className="action-button whatsapp">
+                        Ir a WhatsApp para Enviar Comprobante
+                    </a>
+                )}
             </div>
         </div>
     );
