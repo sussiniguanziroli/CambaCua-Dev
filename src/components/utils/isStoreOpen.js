@@ -4,7 +4,7 @@
 const businessHours = {
     // Monday (1) to Friday (5)
     weekday: [
-        { open: 9, close: 9.5 }, // Morning shift (9:00 AM to 12:30 PM)
+        { open: 9, close: 12.5 }, // Morning shift (9:00 AM to 12:30 PM)
         { open: 17, close: 21 }  // Evening shift (5:00 PM to 9:00 PM)
     ],
     // Saturday (6)
