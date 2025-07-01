@@ -6,6 +6,7 @@ import { useCarrito } from '../../context/CarritoContext';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import DeliveryCostCalculator from '../utils/DeliveryCostCalculator';
+import { isStoreOpen } from '../utils/isStoreOpen'; // Import the new utility
 
 const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryCost }) => {
     const { carrito, calcularTotal, vaciarCarrito } = useCarrito();
@@ -30,19 +31,12 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
         }
     }, [currentUser, navigate]);
 
-    const handleConfirmOrder = async () => {
-        if (carrito.length > 0 && deliveryCost === 0) {
-            Swal.fire('Costo de Envío', 'Por favor, calcula el costo de envío antes de continuar.', 'info');
-            return;
-        }
-        if (isSubmitting || !currentUser) return;
-        
+    const proceedWithOrder = async (isScheduled = false) => {
         setIsSubmitting(true);
         
         const batch = writeBatch(db);
         let stockInsuficiente = false;
 
-        // 1. Verify stock for all products
         for (const item of carrito) {
             const productoRef = doc(db, 'productos', item.id);
             try {
@@ -54,7 +48,6 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
                         Swal.fire('Stock insuficiente', `No hay suficiente stock para ${item.nombre}. Solo quedan ${stockActual} unidades.`, 'error');
                         break; 
                     }
-                    // Prepare stock update
                     batch.update(productoRef, { stock: stockActual - item.cantidad });
                 } else {
                     stockInsuficiente = true;
@@ -74,7 +67,6 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
             return;
         }
 
-        // 2. If stock is sufficient, create the order object
         const pedido = {
             userId: currentUser.uid,
             email: currentUser.email,
@@ -83,35 +75,68 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
             total: productsTotal,
             costoEnvio: deliveryCost,
             fecha: Timestamp.now(),
-            estado: 'Pendiente',
+            estado: isScheduled ? 'Programado' : 'Pendiente',
             metodoPago: paymentMethod,
+            programado: isScheduled,
         };
 
         try {
-            // 3. Add the order to the 'pedidos' collection
             const docRef = await addDoc(collection(db, 'pedidos'), pedido);
-            
-            // 4. Commit the stock updates
             await batch.commit();
-
-            // 5. Clear the cart
             vaciarCarrito();
-
-            // 6. Show success message and navigate
             await Swal.fire({
                 title: "¡Pedido Confirmado!",
-                text: `Tu pedido #${docRef.id} ha sido registrado correctamente.`,
+                text: `Tu pedido #${docRef.id} ha sido registrado.`,
                 icon: "success",
                 timer: 2500,
                 showConfirmButton: false,
             });
-
             navigate(`/order-summary/${docRef.id}`);
-
         } catch (error) {
-            console.error("Error al confirmar el pedido:", error);
+            console.error("Error confirming order:", error);
             setIsSubmitting(false);
-            Swal.fire("Error", "Ocurrió un problema al procesar tu pedido. Por favor intenta nuevamente.", "error");
+            Swal.fire("Error", "Ocurrió un problema al procesar tu pedido.", "error");
+        }
+    };
+
+    const handleConfirmOrder = async () => {
+        if (carrito.length > 0 && deliveryCost === 0) {
+            Swal.fire('Costo de Envío', 'Por favor, calcula el costo de envío antes de continuar.', 'info');
+            return;
+        }
+        if (isSubmitting || !currentUser) return;
+
+        if (isStoreOpen()) {
+            proceedWithOrder(false);
+        } else {
+            let confirmationHtml = `
+                <p>Nuestro horario de atención ha finalizado.</p>
+                <p>Tu pedido será preparado y enviado el próximo día hábil.</p>
+                <div style="margin: 1.5em 0; padding: 0.5em; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;">
+                    <strong>Nuestros Horarios:</strong><br>
+                    Lunes a Viernes: 9:00-12:30 y 17:00-21:00<br>
+                    Sábados: 9:00-13:00
+                </div>
+            `;
+
+            if (paymentMethod === 'Transferencia Bancaria') {
+                confirmationHtml += `
+                    <p><strong>Ya puedes realizar la transferencia</strong> para asegurar tu pedido. Lo prepararemos en cuanto abramos.</p>
+                `;
+            }
+
+            const result = await Swal.fire({
+                title: 'Pedido Fuera de Horario',
+                html: confirmationHtml,
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonText: 'Entendido, Confirmar Pedido',
+                cancelButtonText: 'Cancelar',
+            });
+
+            if (result.isConfirmed) {
+                proceedWithOrder(true);
+            }
         }
     };
 
