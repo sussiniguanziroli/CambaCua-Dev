@@ -6,9 +6,10 @@ import { useCarrito } from '../../context/CarritoContext';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import DeliveryCostCalculator from '../utils/DeliveryCostCalculator';
-import { isStoreOpen } from '../utils/isStoreOpen'; // Import the new utility
+import { isStoreOpen } from '../utils/isStoreOpen';
 
-const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryCost }) => {
+// The component now accepts the 'onBack' prop to handle going to the previous step
+const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryCost, onBack }) => {
     const { carrito, calcularTotal, vaciarCarrito } = useCarrito();
     const { currentUser } = useAuth();
     const navigate = useNavigate();
@@ -195,7 +196,8 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
             </div>
 
             <div className="payment-buttons">
-                <button onClick={() => navigate(-1)} className="checkout-button secondary" disabled={isSubmitting}>
+                {/* This button now correctly calls the onBack function passed from the parent */}
+                <button onClick={onBack} className="checkout-button secondary" disabled={isSubmitting}>
                     Volver
                 </button>
                 <button onClick={handleConfirmOrder} className={`checkout-button ${isSubmitting ? 'loading' : ''}`} disabled={isSubmitting || !currentUser}>

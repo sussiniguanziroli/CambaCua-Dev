@@ -33,6 +33,7 @@ const Checkout = () => {
                     paymentMethod={paymentMethod}
                     deliveryCost={deliveryCost}
                     setDeliveryCost={setDeliveryCost}
+                    onBack={handlePreviousStep} // <-- This prop is now passed
                 />
             )}
         </div>
