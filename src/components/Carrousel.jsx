@@ -11,7 +11,7 @@ import 'pure-react-carousel/dist/react-carousel.es.css'; // Importa los estilos 
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 const slides = [
-  { src: "https://i.ibb.co/KFzndD7/carro-1.jpg", alt: "Cuidado veterinario profesional" },
+  { src: "https://i.ibb.co/0pxBy1qq/portada-marcas-1.png", alt: "Cuidado veterinario profesional" },
   { src: "https://i.ibb.co/XFRxYkB/carro-2.jpg", alt: "Productos de calidad para mascotas" },
   { src: "https://i.ibb.co/jhw4qmD/carro-3.jpg", alt: "Tu mascota en las mejores manos" }
 ];
