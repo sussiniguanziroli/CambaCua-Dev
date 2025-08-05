@@ -7,7 +7,7 @@ const FloatingCartButton = () => {
     const { carrito } = useCarrito();
     const location = useLocation();
     
-    const totalItems = carrito.reduce((acc, item) => acc + item.cantidad, 0);
+    const totalItems = carrito.reduce((acc, item) => acc + item.quantity, 0); // Changed from item.cantidad to item.quantity
 
     const hiddenPaths = ['/checkout', '/order-summary'];
     

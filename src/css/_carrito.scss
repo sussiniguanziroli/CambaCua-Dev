@@ -98,6 +98,19 @@ $heading-color: #343a40;
                 font-size: 1.3rem; font-weight: 600; color: $azul-cambacua; margin: 0; line-height: 1.4; // Nombre en AZUL
             }
 
+            // New style for variation attributes
+            .item-variation-attrs {
+                font-size: 0.85rem;
+                color: $text-gray;
+                margin-top: -0.4rem; // Pull it closer to the name
+                span {
+                    // Styles for individual attribute pairs if needed
+                    &:not(:last-child) {
+                        margin-right: 0.4rem; // Space between "Color: Red | Size: M"
+                    }
+                }
+            }
+
             .item-price {
                 font-size: 1.05rem; color: $text-gray; margin: 0; // Ligeramente más grande
             }
@@ -131,12 +144,6 @@ $heading-color: #343a40;
                              transform: scale(0.95);
                              background-color: $light-gray-bg;
                          }
-                         // Botón Plus con color distintivo (opcional)
-                         // &:last-child:hover {
-                         //     background-color: $azul-cambacua;
-                         //     border-color: $azul-cambacua;
-                         //     color: $main-white;
-                         // }
                     }
 
                      .cantidad-input {
@@ -192,4 +199,3 @@ $heading-color: #343a40;
         }
     }
 }
-

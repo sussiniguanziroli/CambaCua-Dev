@@ -43,16 +43,48 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
             try {
                 const productoSnap = await getDoc(productoRef);
                 if (productoSnap.exists()) {
-                    const stockActual = productoSnap.data().stock;
-                    if (item.cantidad > stockActual) {
+                    const productData = productoSnap.data();
+                    let currentStock = 0;
+                    let stockPath = ''; // To specify if it's main stock or variation stock
+
+                    if (item.hasVariations && item.variationId && productData.variationsList) {
+                        const variationIndex = productData.variationsList.findIndex(v => v.id === item.variationId);
+                        if (variationIndex !== -1) {
+                            currentStock = productData.variationsList[variationIndex].stock;
+                            stockPath = `variationsList[${variationIndex}].stock`;
+                        } else {
+                            stockInsuficiente = true;
+                            Swal.fire('Variación no encontrada', `La variación de ${item.name} ya no está disponible.`, 'error');
+                            break;
+                        }
+                    } else {
+                        currentStock = productData.stock;
+                        stockPath = 'stock';
+                    }
+
+                    if (item.quantity > currentStock) {
                         stockInsuficiente = true;
-                        Swal.fire('Stock insuficiente', `No hay suficiente stock para ${item.nombre}. Solo quedan ${stockActual} unidades.`, 'error');
+                        Swal.fire('Stock insuficiente', `No hay suficiente stock para ${item.name}. Solo quedan ${currentStock} unidades.`, 'error');
                         break; 
                     }
-                    batch.update(productoRef, { stock: stockActual - item.cantidad });
+
+                    // Update stock in batch
+                    if (stockPath.startsWith('variationsList')) {
+                        // For variations, update the specific item in the array
+                        const newVariationsList = [...productData.variationsList];
+                        const variationToUpdate = newVariationsList.find(v => v.id === item.variationId);
+                        if (variationToUpdate) {
+                            variationToUpdate.stock -= item.quantity;
+                            batch.update(productoRef, { variationsList: newVariationsList });
+                        }
+                    } else {
+                        // For simple products, update the main stock field
+                        batch.update(productoRef, { stock: currentStock - item.quantity });
+                    }
+
                 } else {
                     stockInsuficiente = true;
-                    Swal.fire('Producto no encontrado', `El producto ${item.nombre} ya no está disponible.`, 'error');
+                    Swal.fire('Producto no encontrado', `El producto ${item.name} ya no está disponible.`, 'error');
                     break;
                 }
             } catch (error) {
@@ -72,7 +104,7 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
             userId: currentUser.uid,
             email: currentUser.email,
             ...formData,
-            productos: carrito,
+            productos: carrito, // Carrito items now contain variation info
             total: productsTotal,
             costoEnvio: deliveryCost,
             fecha: Timestamp.now(),
@@ -101,7 +133,11 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
     };
 
     const handleConfirmOrder = async () => {
-        if (carrito.length > 0 && deliveryCost === 0) {
+        if (carrito.length === 0) {
+            Swal.fire('Carrito Vacío', 'No hay productos en tu carrito para confirmar el pedido.', 'info');
+            return;
+        }
+        if (deliveryCost === 0 && formData.direccion) { // Only require calculation if an address is provided
             Swal.fire('Costo de Envío', 'Por favor, calcula el costo de envío antes de continuar.', 'info');
             return;
         }
@@ -148,15 +184,22 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
                 <h3>Resumen de Productos</h3>
                 <div className="checkout-items">
                     {carrito.map(item => (
-                        <div key={item.id} className="checkout-item">
+                        <div key={item.id + (item.variationId || '')} className="checkout-item"> {/* Unique key */}
                             <div className="product-details">
-                                <img src={item.imagen} alt={item.nombre} />
+                                <img src={item.imageUrl} alt={item.name} /> {/* Use imageUrl */}
                                 <div className="product-info">
-                                    <h3>{item.nombre}</h3>
-                                    <p>Cant: {item.cantidad}</p>
+                                    <h3>{item.name}</h3>
+                                    {item.hasVariations && item.attributes && (
+                                        <p className="item-variation-attrs">
+                                            {Object.entries(item.attributes).map(([key, value]) => (
+                                                `${key}: ${value}`
+                                            )).join(' | ')}
+                                        </p>
+                                    )}
+                                    <p>Cant: {item.quantity}</p>
                                 </div>
                             </div>
-                            <div className="product-price">${(item.precio * item.cantidad).toLocaleString('es-AR')}</div>
+                            <div className="product-price">${(item.price * item.quantity).toLocaleString('es-AR')}</div> {/* Use item.price */}
                         </div>
                     ))}
                 </div>
@@ -196,7 +239,6 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
             </div>
 
             <div className="payment-buttons">
-                {/* This button now correctly calls the onBack function passed from the parent */}
                 <button onClick={onBack} className="checkout-button secondary" disabled={isSubmitting}>
                     Volver
                 </button>

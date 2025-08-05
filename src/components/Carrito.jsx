@@ -1,18 +1,18 @@
 import React from 'react';
 import { useCarrito } from '../context/CarritoContext';
-import { useAuth } from '../context/AuthContext'; // Import useAuth
+import { useAuth } from '../context/AuthContext'; 
 import { FaTrashAlt, FaArrowLeft, FaPlus, FaMinus } from 'react-icons/fa';
-import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate
+import { Link, useNavigate } from 'react-router-dom'; 
 import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import 'react-toastify/dist/ReactToastify.css'; 
 import Swal from 'sweetalert2';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 
 const Carrito = () => {
     const { carrito, eliminarDelCarrito, actualizarCantidad, vaciarCarrito, calcularTotal } = useCarrito();
-    const { currentUser } = useAuth(); // Get current user
-    const navigate = useNavigate(); // Get navigate function
+    const { currentUser } = useAuth(); 
+    const navigate = useNavigate(); 
 
     const handleContinuarCompra = () => {
         if (!currentUser) {
@@ -34,13 +34,21 @@ const Carrito = () => {
             navigate('/checkout');
         }
     };
-    
-    // ... (rest of your functions: obtenerStockDisponible, handleCantidadChange, etc. remain the same)
-    const obtenerStockDisponible = async (productoId) => {
+
+    const obtenerStockDisponible = async (productId, variationId = null) => {
         try {
-            const productoRef = doc(db, 'productos', productoId);
-            const productoSnapshot = await getDoc(productoRef);
-            return productoSnapshot.exists() ? productoSnapshot.data().stock : 0;
+            const productRef = doc(db, 'productos', productId);
+            const productSnap = await getDoc(productRef);
+
+            if (productSnap.exists()) {
+                const data = productSnap.data();
+                if (data.hasVariations && variationId && data.variationsList) {
+                    const variation = data.variationsList.find(v => v.id === variationId);
+                    return variation ? variation.stock : 0;
+                }
+                return data.stock || 0; 
+            }
+            return 0;
         } catch (error) {
             console.error("Error obteniendo stock:", error);
             toast.error("Error al verificar stock.");
@@ -48,31 +56,31 @@ const Carrito = () => {
         }
     };
 
-    const handleCantidadChange = async (itemId, nuevaCantidad) => {
+    const handleCantidadChange = async (itemId, nuevaCantidad, variationId = null) => {
         const cantidad = parseInt(nuevaCantidad, 10);
         if (isNaN(cantidad) || cantidad <= 0) {
-            eliminarDelCarrito(itemId);
+            eliminarDelCarrito(itemId, variationId); 
             toast.error("Producto eliminado");
         } else {
-            const stockDisponible = await obtenerStockDisponible(itemId);
+            const stockDisponible = await obtenerStockDisponible(itemId, variationId); 
             if (cantidad > stockDisponible) {
-                actualizarCantidad(itemId, stockDisponible);
+                actualizarCantidad(itemId, stockDisponible, variationId); 
                 toast.info(`Máximo stock disponible: ${stockDisponible}`);
             } else {
-                actualizarCantidad(itemId, cantidad);
+                actualizarCantidad(itemId, cantidad, variationId); 
             }
         }
     };
 
-    const handleInputChange = (itemId, event) => {
+    const handleInputChange = (itemId, event, variationId = null) => {
         const valorInput = event.target.value;
         const cantidad = parseInt(valorInput, 10);
         if (!isNaN(cantidad) && cantidad > 0) {
-            handleCantidadChange(itemId, cantidad);
+            handleCantidadChange(itemId, cantidad, variationId); 
         } else if (valorInput === "") {
-            // No action needed on empty input
+
         } else if (!isNaN(cantidad) && cantidad <= 0) {
-            eliminarDelCarrito(itemId);
+            eliminarDelCarrito(itemId, variationId); 
             toast.error("Producto eliminado");
         }
     };
@@ -125,34 +133,44 @@ const Carrito = () => {
                 <div className="carrito-content">
                     <div className="carrito-items-list">
                         {carrito.map(item => (
-                            <div key={item.id} className="carrito-item">
-                                <img src={item.imagen} alt={item.nombre} className="item-image"/>
+
+                            <div key={item.id + (item.variationId || '')} className="carrito-item">
+                                <img src={item.imageUrl} alt={item.name} className="item-image"/>
                                 <div className="item-details">
-                                    <h2 className="item-name">{item.nombre}</h2>
-                                    <p className="item-price">Precio: ${item.precio}</p>
+                                    <h2 className="item-name">{item.name}</h2>
+                                    {item.hasVariations && item.attributes && (
+                                        <p className="item-variation-attrs">
+                                            {}
+                                            {Object.entries(item.attributes).map(([key, value]) => (
+                                                `${key}: ${value}`
+                                            )).join(' | ')}
+                                        </p>
+                                    )}
+                                    <p className="item-price">Precio: ${item.price?.toFixed(2)}</p>
                                     <div className="item-quantity">
-                                        <label htmlFor={`cantidad-${item.id}`}>Cantidad:</label>
+                                        <label htmlFor={`cantidad-${item.id}-${item.variationId || ''}`}>Cantidad:</label>
                                         <div className="quantity-controls">
-                                             <button onClick={() => handleCantidadChange(item.id, item.cantidad - 1)} aria-label="Restar uno">
+                                             <button onClick={() => handleCantidadChange(item.id, item.quantity - 1, item.variationId)} aria-label="Restar uno">
                                                 <FaMinus />
                                             </button>
                                             <input
-                                                id={`cantidad-${item.id}`}
+                                                id={`cantidad-${item.id}-${item.variationId || ''}`}
                                                 type="number"
                                                 className="cantidad-input"
-                                                value={item.cantidad}
-                                                 onChange={(e) => handleInputChange(item.id, e)}
+                                                value={item.quantity}
+                                                onChange={(e) => handleInputChange(item.id, e, item.variationId)}
                                                 aria-label="Cantidad"
                                                 min="1"
+                                                max={item.stock} 
                                             />
-                                            <button onClick={() => handleCantidadChange(item.id, item.cantidad + 1)} aria-label="Sumar uno">
+                                            <button onClick={() => handleCantidadChange(item.id, item.quantity + 1, item.variationId)} aria-label="Sumar uno">
                                                 <FaPlus />
                                             </button>
                                         </div>
                                     </div>
-                                    <p className="item-subtotal">Subtotal: <strong>${(item.precio * item.cantidad).toFixed(2)}</strong></p>
+                                    <p className="item-subtotal">Subtotal: <strong>${(item.price * item.quantity)?.toFixed(2)}</strong></p>
                                 </div>
-                                <button className="item-delete-button" onClick={() => eliminarDelCarrito(item.id)} aria-label={`Eliminar ${item.nombre}`}>
+                                <button className="item-delete-button" onClick={() => eliminarDelCarrito(item.id, item.variationId)} aria-label={`Eliminar ${item.name}`}>
                                     <FaTrashAlt />
                                 </button>
                             </div>

@@ -3,21 +3,75 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import { FaSearch, FaSortAmountDown, FaSortAmountUp } from 'react-icons/fa';
+import { FaSearch, FaSortAmountDown, FaSortAmountUp, FaChevronDown, FaChevronUp } from 'react-icons/fa'; // Added FaChevronDown, FaChevronUp
 
-const OrderHistoryItem = ({ order }) => (
-    <div className="order-history-item">
-        <div className="order-info">
-            <span className="order-id">Pedido #{order.id.substring(0, 8)}...</span>
-            <span className="order-date">{order.fecha}</span>
+// Component to display individual product details within an order
+const OrderProductItem = ({ item }) => (
+    <div className="order-product-item">
+        <img src={item.imageUrl} alt={item.name} className="product-image"/>
+        <div className="product-info">
+            <h4>{item.name}</h4>
+            {item.hasVariations && item.attributes && (
+                <p className="product-variation-attrs">
+                    {Object.entries(item.attributes).map(([key, value]) => (
+                        `${key}: ${value}`
+                    )).join(' | ')}
+                </p>
+            )}
+            <div className="product-meta">
+                <span>${item.price?.toFixed(2)} c/u</span>
+                <span>Cant: {item.quantity}</span>
+            </div>
         </div>
-        <div className="order-details-right">
-            <span className="order-total">${order.total.toFixed(2)}</span>
-            <span className={`status-badge ${order.estado.toLowerCase()}`}>{order.estado}</span>
-            <Link to={`/order-summary/${order.id}`} className="details-link">Ver Detalles</Link>
+        <div className="product-subtotal">
+            ${(item.price * item.quantity)?.toFixed(2)}
         </div>
     </div>
 );
+
+// Main Order History Item component
+const OrderHistoryItem = ({ order }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    return (
+        <div className="order-history-item">
+            <div className="order-summary-header" onClick={() => setIsExpanded(!isExpanded)}>
+                <div className="order-info">
+                    <span className="order-id">Pedido #{order.id.substring(0, 8)}...</span>
+                    <span className="order-date">{order.fecha}</span>
+                </div>
+                <div className="order-details-right">
+                    <span className="order-total">${order.total.toFixed(2)}</span>
+                    <span className={`status-badge ${order.estado.toLowerCase()}`}>{order.estado}</span>
+                    <button className="expand-button">
+                        {isExpanded ? <FaChevronUp /> : <FaChevronDown />}
+                    </button>
+                </div>
+            </div>
+            {isExpanded && (
+                <div className="order-details-expanded">
+                    <div className="expanded-section">
+                        <h4>Productos del Pedido:</h4>
+                        <div className="order-products-list">
+                            {order.productos.map((item, index) => (
+                                <OrderProductItem key={item.id + (item.variationId || '')} item={item} />
+                            ))}
+                        </div>
+                    </div>
+                    <div className="expanded-section">
+                        <h4>Detalles de Envío:</h4>
+                        <p><strong>Nombre:</strong> {order.nombre}</p>
+                        <p><strong>Dirección:</strong> {order.direccion}</p>
+                        {order.indicaciones && <p><strong>Indicaciones:</strong> {order.indicaciones}</p>}
+                        <p><strong>Método de Pago:</strong> {order.metodoPago}</p>
+                        {order.costoEnvio > 0 && <p><strong>Costo de Envío:</strong> ${order.costoEnvio.toFixed(2)}</p>}
+                    </div>
+                    <Link to={`/order-summary/${order.id}`} className="details-link">Ver Resumen Completo</Link>
+                </div>
+            )}
+        </div>
+    );
+};
 
 const OrderDetails = () => {
     const { currentUser } = useAuth();

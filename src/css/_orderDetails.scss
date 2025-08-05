@@ -133,81 +133,191 @@
         }
 
         @media(min-width: 768px) {
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: center;
+            // No longer always flex-row, as it's now collapsible
+            // flex-direction: row;
+            // justify-content: space-between;
+            // align-items: center;
         }
     }
 
-    .order-info {
+    .order-summary-header {
         display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-        font-size: 1.1rem;
-
-        .order-id {
-            font-weight: 600;
-            color: $heading-color;
-        }
-
-        .order-date {
-            color: $text-gray;
-        }
-    }
-
-    .order-details-right {
-        display: flex;
+        justify-content: space-between;
         align-items: center;
-        gap: 1rem;
-        flex-wrap: wrap;
+        width: 100%;
+        cursor: pointer;
+        padding-bottom: 0.5rem; // Space between header and expanded content
+        border-bottom: 1px solid transparent; // Initially transparent
+        transition: border-bottom 0.2s ease;
 
-        .order-total {
-            font-weight: 600;
-            font-size: 1rem;
-            color: $azul-cambacua;
+        .order-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            font-size: 1.1rem;
+
+            .order-id {
+                font-weight: 600;
+                color: $heading-color;
+            }
+
+            .order-date {
+                color: $text-gray;
+                font-size: 0.9rem;
+            }
         }
 
-        .details-link {
-            background-color: $azul-cambacua;
-            color: $main-white;
-            text-decoration: none;
-            padding: 0.4rem 1rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            transition: background-color 0.2s ease;
+        .order-details-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
 
-            &:hover {
-                background-color: $button-hover-cambacua;
+            .order-total {
+                font-weight: 600;
+                font-size: 1rem;
+                color: $azul-cambacua;
+            }
+
+            .status-badge {
+                padding: 0.3rem 0.8rem;
+                border-radius: 16px;
+                font-size: 0.8rem;
+                font-weight: 600;
+                text-transform: capitalize;
+                color: white;
+
+                &.pendiente { background-color: #ffc107; color: #333; }
+                &.pagado { background-color: #28a745; }
+                &.completado, &.enviado { background-color: #17a2b8; }
+                &.cancelado { background-color: #dc3545; }
+            }
+
+            .expand-button {
+                background: none;
+                border: none;
+                color: $azul-cambacua;
+                font-size: 1.2rem;
+                cursor: pointer;
+                transition: transform 0.2s ease;
+                &:hover {
+                    color: $button-hover-cambacua;
+                }
             }
         }
     }
 
-    // Re-using status badge styles from previous components
-    .status-badge {
-        padding: 0.3rem 0.8rem;
-        border-radius: 16px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        text-transform: capitalize;
-        color: white;
+    .order-details-expanded {
+        width: 100%;
+        padding-top: 1rem;
+        border-top: 1px solid $border-color; // Separator when expanded
+        animation: fadeIn 0.3s ease-out; // Smooth reveal
 
-        &.pendiente {
-            background-color: #ffc107;
-            color: #333;
+        .expanded-section {
+            margin-bottom: 1.5rem;
+            &:last-of-type {
+                margin-bottom: 0;
+            }
+
+            h4 {
+                font-size: 1.1rem;
+                font-weight: 600;
+                color: $heading-color;
+                margin-bottom: 0.75rem;
+                border-bottom: 1px solid $light-gray-bg; // Subtle separator
+                padding-bottom: 0.25rem;
+            }
+
+            p {
+                font-size: 0.9rem;
+                color: $text-gray;
+                margin-bottom: 0.4rem;
+                strong {
+                    color: $heading-color;
+                    margin-right: 0.3rem;
+                }
+            }
         }
 
-        &.pagado {
-            background-color: #28a745;
+        .order-products-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
         }
 
-        &.completado,
-        &.enviado {
-            background-color: #17a2b8;
+        .order-product-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background-color: $light-gray-bg;
+            border-radius: 6px;
+            border: 1px solid $border-color;
+
+            .product-image {
+                width: 60px;
+                height: 60px;
+                object-fit: contain;
+                border-radius: 4px;
+                flex-shrink: 0;
+                border: 1px solid $border-color;
+            }
+
+            .product-info {
+                flex-grow: 1;
+                h4 {
+                    font-size: 1rem;
+                    font-weight: 500;
+                    color: $azul-cambacua;
+                    margin: 0 0 0.2rem 0;
+                }
+                .product-meta {
+                    font-size: 0.85rem;
+                    color: $text-gray;
+                    span {
+                        &:not(:last-child) {
+                            margin-right: 0.5rem;
+                        }
+                    }
+                }
+            }
+            // New style for variation attributes in order details
+            .product-variation-attrs {
+                font-size: 0.8rem;
+                color: darken($text-gray, 10%);
+                margin-top: -0.2rem; // Adjust spacing
+                margin-bottom: 0.2rem;
+                span {
+                    &:not(:last-child) {
+                        margin-right: 0.3rem;
+                    }
+                }
+            }
+
+            .product-subtotal {
+                font-size: 0.95rem;
+                font-weight: 600;
+                color: $heading-color;
+                flex-shrink: 0;
+            }
         }
 
-        &.cancelado {
-            background-color: #dc3545;
+        .details-link {
+            display: inline-block;
+            background-color: $azul-cambacua;
+            color: $main-white;
+            text-decoration: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+            margin-top: 1rem;
+            text-align: center;
+            &:hover {
+                background-color: $button-hover-cambacua;
+            }
         }
     }
 
