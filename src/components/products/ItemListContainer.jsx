@@ -20,14 +20,14 @@ const ItemListContainer = () => {
     const [filteredProducts, setFilteredProducts] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [categories, setCategories] = useState([]);
-    
+
     const location = useLocation();
     const queryParams = useQuery();
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedSubcategory, setSelectedSubcategory] = useState('');
-    
+
     const [isMenuHidden, setIsMenuHidden] = useState(true);
-    
+
     useEffect(() => {
         const newParams = new URLSearchParams(location.search);
         const categoryFromUrl = newParams.get('categoria') || '';
@@ -42,10 +42,40 @@ const ItemListContainer = () => {
             try {
                 const q = query(collection(db, 'productos'), where('activo', '==', true));
                 const snapshot = await getDocs(q);
-                const productosFirebase = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
+                const productosFirebase = snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    let displayStock = data.stock;
+                    let displayPrice = data.precio;
+                    let hasAnyVariationStock = false;
+
+                    if (data.hasVariations && Array.isArray(data.variationsList)) {
+                        // For variable products, calculate display stock and min price
+                        let totalStock = 0;
+                        let minPrice = Infinity;
+
+                        data.variationsList.forEach(variation => {
+                            if (variation.activo && variation.stock > 0) {
+                                hasAnyVariationStock = true;
+                                totalStock += variation.stock;
+                            }
+                            if (variation.activo && variation.precio < minPrice) {
+                                minPrice = variation.precio;
+                            }
+                        });
+
+                        displayStock = hasAnyVariationStock ? totalStock : 0; // Show total stock of active variations, or 0
+                        displayPrice = hasAnyVariationStock ? minPrice : null; // Show min price if any variation is in stock
+                    }
+
+                    return {
+                        id: doc.id,
+                        ...data,
+                        // Add computed properties for list display
+                        _displayStock: displayStock,
+                        _displayPrice: displayPrice,
+                        _hasAnyVariationStock: hasAnyVariationStock // Helper to check if any variation is in stock
+                    };
+                });
                 setProductos(productosFirebase);
             } catch (error) {
                 console.error("Error obteniendo los productos: ", error);
@@ -73,33 +103,37 @@ const ItemListContainer = () => {
     }, []);
 
     useEffect(() => {
-        const productosConStock = productos.filter(producto => producto.stock > 0);
-        const productosSinStock = productos.filter(producto => producto.stock === 0);
+        // Filter products based on search term, category, and subcategory
+        let filtered = productos.filter(producto => {
+            // Apply category and subcategory filters first
+            const matchesCategory = !selectedCategory || producto.categoryAdress === selectedCategory;
+            const matchesSubcategory = !selectedSubcategory || producto.subcategoria === selectedSubcategory;
+
+            // Apply search term filter
+            const matchesSearch = !searchTerm ||
+                producto.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (producto.descripcion && producto.descripcion.toLowerCase().includes(searchTerm.toLowerCase()));
+
+            return matchesCategory && matchesSubcategory && matchesSearch;
+        });
+
+        // Separate products with stock from those without, considering variations
+        const productosConStock = filtered.filter(producto =>
+            producto.hasVariations ? producto._hasAnyVariationStock : producto._displayStock > 0
+        );
+        const productosSinStock = filtered.filter(producto =>
+            producto.hasVariations ? !producto._hasAnyVariationStock : producto._displayStock === 0
+        );
+
+        // Sort: products with stock first, then products without stock
         const productosOrdenados = [...productosConStock, ...productosSinStock];
 
-        let filtered = productosOrdenados;
-
-        if (selectedCategory) {
-            filtered = filtered.filter(producto => producto.categoryAdress === selectedCategory);
-        }
-        
-        if (selectedSubcategory) {
-            filtered = filtered.filter(producto => producto.subcategoria === selectedSubcategory);
-        }
-
-        if (searchTerm) {
-            filtered = filtered.filter(producto =>
-                producto.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (producto.descripcion && producto.descripcion.toLowerCase().includes(searchTerm.toLowerCase()))
-            );
-        }
-
-        setFilteredProducts(filtered);
+        setFilteredProducts(productosOrdenados);
     }, [searchTerm, selectedCategory, selectedSubcategory, productos]);
 
     const handleCategoryClick = (categoryAdress) => {
         setSelectedCategory(categoryAdress);
-        setSelectedSubcategory(''); 
+        setSelectedSubcategory('');
     };
 
     const toggleMenuFachaCarrito = () => {
@@ -110,23 +144,31 @@ const ItemListContainer = () => {
         setIsMenuHidden(true);
     };
 
-    const obtenerStockDisponible = async (productoId) => {
-        const productoRef = doc(db, 'productos', productoId);
-        const productoSnapshot = await getDoc(productoRef);
-        return productoSnapshot.exists() ? productoSnapshot.data().stock : 0;
+    const obtenerStockDisponible = async (productoId, variationId = null) => {
+        const productRef = doc(db, 'productos', productoId);
+        const productSnap = await getDoc(productRef);
+        if (productSnap.exists()) {
+            const data = productSnap.data();
+            if (data.hasVariations && variationId) {
+                const variation = data.variationsList.find(v => v.id === variationId);
+                return variation ? variation.stock : 0;
+            }
+            return data.stock;
+        }
+        return 0;
     };
 
-    const handleCantidadChangeDesktop = async (id, e) => {
+    const handleCantidadChangeDesktop = async (id, e, variationId = null) => {
         const cantidad = parseInt(e.target.value, 10);
-        const stockDisponible = await obtenerStockDisponible(id);
+        const stockDisponible = await obtenerStockDisponible(id, variationId);
 
         if (cantidad > stockDisponible) {
-            actualizarCantidad(id, stockDisponible);
+            actualizarCantidad(id, stockDisponible, variationId); // Pass variationId to actualizarCantidad
             toast.info(`Se ha alcanzado el máximo de productos disponibles (${stockDisponible})`);
         } else if (cantidad > 0) {
-            actualizarCantidad(id, cantidad);
+            actualizarCantidad(id, cantidad, variationId); // Pass variationId
         } else {
-            eliminarDelCarrito(id);
+            eliminarDelCarrito(id, variationId); // Pass variationId
             notifyEliminar();
         }
     };
@@ -158,24 +200,31 @@ const ItemListContainer = () => {
                     ) : (
                         <div>
                             {carrito.map(item => (
-                                <div key={item.id} className="carrito-item-desk">
+                                <div key={item.id + (item.variationId || '')} className="carrito-item-desk"> {/* Use variationId in key */}
                                     <div className='carrito-first-item'>
-                                        <img src={item.imagen} alt={item.nombre} />
-                                        <h2>{item.nombre}</h2>
+                                        <img src={item.imageUrl} alt={item.name} /> {/* Use imageUrl from cart item */}
+                                        <h2>
+                                            {item.name}
+                                            {item.hasVariations && item.attributes && (
+                                                <span className="text-sm text-gray-600 ml-2">
+                                                    ({Object.values(item.attributes).join(', ')})
+                                                </span>
+                                            )}
+                                        </h2>
                                     </div>
-                                    <p>Precio: ${item.precio}</p>
+                                    <p>Precio: ${item.price?.toFixed(2)}</p> {/* Use price from cart item */}
                                     <div className="cantidad-control">
-                                        <button onClick={() => handleCantidadChangeDesktop(item.id, { target: { value: item.cantidad - 1 } })}><FaMinus /></button>
+                                        <button onClick={() => handleCantidadChangeDesktop(item.id, { target: { value: item.quantity - 1 } }, item.variationId)}><FaMinus /></button>
                                         <input
                                             type="number"
-                                            value={item.cantidad}
-                                            onChange={(e) => handleCantidadChangeDesktop(item.id, e)}
+                                            value={item.quantity}
+                                            onChange={(e) => handleCantidadChangeDesktop(item.id, e, item.variationId)}
                                         />
-                                        <button onClick={() => handleCantidadChangeDesktop(item.id, { target: { value: item.cantidad + 1 } })}><FaPlus /></button>
+                                        <button onClick={() => handleCantidadChangeDesktop(item.id, { target: { value: item.quantity + 1 } }, item.variationId)}><FaPlus /></button>
                                     </div>
                                     <div className='precio-borrar'>
-                                        <p className="total-price">Subtotal: ${item.precio * item.cantidad}</p>
-                                        <button className="eliminar-button" onClick={() => { eliminarDelCarrito(item.id); notifyEliminar() }}>
+                                        <p className="total-price">Subtotal: ${(item.price * item.quantity)?.toFixed(2)}</p>
+                                        <button className="eliminar-button" onClick={() => { eliminarDelCarrito(item.id, item.variationId); notifyEliminar() }}>
                                             <FaTrashAlt />Eliminar
                                         </button>
                                     </div>
@@ -217,7 +266,7 @@ const ItemListContainer = () => {
                         </button>
                     ))}
                 </div>
-                
+
                 {showSubcategories && (
                     <div className="subcategory-filters">
                          <button

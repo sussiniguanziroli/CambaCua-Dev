@@ -8,6 +8,12 @@ $border-color: #e0e0e0;
 $success-color: #28a745;
 $danger-color: #dc3545;
 $heading-color: #333333; // Color para títulos de sección
+$selected-border-color: $azul-cambacua; // Color para el borde de la opción seleccionada
+$disabled-text-color: #a0a0a0; // Color para texto de opciones deshabilitadas
+$info-bg-color: #e0f2f7; // Light blue for info messages
+$info-text-color: #007bff; // Blue for info text
+$warning-bg-color: #fff3cd; // Light yellow for warning messages
+$warning-text-color: #856404; // Dark yellow for warning text
 // --- Fin de Variables Asumidas ---
 
 // Estilo para el contenedor que viene de ItemDetailContainer
@@ -58,7 +64,7 @@ $heading-color: #333333; // Color para títulos de sección
             width: 100%;
             border-radius: 12px;
             overflow: hidden;
-            background-color: $light-gray-bg; // Mantener fondo sutil
+            background-color: $light-gray-bg;
 
             .carousel-cell {
                 width: 100%;
@@ -68,9 +74,7 @@ $heading-color: #333333; // Color para títulos de sección
                     display: block; width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: contain; max-height: 70vh;
                 }
             }
-            // --- Estilos Flickity (sin cambios respecto a la versión anterior) ---
-             .flickity-prev-next-button { width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, 0.9); color: $azul-cambacua; box-shadow: 0 1px 4px rgba(0,0,0,0.1); transition: transform 0.2s ease; &:hover { background: $main-white; transform: scale(1.05); } &.previous { left: 15px; } &.next { right: 15px; } svg { width: 20px; height: 20px; } } .flickity-page-dots { bottom: 15px; .dot { width: 10px; height: 10px; background: rgba(0, 0, 0, 0.2); opacity: 1; transition: background-color 0.2s ease; margin: 0 5px; &.is-selected { background: $azul-cambacua; } } }
-            // --- Fin Estilos Flickity ---
+            .flickity-prev-next-button { width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, 0.9); color: $azul-cambacua; box-shadow: 0 1px 4px rgba(0,0,0,0.1); transition: transform 0.2s ease; &:hover { background: $main-white; transform: scale(1.05); } &.previous { left: 15px; } &.next { right: 15px; } svg { width: 20px; height: 20px; } } .flickity-page-dots { bottom: 15px; .dot { width: 10px; height: 10px; background: rgba(0, 0, 0, 0.2); opacity: 1; transition: background-color 0.2s ease; margin: 0 5px; &.is-selected { background: $azul-cambacua; } } }
         }
     }
 
@@ -79,110 +83,202 @@ $heading-color: #333333; // Color para títulos de sección
         width: 100%;
         display: flex;
         flex-direction: column;
-        gap: 1.5rem; // Espacio vertical entre secciones principales (Título/Precio, Acciones, Descripción, Detalles)
+        gap: 1.5rem;
 
         @media (min-width: 768px) {
             width: 50%;
             flex-shrink: 0;
-            gap: 2rem; // Aumentar espacio vertical en desktop
+            gap: 2rem;
         }
 
         .product-title {
-            font-size: 2rem; font-weight: 600; color: $heading-color; line-height: 1.3; margin: 0; // Sin margen inferior aquí, el gap se encarga
+            font-size: 2rem; font-weight: 600; color: $heading-color; line-height: 1.3; margin: 0;
         }
 
-        .product-price {
-            font-size: 1.8rem; font-weight: 500; color: $azul-cambacua; margin: 0; // Sin margen inferior aquí
+        .product-category {
+            font-size: 0.9rem; color: $text-gray; margin-bottom: 0.5rem;
         }
 
         .detail-actions {
-            display: flex; flex-direction: column; gap: 0.75rem; align-items: flex-start; // Sin margen inferior aquí
+            display: flex; flex-direction: column; gap: 0.75rem; align-items: flex-start;
              @media (min-width: 480px) { flex-direction: row; align-items: center; }
 
             .add-to-cart-button-detail {
                 background-color: $azul-cambacua; color: $main-white; border: none; border-radius: 6px; padding: 0.8rem 1.5rem; font-size: 1rem; font-weight: 500; cursor: pointer; transition: background-color 0.2s ease, transform 0.1s ease; display: inline-flex; align-items: center; gap: 0.5rem; white-space: nowrap;
                 &:hover { background-color: $button-hover-cambacua; }
                 &:active { transform: scale(0.98); }
-                &:disabled { background-color: #bdc3c7; cursor: not-allowed; svg { color: #7f8c8d;} }
+                &.disabled { background-color: #bdc3c7; cursor: not-allowed; svg { color: #7f8c8d;} }
             }
             .stock-status { background-color: $danger-color; color: $main-white; padding: 0.8rem 1.5rem; border-radius: 6px; font-size: 1rem; font-weight: 500; white-space: nowrap; }
             .stock-available { font-size: 0.9rem; color: $text-gray; margin: 0; padding-left: 0.5rem; }
         }
 
-        // --- INICIO: Mejoras de Estructura Descripción y Detalles ---
-
-        // Sección Descripción Mejorada
         .product-description {
-             // Separador opcional si se ve muy pegado a las acciones
-             // border-top: 1px solid $border-color;
-             // padding-top: 1.5rem;
-
              h3 {
-                 margin-bottom: 0.75rem; // Espacio debajo del título "Descripción"
-                 font-size: 1.2rem; // Título un poco más grande
+                 margin-bottom: 0.75rem;
+                 font-size: 1.2rem;
                  font-weight: 600;
                  color: $heading-color;
-                 padding-bottom: 0.25rem; // Pequeño espacio inferior
-                 border-bottom: 2px solid $azul-cambacua; // Línea sutil debajo del título
-                 display: inline-block; // Para que el borde se ajuste al texto
+                 padding-bottom: 0.25rem;
+                 border-bottom: 2px solid $azul-cambacua;
+                 display: inline-block;
              }
              p {
                  font-size: 0.95rem;
                  color: $text-gray;
-                 line-height: 1.7; // Buena legibilidad
-                 margin: 0; // El gap del contenedor padre maneja el espacio
+                 line-height: 1.7;
+                 margin: 0;
              }
         }
 
-
-        // Sección Detalles Mejorada
         .product-details {
-            background-color: $light-gray-bg; // Fondo gris claro para agrupar visualmente
-            border: 1px solid $border-color; // Borde sutil alrededor
-            border-radius: 8px; // Bordes redondeados
-            padding: 1.5rem; // Padding interno generoso
-            margin-top: 1rem; // Margen superior para separar de la descripción
+            background-color: $light-gray-bg;
+            border: 1px solid $border-color;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1rem;
 
             h3 {
-                margin-top: 0; // Quitar margen superior del h3
-                margin-bottom: 1rem; // Buen espacio debajo del título "Detalles"
+                margin-top: 0;
+                margin-bottom: 1rem;
                 font-size: 1.2rem;
                 font-weight: 600;
                 color: $heading-color;
                 padding-bottom: 0.25rem;
-                border-bottom: 2px solid $azul-cambacua; // Línea consistente con descripción
+                border-bottom: 2px solid $azul-cambacua;
                 display: inline-block;
             }
 
-            // Estilo para cada línea de detalle (si usas <p> o <div> en lugar de solo <br>)
-            // Si usas solo <br>, el line-height ayuda, pero si agrupas (ej <p><strong>Cat:</strong> Val</p>) puedes estilar .detail-item
-            .detail-item { // Asumiendo que envuelves cada par Clave:Valor
-                 margin-bottom: 0.8rem; // Espacio entre cada detalle
-                 &:last-child { margin-bottom: 0; } // Sin margen en el último
+            .detail-item {
+                 margin-bottom: 0.8rem;
+                 &:last-child { margin-bottom: 0; }
             }
 
             strong {
-                color: $heading-color; // Clave un poco más oscura
+                color: $heading-color;
                 margin-right: 0.5rem;
-                font-weight: 500; // Peso normal o semi-bold
+                font-weight: 500;
             }
 
-            // Estilo general del texto dentro de detalles
             font-size: 0.9rem;
             color: $text-gray;
-            line-height: 1.6; // Espaciado vertical
+            line-height: 1.6;
 
-             // Quitar efecto del <br> si ya usamos .detail-item con margin
-             br { display: none; } // O ajustar su margin si se siguen usando <br> directamente
-
+             br { display: none; }
         }
-        // --- FIN: Mejoras de Estructura Descripción y Detalles ---
-
-    } // Fin .detail-body-column
-} // Fin .item-detail-page-content
+    }
+}
 
 // Estilo global para popups Swal (opcional, si no está ya definido)
 .swal2-popup {
     font-family: 'Poppins', sans-serif;
-    font-size: 1rem; // Ajusta si es necesario
+    font-size: 1rem;
+}
+
+// --- NEW STYLES FOR VARIATION SELECTORS ---
+.variations-selection-area {
+    margin-bottom: 1.5rem; // Space below the entire variation section
+
+    .variation-selector {
+        margin-bottom: 1rem; // Space between different attribute groups (e.g., Color, Size)
+
+        .variation-label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: $heading-color;
+            margin-bottom: 0.75rem;
+        }
+
+        .variation-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem; // Space between buttons
+        }
+
+        .variation-button {
+            padding: 0.6rem 1rem;
+            border: 2px solid $border-color;
+            border-radius: 8px; // Slightly more rounded corners for buttons
+            background-color: $main-white;
+            color: $text-gray;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap; // Prevent text wrapping
+
+            &:hover:not(:disabled) {
+                border-color: $button-hover-cambacua;
+                background-color: lighten($azul-cambacua, 45%); // Light blue hover
+                color: $azul-cambacua;
+                transform: translateY(-2px); // Subtle lift effect
+                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            }
+
+            &.selected {
+                background-color: $azul-cambacua;
+                color: $main-white;
+                border-color: $azul-cambacua;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+                transform: translateY(-1px); // Slightly more prominent when selected
+            }
+
+            &.disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+                background-color: $light-gray-bg;
+                color: $disabled-text-color;
+                border-color: $light-gray-bg;
+                text-decoration: line-through; // Indicate unavailability
+                &:hover {
+                    transform: none; // Remove hover effect for disabled
+                    box-shadow: none;
+                }
+            }
+        }
+    }
+}
+
+.variation-info {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background-color: $info-bg-color; // Light blue background
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+
+    .product-price {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: $azul-cambacua;
+        margin-bottom: 0.5rem;
+    }
+
+    .stock-available {
+        font-size: 1rem;
+        font-weight: 500;
+        &.text-red { color: $danger-color; } // Red for out of stock
+        &.text-green { color: $success-color; } // Green for in stock
+    }
+}
+
+.info-message {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    text-align: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+
+    &.info-warning {
+        background-color: $warning-bg-color; // Light yellow
+        color: $warning-text-color; // Dark yellow text
+        border: 1px solid darken($warning-bg-color, 10%);
+    }
+}
+
+// Icon positioning for add to cart button
+.add-to-cart-button-detail .icon-left {
+    margin-right: 0.5rem;
 }

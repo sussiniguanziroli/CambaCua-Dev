@@ -32,7 +32,6 @@ const ItemList = ({ productos, searchTerm, selectedCategory, selectedSubcategory
     const notifyAgregado = () => toast.success("Agregado al carrito");
     const notifyCarrito = () => toast.info("Producto ya agregado!");
     const notifyCopiar = () => toast.info("Enlace copiado al portapales");
-    
 
 
     return (
@@ -45,9 +44,14 @@ const ItemList = ({ productos, searchTerm, selectedCategory, selectedSubcategory
             <div className='item-list'>
                 {currentItems.length > 0 ? (
                     currentItems.map(producto => (
-
-                        <Item key={producto.id} notifyAgregado={notifyAgregado} notifyCarrito={notifyCarrito} notifyCopiar={notifyCopiar} producto={producto} />
-
+                        // Pass the computed _displayStock, _displayPrice, _hasAnyVariationStock to Item
+                        <Item
+                            key={producto.id}
+                            notifyAgregado={notifyAgregado}
+                            notifyCarrito={notifyCarrito}
+                            notifyCopiar={notifyCopiar}
+                            producto={producto}
+                        />
                     ))
                 ) : searchTerm || selectedCategory || selectedSubcategory ? (
                     <div className='no-results'>
@@ -78,8 +82,6 @@ const ItemList = ({ productos, searchTerm, selectedCategory, selectedSubcategory
                     </button>
                 </div>
             )}
-
-
         </div>
     );
 }

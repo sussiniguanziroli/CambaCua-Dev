@@ -1,108 +1,100 @@
 import React, { useEffect, useRef } from 'react';
 import Flickity from 'flickity';
-import "flickity/css/flickity.css"; // Asegúrate que este CSS se cargue globalmente o aquí
+import "flickity/css/flickity.css";
 import { FiShoppingCart, FiShare2, FiCopy } from 'react-icons/fi';
-import { FaTimes } from 'react-icons/fa'; // Icono para cerrar
+import { FaTimes } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
 const ModalProducto = ({ producto, isOpen, onClose, addToCart, existsInCart, notifyCopiar }) => {
     const modalRef = useRef();
-    const flickityRef = useRef(null); // Ref para el elemento HTML del carrusel
-    const flktyInstance = useRef(null); // Ref para guardar la instancia de Flickity
+    const flickityRef = useRef(null);
+    const flktyInstance = useRef(null);
+    const navigate = useNavigate();
 
-    // Lógica para cerrar el modal al hacer clic fuera del contenido
     const handleClickOutside = (event) => {
         if (modalRef.current && !modalRef.current.contains(event.target)) {
-            onClose(); // Llama a la función pasada por props para cerrar
+            onClose();
         }
     };
 
-    // Efecto para manejar la inicialización/destrucción de Flickity y listeners
     useEffect(() => {
-        let timerId = null; // Para guardar el ID del setTimeout
+        let timerId = null;
 
         if (isOpen) {
-            // Añadir listener para clic fuera cuando el modal está abierto
             document.addEventListener('mousedown', handleClickOutside);
-
-            // Inicializar Flickity usando setTimeout para esperar el renderizado completo
             timerId = setTimeout(() => {
-                // Solo inicializar si el elemento existe y NO hay una instancia activa
                 if (flickityRef.current && !flktyInstance.current) {
                     flktyInstance.current = new Flickity(flickityRef.current, {
                         cellAlign: 'center',
                         contain: true,
                         pageDots: true,
                         prevNextButtons: true,
-                        wrapAround: true
-                        // imagesLoaded: true // Podría ser útil si las imágenes cargan lento
+                        wrapAround: true,
+                        imagesLoaded: true
                     });
-                     // Forzar un resize inicial después de inicializar
-                     flktyInstance.current.resize();
+                    flktyInstance.current.resize();
                 }
-            }, 0); // El delay de 0ms es suficiente para diferir la ejecución
-
+            }, 0);
         } else {
-            // Limpieza cuando el modal se cierra (isOpen es false)
             document.removeEventListener('mousedown', handleClickOutside);
-
-            // Destruir instancia de Flickity si existe al cerrar explícitamente
             if (flktyInstance.current) {
-                 try {
-                      flktyInstance.current.destroy();
-                 } catch (error) {
-                      console.error("Error destroying Flickity on close:", error);
-                 }
-                flktyInstance.current = null; // Limpiar la referencia
+                try {
+                    flktyInstance.current.destroy();
+                } catch (error) {
+                    console.error("Error destroying Flickity on close:", error);
+                }
+                flktyInstance.current = null;
             }
         }
 
-        // Función de limpieza del efecto (se ejecuta al desmontar o ANTES de re-ejecutar si isOpen cambia)
         return () => {
-            clearTimeout(timerId); // Limpiar el timeout si el componente se desmonta antes de que se ejecute
-            document.removeEventListener('mousedown', handleClickOutside); // Asegurar quitar listener
-
-            // Destruir la instancia de Flickity también aquí por si se desmonta estando abierto
+            clearTimeout(timerId);
+            document.removeEventListener('mousedown', handleClickOutside);
             if (flktyInstance.current) {
-                 try {
-                      flktyInstance.current.destroy();
-                 } catch (error) {
-                      console.error("Error destroying Flickity on cleanup:", error);
-                 }
+                try {
+                    flktyInstance.current.destroy();
+                } catch (error) {
+                    console.error("Error destroying Flickity on cleanup:", error);
+                }
                 flktyInstance.current = null;
             }
         };
-    }, [isOpen]); // La dependencia crucial es isOpen
+    }, [isOpen]);
 
-    // --- Renderizado del Componente ---
-
-    // No renderizar nada si no está abierto o no hay producto
     if (!isOpen || !producto) return null;
 
-    // Lógica para compartir y copiar (sin cambios)
-    const urlProducto = `${window.location.origin}/producto/${producto.id}`;
+    const urlProducto = `${window.location.origin}/producto/${producto.id}`; // Changed to /producto/:id
 
     const handleCopyLink = () => {
-        navigator.clipboard.writeText(urlProducto)
-            .then(() => notifyCopiar())
-            .catch((error) => console.error('Error al copiar el enlace:', error));
+        const el = document.createElement('textarea');
+        el.value = urlProducto;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        notifyCopiar();
     };
 
     const handleNativeShare = () => {
         if (navigator.share) {
             navigator.share({ title: producto.nombre, text: `Mira este producto: ${producto.nombre}`, url: urlProducto })
-            .then(() => console.log('Compartido exitosamente'))
-            .catch((error) => console.error('Error al compartir:', error));
+                .then(() => console.log('Compartido exitosamente'))
+                .catch((error) => console.error('Error al compartir:', error));
         } else {
-             handleCopyLink();
-             alert('Tu navegador no soporta la función de compartir. Se ha copiado el enlace.');
+            handleCopyLink();
+            Swal.fire({
+                title: "Función no soportada",
+                text: "Tu navegador no soporta la función de compartir. Se ha copiado el enlace al portapapeles.",
+                icon: "info",
+                confirmButtonColor: '#0b369c',
+            });
         }
     };
 
-    // Preparar imágenes para el carrusel
     const imagenesCarousel = [producto.imagen, producto.imagenB, producto.imagenC].filter(Boolean);
-    const fallbackImage = "https://via.placeholder.com/400?text=Imagen+no+disponible"; // Reemplaza con tu imagen por defecto
+    const fallbackImage = "https://placehold.co/400x400/E0E0E0/808080?text=Imagen+no+disponible";
 
-    // Estructura JSX (sin cambios respecto a la versión anterior con columnas)
     return (
         <div className={`modal ${isOpen ? 'fade-in-up' : ''}`}>
             <div className="modal-content" ref={modalRef}>
@@ -120,7 +112,7 @@ const ModalProducto = ({ producto, isOpen, onClose, addToCart, existsInCart, not
                                 ))
                             ) : (
                                 <div className="carousel-cell">
-                                     <img src={fallbackImage} alt="Producto sin imagen" />
+                                    <img src={fallbackImage} alt="Producto sin imagen" />
                                 </div>
                             )}
                         </div>
@@ -128,7 +120,14 @@ const ModalProducto = ({ producto, isOpen, onClose, addToCart, existsInCart, not
                     <div className="modal-body-column">
                         <div className="modal-header">
                             <h2>{producto.nombre}</h2>
-                            {producto.stock > 0 ? (
+                            {producto.hasVariations ? (
+                                <button
+                                    onClick={() => { onClose(); navigate(`/producto/${producto.id}`); }} // Changed to /producto/:id
+                                    className="add-to-cart"
+                                >
+                                    Ver Detalles y Opciones
+                                </button>
+                            ) : producto.stock > 0 ? (
                                 <button onClick={() => addToCart(producto)} className="add-to-cart" disabled={existsInCart}>
                                     <FiShoppingCart size={18} /> {existsInCart ? "En carrito" : "Agregar al carrito"}
                                 </button>
@@ -137,17 +136,23 @@ const ModalProducto = ({ producto, isOpen, onClose, addToCart, existsInCart, not
                             )}
                         </div>
                         <div className="modal-body">
-                            <p className="product-price">${producto.precio}</p>
-                            <p>{producto.descripcion}</p>
-                             <div className="product-details">
-                                {producto.categoria && (<><strong>Categoría:</strong> {producto.categoria}<br /></>)}
-                                {producto.subcategoria && (<><strong>Subcategoría:</strong> {producto.subcategoria}<br /></>)}
-                                <strong>Disponibilidad:</strong> {producto.stock > 0 ? `${producto.stock} unidades` : 'Agotado'}
-                             </div>
+                            {producto.hasVariations ? (
+                                <p className="info-message">Este producto tiene variaciones (ej. talla, color). Por favor, haz clic en "Ver Detalles y Opciones" para seleccionarlas.</p>
+                            ) : (
+                                <>
+                                    <p className="product-price">${producto.precio}</p>
+                                    <p>{producto.descripcion}</p>
+                                    <div className="product-details">
+                                        {producto.categoria && (<><strong>Categoría:</strong> {producto.categoria}<br /></>)}
+                                        {producto.subcategoria && (<><strong>Subcategoría:</strong> {producto.subcategoria}<br /></>)}
+                                        <strong>Disponibilidad:</strong> {producto.stock > 0 ? `${producto.stock} unidades` : 'Agotado'}
+                                    </div>
+                                </>
+                            )}
                             <div className="share-buttons">
                                 <button onClick={handleNativeShare}><FiShare2 /> Compartir</button>
                                 <button onClick={handleCopyLink} className="hiddenInMobile"><FiCopy /> Copiar Enlace</button>
-                             </div>
+                            </div>
                         </div>
                     </div>
                 </div>
