@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase/config';
 
 export const AuthContext = createContext();
@@ -23,7 +23,9 @@ export const AuthProvider = ({ children }) => {
             uid: user.uid,
             nombre: nombre,
             email: email,
-            createdAt: new Date()
+            createdAt: serverTimestamp(),
+            provider: "email/password",
+            role: "baseCustomer"
         });
         
         return userCredential;
@@ -46,7 +48,9 @@ export const AuthProvider = ({ children }) => {
                 uid: user.uid,
                 nombre: user.displayName,
                 email: user.email,
-                createdAt: new Date()
+                createdAt: serverTimestamp(),
+                provider: "google",
+                role: "baseCustomer"
             });
         }
         return result;
