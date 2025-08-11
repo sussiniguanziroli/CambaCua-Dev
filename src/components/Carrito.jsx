@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useCarrito } from '../context/CarritoContext';
 import { useAuth } from '../context/AuthContext'; 
 import { FaTrashAlt, FaArrowLeft, FaPlus, FaMinus } from 'react-icons/fa';
@@ -13,6 +13,43 @@ const Carrito = () => {
     const { carrito, eliminarDelCarrito, actualizarCantidad, vaciarCarrito, calcularTotal } = useCarrito();
     const { currentUser } = useAuth(); 
     const navigate = useNavigate(); 
+    const [productosInfo, setProductosInfo] = useState({});
+
+    useEffect(() => {
+        const cargarDatosFaltantes = async () => {
+            const nuevosDatos = {};
+            for (const item of carrito) {
+                if (!item.name || !item.imageUrl || !item.price) {
+                    const ref = doc(db, 'productos', item.id);
+                    const snap = await getDoc(ref);
+                    if (snap.exists()) {
+                        const data = snap.data();
+                        if (data.hasVariations && item.variationId) {
+                            const variacion = data.variationsList.find(v => v.id === item.variationId);
+                            if (variacion) {
+                                nuevosDatos[item.id + (item.variationId || '')] = {
+                                    name: data.nombre,
+                                    imageUrl: variacion.imagen || data.imagen,
+                                    price: variacion.precio,
+                                    attributes: variacion.attributes || {},
+                                    hasVariations: true
+                                };
+                            }
+                        } else {
+                            nuevosDatos[item.id] = {
+                                name: data.nombre,
+                                imageUrl: data.imagen,
+                                price: data.precio,
+                                hasVariations: false
+                            };
+                        }
+                    }
+                }
+            }
+            setProductosInfo(prev => ({ ...prev, ...nuevosDatos }));
+        };
+        cargarDatosFaltantes();
+    }, [carrito]);
 
     const handleContinuarCompra = () => {
         if (!currentUser) {
@@ -132,49 +169,56 @@ const Carrito = () => {
             ) : (
                 <div className="carrito-content">
                     <div className="carrito-items-list">
-                        {carrito.map(item => (
+                        {carrito.map(item => {
+                            const fallback = productosInfo[item.id + (item.variationId || '')] || productosInfo[item.id] || {};
+                            const nombre = item.name || fallback.name || 'Producto';
+                            const imagen = item.imageUrl || fallback.imageUrl || '';
+                            const precio = item.price ?? fallback.price ?? 0;
+                            const attrs = item.attributes || fallback.attributes || {};
+                            const hasVars = item.hasVariations ?? fallback.hasVariations;
 
-                            <div key={item.id + (item.variationId || '')} className="carrito-item">
-                                <img src={item.imageUrl} alt={item.name} className="item-image"/>
-                                <div className="item-details">
-                                    <h2 className="item-name">{item.name}</h2>
-                                    {item.hasVariations && item.attributes && (
-                                        <p className="item-variation-attrs">
-                                            {}
-                                            {Object.entries(item.attributes).map(([key, value]) => (
-                                                `${key}: ${value}`
-                                            )).join(' | ')}
-                                        </p>
-                                    )}
-                                    <p className="item-price">Precio: ${item.price?.toFixed(2)}</p>
-                                    <div className="item-quantity">
-                                        <label htmlFor={`cantidad-${item.id}-${item.variationId || ''}`}>Cantidad:</label>
-                                        <div className="quantity-controls">
-                                             <button onClick={() => handleCantidadChange(item.id, item.quantity - 1, item.variationId)} aria-label="Restar uno">
-                                                <FaMinus />
-                                            </button>
-                                            <input
-                                                id={`cantidad-${item.id}-${item.variationId || ''}`}
-                                                type="number"
-                                                className="cantidad-input"
-                                                value={item.quantity}
-                                                onChange={(e) => handleInputChange(item.id, e, item.variationId)}
-                                                aria-label="Cantidad"
-                                                min="1"
-                                                max={item.stock} 
-                                            />
-                                            <button onClick={() => handleCantidadChange(item.id, item.quantity + 1, item.variationId)} aria-label="Sumar uno">
-                                                <FaPlus />
-                                            </button>
+                            return (
+                                <div key={item.id + (item.variationId || '')} className="carrito-item">
+                                    <img src={imagen} alt={nombre} className="item-image"/>
+                                    <div className="item-details">
+                                        <h2 className="item-name">{nombre}</h2>
+                                        {hasVars && attrs && Object.keys(attrs).length > 0 && (
+                                            <p className="item-variation-attrs">
+                                                {Object.entries(attrs).map(([key, value]) => (
+                                                    `${key}: ${value}`
+                                                )).join(' | ')}
+                                            </p>
+                                        )}
+                                        <p className="item-price">Precio: ${precio.toFixed(2)}</p>
+                                        <div className="item-quantity">
+                                            <label htmlFor={`cantidad-${item.id}-${item.variationId || ''}`}>Cantidad:</label>
+                                            <div className="quantity-controls">
+                                                 <button onClick={() => handleCantidadChange(item.id, item.quantity - 1, item.variationId)} aria-label="Restar uno">
+                                                    <FaMinus />
+                                                </button>
+                                                <input
+                                                    id={`cantidad-${item.id}-${item.variationId || ''}`}
+                                                    type="number"
+                                                    className="cantidad-input"
+                                                    value={item.quantity}
+                                                    onChange={(e) => handleInputChange(item.id, e, item.variationId)}
+                                                    aria-label="Cantidad"
+                                                    min="1"
+                                                    max={item.stock} 
+                                                />
+                                                <button onClick={() => handleCantidadChange(item.id, item.quantity + 1, item.variationId)} aria-label="Sumar uno">
+                                                    <FaPlus />
+                                                </button>
+                                            </div>
                                         </div>
+                                        <p className="item-subtotal">Subtotal: <strong>${(precio * item.quantity).toFixed(2)}</strong></p>
                                     </div>
-                                    <p className="item-subtotal">Subtotal: <strong>${(item.price * item.quantity)?.toFixed(2)}</strong></p>
+                                    <button className="item-delete-button" onClick={() => eliminarDelCarrito(item.id, item.variationId)} aria-label={`Eliminar ${nombre}`}>
+                                        <FaTrashAlt />
+                                    </button>
                                 </div>
-                                <button className="item-delete-button" onClick={() => eliminarDelCarrito(item.id, item.variationId)} aria-label={`Eliminar ${item.name}`}>
-                                    <FaTrashAlt />
-                                </button>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                     <div className="carrito-summary">
                          <div className="total-section">
