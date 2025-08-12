@@ -1,11 +1,11 @@
 /*
   File: OrderConfirmation.jsx
   Description: Confirms and submits the final order.
-  Status: DEBUGGING ADDED. Console logs have been added to inspect the
-          final 'pedido' object before it's saved to Firestore.
+  Status: FEATURE UPDATED. Points system is now a toggle (all or nothing)
+          instead of a manual input, simplifying the user experience.
 */
 import React, { useState, useEffect } from 'react';
-import { collection, addDoc, Timestamp, writeBatch, doc, getDoc } from 'firebase/firestore';
+import { collection, addDoc, Timestamp, writeBatch, doc, getDoc, increment } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import Swal from 'sweetalert2';
 import { useCarrito } from '../../context/CarritoContext';
@@ -13,14 +13,39 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import DeliveryCostCalculator from '../utils/DeliveryCostCalculator';
 import { isStoreOpen } from '../utils/isStoreOpen';
+import { FaGift } from 'react-icons/fa';
 
 const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryCost, onBack }) => {
     const { carrito, vaciarCarrito } = useCarrito();
     const { currentUser } = useAuth();
     const navigate = useNavigate();
     const [isSubmitting, setIsSubmitting] = useState(false);
-    
     const [productosInfo, setProductosInfo] = useState({});
+    
+    // State for points system
+    const [userScore, setUserScore] = useState(0);
+    const [applyPoints, setApplyPoints] = useState(false); // Replaces pointsToUse and discount
+
+    const productsTotal = carrito.reduce((acc, item) => {
+        const itemKey = item.id + (item.variationId || '');
+        const info = productosInfo[itemKey] || {};
+        const price = item.price ?? info.price ?? 0;
+        return acc + (price * item.quantity);
+    }, 0);
+
+    // Fetch user points
+    useEffect(() => {
+        const fetchUserScore = async () => {
+            if (currentUser) {
+                const userRef = doc(db, 'users', currentUser.uid);
+                const userSnap = await getDoc(userRef);
+                if (userSnap.exists()) {
+                    setUserScore(userSnap.data().score || 0);
+                }
+            }
+        };
+        fetchUserScore();
+    }, [currentUser]);
 
     useEffect(() => {
         const fetchMissingDetails = async () => {
@@ -29,15 +54,12 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
 
             for (const item of carrito) {
                 const itemKey = item.id + (item.variationId || '');
-                
                 if (!item.price || !item.name || !item.imageUrl) {
                     const productRef = doc(db, 'productos', item.id);
                     const productSnap = await getDoc(productRef);
-
                     if (productSnap.exists()) {
                         const productData = productSnap.data();
                         const fetchedDetails = {};
-
                         if (productData.hasVariations && item.variationId) {
                             const variation = productData.variationsList.find(v => v.id === item.variationId);
                             if (variation) {
@@ -51,7 +73,6 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
                             fetchedDetails.name = productData.nombre;
                             fetchedDetails.imageUrl = productData.imagen;
                         }
-
                         if (Object.keys(fetchedDetails).length > 0) {
                             newInfo[itemKey] = fetchedDetails;
                             needsUpdate = true;
@@ -63,34 +84,15 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
                 setProductosInfo(prev => ({ ...prev, ...newInfo }));
             }
         };
-
         if (carrito.length > 0) {
             fetchMissingDetails();
         }
     }, [carrito]);
 
-    const productsTotal = carrito.reduce((acc, item) => {
-        const itemKey = item.id + (item.variationId || '');
-        const info = productosInfo[itemKey] || {};
-        const price = item.price ?? info.price ?? 0;
-        return acc + (price * item.quantity);
-    }, 0);
-
-    useEffect(() => {
-        if (!currentUser) {
-            Swal.fire({
-                title: 'Necesitas iniciar sesión',
-                text: 'Para finalizar la compra, por favor inicia sesión o crea una cuenta.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Ir a Iniciar Sesión',
-                cancelButtonText: 'Volver',
-            }).then((result) => {
-                if (result.isConfirmed) navigate('/auth');
-                else navigate('/carrito');
-            });
-        }
-    }, [currentUser, navigate]);
+    // Simplified discount calculation
+    const maxDiscount = Math.min(userScore, productsTotal);
+    const discountAmount = applyPoints ? maxDiscount : 0;
+    const finalTotal = productsTotal - discountAmount;
 
     const proceedWithOrder = async (isScheduled = false) => {
         setIsSubmitting(true);
@@ -100,17 +102,11 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
         const finalCarrito = carrito.map(item => {
             const itemKey = item.id + (item.variationId || '');
             const info = productosInfo[itemKey] || {};
-            // Ensure every field has a valid fallback to prevent 'undefined'
             return {
-                id: item.id,
-                quantity: item.quantity,
-                hasVariations: item.hasVariations ?? false,
-                variationId: item.variationId || null,
-                name: item.name ?? info.name ?? 'Nombre no disponible',
-                price: item.price ?? info.price ?? 0,
-                imageUrl: item.imageUrl ?? info.imageUrl ?? null,
-                attributes: item.attributes ?? info.attributes ?? null,
-                stock: item.stock ?? 0, // Ensure stock is not undefined
+                id: item.id, quantity: item.quantity, hasVariations: item.hasVariations ?? false,
+                variationId: item.variationId || null, name: item.name ?? info.name ?? 'Nombre no disponible',
+                price: item.price ?? info.price ?? 0, imageUrl: item.imageUrl ?? info.imageUrl ?? null,
+                attributes: item.attributes ?? info.attributes ?? null, stock: item.stock ?? 0,
             };
         });
 
@@ -118,34 +114,23 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
             for (const item of finalCarrito) {
                 const productoRef = doc(db, 'productos', item.id);
                 const productoSnap = await getDoc(productoRef);
-
                 if (productoSnap.exists()) {
                     const productData = productoSnap.data();
                     let currentStock = 0;
-
                     if (productData.hasVariations === true && productData.variationsList) {
                         const variation = productData.variationsList.find(v => v.id === item.variationId);
-                        if (variation) {
-                            currentStock = variation.stock || 0;
-                        } else {
-                            stockInsuficiente = true;
-                            Swal.fire('Variación no encontrada', `La variación de ${item.name} ya no está disponible.`, 'error');
-                            throw new Error("Variation not found");
-                        }
+                        if (variation) { currentStock = variation.stock || 0; } 
+                        else { stockInsuficiente = true; throw new Error("Variation not found"); }
                     } else {
                         currentStock = productData.stock || 0;
                     }
-
                     if (item.quantity > currentStock) {
                         stockInsuficiente = true;
                         Swal.fire('Stock insuficiente', `No hay suficiente stock para ${item.name}. Solo quedan ${currentStock} unidades.`, 'error');
                         throw new Error("Insufficient stock");
                     }
-
                     if (productData.hasVariations === true && productData.variationsList) {
-                        const newVariationsList = productData.variationsList.map(v =>
-                            v.id === item.variationId ? { ...v, stock: v.stock - item.quantity } : v
-                        );
+                        const newVariationsList = productData.variationsList.map(v => v.id === item.variationId ? { ...v, stock: v.stock - item.quantity } : v);
                         batch.update(productoRef, { variationsList: newVariationsList });
                     } else {
                         batch.update(productoRef, { stock: currentStock - item.quantity });
@@ -158,42 +143,27 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
             }
 
             const pedido = {
-                userId: currentUser.uid,
-                email: currentUser.email,
-                nombre: formData.nombre || null,
-                direccion: formData.direccion || null,
-                indicaciones: formData.indicaciones || null,
-                telefono: formData.telefono || null,
-                placeId: formData.placeId || null,
-                productos: finalCarrito,
-                total: productsTotal,
-                costoEnvio: deliveryCost,
-                fecha: Timestamp.now(),
+                userId: currentUser.uid, email: currentUser.email, ...formData,
+                productos: finalCarrito, total: productsTotal,
+                puntosDescontados: discountAmount, totalConDescuento: finalTotal,
+                costoEnvio: deliveryCost, fecha: Timestamp.now(),
                 estado: isScheduled ? 'Programado' : 'Pendiente',
-                metodoPago: paymentMethod,
-                programado: isScheduled,
+                metodoPago: paymentMethod, programado: isScheduled,
             };
-
-            // --- DEBUGGING LOG ---
-            // This will print the exact object being sent to Firestore.
-            console.log("Attempting to save the following order object to Firestore:");
-            console.log(JSON.stringify(pedido, null, 2));
+            
+            if (discountAmount > 0) {
+                const userRef = doc(db, 'users', currentUser.uid);
+                batch.update(userRef, { score: increment(-discountAmount) });
+            }
 
             const docRef = await addDoc(collection(db, 'pedidos'), pedido);
             await batch.commit();
             vaciarCarrito();
-            await Swal.fire({
-                title: "¡Pedido Confirmado!",
-                text: `Tu pedido #${docRef.id} ha sido registrado.`,
-                icon: "success",
-                timer: 2500,
-                showConfirmButton: false,
-            });
+            await Swal.fire({ title: "¡Pedido Confirmado!", text: `Tu pedido #${docRef.id} ha sido registrado.`, icon: "success", timer: 2500, showConfirmButton: false });
             navigate(`/order-summary/${docRef.id}`);
 
         } catch (error) {
-            // --- DEBUGGING LOG ---
-            console.error("FULL FIREBASE ERROR:", error);
+            console.error("Error confirming order:", error);
             if (!stockInsuficiente) {
                  Swal.fire("Error", "Ocurrió un problema al procesar tu pedido. Revisa la consola para más detalles.", "error");
             }
@@ -260,18 +230,13 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
                         const name = item.name ?? info.name ?? 'Cargando...';
                         const imageUrl = item.imageUrl ?? info.imageUrl ?? 'https://placehold.co/100x100/eee/ccc?text=...';
                         const attributes = item.attributes ?? info.attributes ?? {};
-
                         return (
                             <div key={itemKey} className="checkout-item">
                                 <div className="product-details">
                                     <img src={imageUrl} alt={name} />
                                     <div className="product-info">
                                         <h3>{name}</h3>
-                                        {item.hasVariations && attributes && Object.keys(attributes).length > 0 && (
-                                            <p className="item-variation-attrs">
-                                                {Object.entries(attributes).map(([key, value]) => `${key}: ${value}`).join(' | ')}
-                                            </p>
-                                        )}
+                                        {item.hasVariations && attributes && Object.keys(attributes).length > 0 && (<p className="item-variation-attrs">{Object.entries(attributes).map(([key, value]) => `${key}: ${value}`).join(' | ')}</p>)}
                                         <p>Cant: {item.quantity}</p>
                                     </div>
                                 </div>
@@ -281,10 +246,35 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
                     })}
                 </div>
 
+                <div className="points-discount-section">
+                    <h4><FaGift /> Tienes {userScore} Puntos</h4>
+                    {userScore > 0 && (
+                        <>
+                            <p>Puedes usar tus puntos para obtener un descuento de hasta ${maxDiscount.toLocaleString('es-ar')}.</p>
+                            <button 
+                                onClick={() => setApplyPoints(!applyPoints)} 
+                                className={`points-toggle-button ${applyPoints ? 'active' : ''}`}
+                            >
+                                {applyPoints ? 'Quitar Descuento' : 'Usar Puntos'}
+                            </button>
+                        </>
+                    )}
+                </div>
+
                 <div className="order-total-summary">
+                    <div className="total-row">
+                        <span>Subtotal:</span>
+                        <span>${productsTotal.toLocaleString('es-ar')}</span>
+                    </div>
+                    {discountAmount > 0 && (
+                        <div className="total-row discount">
+                            <span>Descuento por Puntos:</span>
+                            <span>-${discountAmount.toLocaleString('es-ar')}</span>
+                        </div>
+                    )}
                     <div className="total-row grand-total">
                         <span>Total de Productos:</span>
-                        <span>${productsTotal.toLocaleString('es-ar')}</span>
+                        <span>${finalTotal.toLocaleString('es-ar')}</span>
                     </div>
                     <p className="payment-method-notice">A pagar por {paymentMethod}.</p>
                 </div>

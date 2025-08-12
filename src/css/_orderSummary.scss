@@ -8,16 +8,31 @@
   font-family: 'Poppins', sans-serif;
   position: relative; // Needed for positioning the menu
 
+  .order-detail.discount {
+        color: #059669;
+        font-weight: 500;
+        span {
+            color: #059669;
+        }
+    }
+    .order-detail.grand-total {
+        font-size: 1.1rem;
+        font-weight: 700;
+        border-top: 1px dashed #ccc;
+        padding-top: 1rem;
+        margin-top: 1rem;
+    }
+
   .summary-actions-header {
     display: flex;
     justify-content: space-between; // Align items
     align-items: center;
     margin-bottom: 1.5rem;
   }
-  
+
   .order-options-menu {
     position: relative;
-    
+
     .options-button {
       background: transparent;
       border: none;

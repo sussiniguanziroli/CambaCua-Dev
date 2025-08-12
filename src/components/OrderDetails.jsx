@@ -1,37 +1,30 @@
+/*
+  File: OrderDetails.jsx
+  Description: Displays a list of the user's past orders.
+  Status: FEATURE ADDED. Now fetches and displays the user's current point balance.
+*/
 import React, { useState, useEffect, useMemo } from 'react';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import { FaSearch, FaSortAmountDown, FaSortAmountUp, FaChevronDown, FaChevronUp } from 'react-icons/fa'; // Added FaChevronDown, FaChevronUp
+import { FaSearch, FaChevronDown, FaChevronUp, FaGift } from 'react-icons/fa';
 
-// Component to display individual product details within an order
 const OrderProductItem = ({ item }) => (
     <div className="order-product-item">
         <img src={item.imageUrl} alt={item.name} className="product-image"/>
         <div className="product-info">
             <h4>{item.name}</h4>
-            {item.hasVariations && item.attributes && (
-                <p className="product-variation-attrs">
-                    {Object.entries(item.attributes).map(([key, value]) => (
-                        `${key}: ${value}`
-                    )).join(' | ')}
-                </p>
-            )}
-            <div className="product-meta">
-                <span>${item.price?.toFixed(2)} c/u</span>
-                <span>Cant: {item.quantity}</span>
-            </div>
+            {item.hasVariations && item.attributes && (<p className="product-variation-attrs">{Object.entries(item.attributes).map(([key, value]) => `${key}: ${value}`).join(' | ')}</p>)}
+            <div className="product-meta"><span>${item.price?.toFixed(2)} c/u</span><span>Cant: {item.quantity}</span></div>
         </div>
-        <div className="product-subtotal">
-            ${(item.price * item.quantity)?.toFixed(2)}
-        </div>
+        <div className="product-subtotal">${(item.price * item.quantity)?.toFixed(2)}</div>
     </div>
 );
 
-// Main Order History Item component
 const OrderHistoryItem = ({ order }) => {
     const [isExpanded, setIsExpanded] = useState(false);
+    const totalFinal = order.totalConDescuento ?? order.total;
 
     return (
         <div className="order-history-item">
@@ -41,22 +34,16 @@ const OrderHistoryItem = ({ order }) => {
                     <span className="order-date">{order.fecha}</span>
                 </div>
                 <div className="order-details-right">
-                    <span className="order-total">${order.total.toFixed(2)}</span>
+                    <span className="order-total">${totalFinal.toFixed(2)}</span>
                     <span className={`status-badge ${order.estado.toLowerCase()}`}>{order.estado}</span>
-                    <button className="expand-button">
-                        {isExpanded ? <FaChevronUp /> : <FaChevronDown />}
-                    </button>
+                    <button className="expand-button">{isExpanded ? <FaChevronUp /> : <FaChevronDown />}</button>
                 </div>
             </div>
             {isExpanded && (
                 <div className="order-details-expanded">
                     <div className="expanded-section">
                         <h4>Productos del Pedido:</h4>
-                        <div className="order-products-list">
-                            {order.productos.map((item, index) => (
-                                <OrderProductItem key={item.id + (item.variationId || '')} item={item} />
-                            ))}
-                        </div>
+                        <div className="order-products-list">{order.productos.map((item) => (<OrderProductItem key={item.id + (item.variationId || '')} item={item} />))}</div>
                     </div>
                     <div className="expanded-section">
                         <h4>Detalles de Envío:</h4>
@@ -66,6 +53,12 @@ const OrderHistoryItem = ({ order }) => {
                         <p><strong>Método de Pago:</strong> {order.metodoPago}</p>
                         {order.costoEnvio > 0 && <p><strong>Costo de Envío:</strong> ${order.costoEnvio.toFixed(2)}</p>}
                     </div>
+                     {order.puntosDescontados > 0 && (
+                         <div className="expanded-section">
+                            <h4>Descuentos</h4>
+                            <p><strong>Puntos Usados:</strong> {order.puntosDescontados} (${order.puntosDescontados.toFixed(2)})</p>
+                        </div>
+                    )}
                     <Link to={`/order-summary/${order.id}`} className="details-link">Ver Resumen Completo</Link>
                 </div>
             )}
@@ -76,83 +69,61 @@ const OrderHistoryItem = ({ order }) => {
 const OrderDetails = () => {
     const { currentUser } = useAuth();
     const [allOrders, setAllOrders] = useState([]);
+    const [userScore, setUserScore] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [sortOption, setSortOption] = useState('date-desc');
 
     useEffect(() => {
-        if (!currentUser) {
-            setLoading(false);
-            return;
-        }
+        if (!currentUser) { setLoading(false); return; }
 
-        const fetchOrders = async () => {
+        const fetchData = async () => {
             setLoading(true);
             setError('');
             try {
+                const userRef = doc(db, "users", currentUser.uid);
+                const userSnap = await getDoc(userRef);
+                if (userSnap.exists()) { setUserScore(userSnap.data().score || 0); }
+
                 const q1 = query(collection(db, "pedidos"), where("userId", "==", currentUser.uid));
                 const q2 = query(collection(db, "pedidos_completados"), where("userId", "==", currentUser.uid));
-
-                const [pedidosSnap, completadosSnap] = await Promise.all([
-                    getDocs(q1),
-                    getDocs(q2)
-                ]);
-
+                const [pedidosSnap, completadosSnap] = await Promise.all([getDocs(q1), getDocs(q2)]);
+                
                 const fetchedOrders = [];
                 pedidosSnap.forEach(doc => fetchedOrders.push({ id: doc.id, ...doc.data() }));
                 completadosSnap.forEach(doc => fetchedOrders.push({ id: doc.id, ...doc.data() }));
-
-                const formattedOrders = fetchedOrders.map(order => ({
-                    ...order,
-                    fecha: new Date(order.fecha.seconds * 1000)
-                }));
                 
+                const formattedOrders = fetchedOrders.map(order => ({ ...order, fecha: new Date(order.fecha.seconds * 1000) }));
                 setAllOrders(formattedOrders);
 
             } catch (err) {
-                console.error("Error fetching user orders:", err);
-                setError('No se pudieron cargar tus compras. Inténtalo de nuevo.');
+                console.error("Error fetching user data:", err);
+                setError('No se pudieron cargar tus datos. Inténtalo de nuevo.');
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchOrders();
+        fetchData();
     }, [currentUser]);
 
     const filteredAndSortedOrders = useMemo(() => {
         let orders = [...allOrders];
-
-        if (searchTerm) {
-            orders = orders.filter(order => order.id.toLowerCase().includes(searchTerm.toLowerCase()));
-        }
-
+        if (searchTerm) { orders = orders.filter(order => order.id.toLowerCase().includes(searchTerm.toLowerCase())); }
         orders.sort((a, b) => {
             switch (sortOption) {
-                case 'date-asc':
-                    return a.fecha - b.fecha;
-                case 'total-desc':
-                    return b.total - a.total;
-                case 'total-asc':
-                    return a.total - b.total;
-                case 'date-desc':
-                default:
-                    return b.fecha - a.fecha;
+                case 'date-asc': return a.fecha - b.fecha;
+                case 'total-desc': return (b.totalConDescuento ?? b.total) - (a.totalConDescuento ?? a.total);
+                case 'total-asc': return (a.totalConDescuento ?? a.total) - (b.totalConDescuento ?? b.total);
+                case 'date-desc': default: return b.fecha - a.fecha;
             }
         });
-        
         return orders.map(order => ({...order, fecha: order.fecha.toLocaleDateString('es-AR')}));
-
     }, [allOrders, searchTerm, sortOption]);
 
-    if (loading) {
-        return <div className="order-details-container"><div className='css-loader'></div><h5 className="loader">Cargando tus compras...</h5></div>;
-    }
-
-    if (error) {
-        return <div className="order-details-container"><p className="error-message">{error}</p></div>;
-    }
+    if (loading) { return <div className="order-details-container"><div className='css-loader'></div><h5 className="loader">Cargando...</h5></div>; }
+    if (error) { return <div className="order-details-container"><p className="error-message">{error}</p></div>; }
 
     return (
         <div className="order-details-container my-purchases-container">
@@ -161,15 +132,15 @@ const OrderDetails = () => {
                 <p>Aquí encontrarás el historial de todos tus pedidos.</p>
             </div>
 
+            <div className="user-score-display">
+                <FaGift />
+                <span>Tus Puntos: <strong>{userScore}</strong></span>
+            </div>
+
             <div className="controls-bar">
                 <div className="search-control">
                     <FaSearch />
-                    <input
-                        type="text"
-                        placeholder="Buscar por N° de pedido..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+                    <input type="text" placeholder="Buscar por N° de pedido..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                 </div>
                 <div className="sort-control">
                     <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
@@ -186,10 +157,7 @@ const OrderDetails = () => {
                     filteredAndSortedOrders.map(order => <OrderHistoryItem key={order.id} order={order} />)
                 ) : (
                     <div className="no-orders-found">
-                        {searchTerm 
-                            ? <p>No se encontraron pedidos que coincidan con tu búsqueda.</p>
-                            : <p>Aún no has realizado ninguna compra.</p>
-                        }
+                        {searchTerm ? <p>No se encontraron pedidos.</p> : <p>Aún no has realizado ninguna compra.</p> }
                         <Link to="/productos" className="shop-now-button">Ir a la Tienda</Link>
                     </div>
                 )}

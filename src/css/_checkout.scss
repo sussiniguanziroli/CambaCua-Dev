@@ -279,6 +279,57 @@
     box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
     margin: 2rem 0;
 
+   
+    .points-discount-section {
+        background-color: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin: 2rem 0;
+        color: #14532d;
+        text-align: center;
+
+        h4 {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        p {
+            margin: 0 0 1rem 0;
+            font-size: 0.95rem;
+        }
+
+        .points-toggle-button {
+            padding: 0.75rem 2rem;
+            background-color: #059669;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+
+            &:hover {
+                background-color: #047857;
+                transform: translateY(-2px);
+            }
+
+            &.active {
+                background-color: #ef4444; // Red color when active
+
+                &:hover {
+                    background-color: #dc2626;
+                }
+            }
+        }
+    }
     h2 {
         color: $azul-cambacua;
         margin-bottom: 1.5rem;
@@ -560,6 +611,15 @@
     margin-top: 2rem;
     border-top: 2px solid #686a6e;
     padding-top: 1.5rem;
+
+     .total-row.discount {
+            color: #059669; // Green color for discount text
+            font-weight: 500;
+
+            span:last-child {
+                color: #059669;
+            }
+        }
 
     .total-row {
         display: flex;

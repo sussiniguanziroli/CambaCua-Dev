@@ -2435,6 +2435,64 @@ html {
   box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
   margin: 2rem 0;
 }
+.checkout-form-container .points-discount-section,
+.payment-method-container .points-discount-section,
+.order-confirmation-container .points-discount-section {
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+  color: #14532d;
+  text-align: center;
+}
+.checkout-form-container .points-discount-section h4,
+.payment-method-container .points-discount-section h4,
+.order-confirmation-container .points-discount-section h4 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+.checkout-form-container .points-discount-section p,
+.payment-method-container .points-discount-section p,
+.order-confirmation-container .points-discount-section p {
+  margin: 0 0 1rem 0;
+  font-size: 0.95rem;
+}
+.checkout-form-container .points-discount-section .points-toggle-button,
+.payment-method-container .points-discount-section .points-toggle-button,
+.order-confirmation-container .points-discount-section .points-toggle-button {
+  padding: 0.75rem 2rem;
+  background-color: #059669;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+.checkout-form-container .points-discount-section .points-toggle-button:hover,
+.payment-method-container .points-discount-section .points-toggle-button:hover,
+.order-confirmation-container .points-discount-section .points-toggle-button:hover {
+  background-color: #047857;
+  transform: translateY(-2px);
+}
+.checkout-form-container .points-discount-section .points-toggle-button.active,
+.payment-method-container .points-discount-section .points-toggle-button.active,
+.order-confirmation-container .points-discount-section .points-toggle-button.active {
+  background-color: #ef4444;
+}
+.checkout-form-container .points-discount-section .points-toggle-button.active:hover,
+.payment-method-container .points-discount-section .points-toggle-button.active:hover,
+.order-confirmation-container .points-discount-section .points-toggle-button.active:hover {
+  background-color: #dc2626;
+}
 .checkout-form-container h2,
 .payment-method-container h2,
 .order-confirmation-container h2 {
@@ -2705,6 +2763,13 @@ html {
   margin-top: 2rem;
   border-top: 2px solid #686a6e;
   padding-top: 1.5rem;
+}
+.order-total-summary .total-row.discount {
+  color: #059669;
+  font-weight: 500;
+}
+.order-total-summary .total-row.discount span:last-child {
+  color: #059669;
 }
 .order-total-summary .total-row {
   display: flex;
@@ -3121,6 +3186,23 @@ html {
   font-size: 1rem;
   color: #555;
 }
+.order-details-container .user-score-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+.order-details-container .user-score-display strong {
+  font-weight: 700;
+}
 .order-details-container .controls-bar {
   width: 100%;
   display: flex;
@@ -3389,6 +3471,20 @@ html {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   font-family: "Poppins", sans-serif;
   position: relative;
+}
+.order-summary-container .order-detail.discount {
+  color: #059669;
+  font-weight: 500;
+}
+.order-summary-container .order-detail.discount span {
+  color: #059669;
+}
+.order-summary-container .order-detail.grand-total {
+  font-size: 1.1rem;
+  font-weight: 700;
+  border-top: 1px dashed #ccc;
+  padding-top: 1rem;
+  margin-top: 1rem;
 }
 .order-summary-container .summary-actions-header {
   display: flex;
