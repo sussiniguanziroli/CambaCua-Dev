@@ -1,25 +1,33 @@
+/*
+  File: Carrito.jsx
+  Description: Displays the shopping cart items to the user.
+  Status: CRITICAL FIX APPLIED. Total calculation is now performed
+          inside the component to ensure it uses the correct, fetched prices.
+*/
 import React, { useEffect, useState } from 'react';
 import { useCarrito } from '../context/CarritoContext';
-import { useAuth } from '../context/AuthContext'; 
+import { useAuth } from '../context/AuthContext';
 import { FaTrashAlt, FaArrowLeft, FaPlus, FaMinus } from 'react-icons/fa';
-import { Link, useNavigate } from 'react-router-dom'; 
+import { Link, useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css'; 
+import 'react-toastify/dist/ReactToastify.css';
 import Swal from 'sweetalert2';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 
 const Carrito = () => {
-    const { carrito, eliminarDelCarrito, actualizarCantidad, vaciarCarrito, calcularTotal } = useCarrito();
-    const { currentUser } = useAuth(); 
-    const navigate = useNavigate(); 
+    // Removed `calcularTotal` as it will be handled locally
+    const { carrito, eliminarDelCarrito, actualizarCantidad, vaciarCarrito } = useCarrito();
+    const { currentUser } = useAuth();
+    const navigate = useNavigate();
     const [productosInfo, setProductosInfo] = useState({});
 
     useEffect(() => {
         const cargarDatosFaltantes = async () => {
             const nuevosDatos = {};
             for (const item of carrito) {
-                if (!item.name || !item.imageUrl || !item.price) {
+                const itemKey = item.id + (item.variationId || '');
+                if (!productosInfo[itemKey] && (!item.name || !item.imageUrl || item.price === null || item.price === undefined)) {
                     const ref = doc(db, 'productos', item.id);
                     const snap = await getDoc(ref);
                     if (snap.exists()) {
@@ -27,29 +35,30 @@ const Carrito = () => {
                         if (data.hasVariations && item.variationId) {
                             const variacion = data.variationsList.find(v => v.id === item.variationId);
                             if (variacion) {
-                                nuevosDatos[item.id + (item.variationId || '')] = {
-                                    name: data.nombre,
-                                    imageUrl: variacion.imagen || data.imagen,
-                                    price: variacion.precio,
-                                    attributes: variacion.attributes || {},
-                                    hasVariations: true
-                                };
+                                nuevosDatos[itemKey] = { name: data.nombre, imageUrl: variacion.imagen || data.imagen, price: variacion.precio, attributes: variacion.attributes || {} };
                             }
                         } else {
-                            nuevosDatos[item.id] = {
-                                name: data.nombre,
-                                imageUrl: data.imagen,
-                                price: data.precio,
-                                hasVariations: false
-                            };
+                            nuevosDatos[itemKey] = { name: data.nombre, imageUrl: data.imagen, price: data.precio };
                         }
                     }
                 }
             }
-            setProductosInfo(prev => ({ ...prev, ...nuevosDatos }));
+            if (Object.keys(nuevosDatos).length > 0) {
+                setProductosInfo(prev => ({ ...prev, ...nuevosDatos }));
+            }
         };
-        cargarDatosFaltantes();
-    }, [carrito]);
+        if (carrito.length > 0) {
+            cargarDatosFaltantes();
+        }
+    }, [carrito, productosInfo]);
+    
+    // CORRECTED: Calculate total locally to ensure correct prices are used.
+    const totalCompra = carrito.reduce((acc, item) => {
+        const itemKey = item.id + (item.variationId || '');
+        const info = productosInfo[itemKey] || {};
+        const precio = item.price ?? info.price ?? 0;
+        return acc + (precio * item.quantity);
+    }, 0);
 
     const handleContinuarCompra = () => {
         if (!currentUser) {
@@ -60,12 +69,8 @@ const Carrito = () => {
                 showCancelButton: true,
                 confirmButtonText: 'Iniciar Sesión',
                 cancelButtonText: 'Cancelar',
-                confirmButtonColor: '#0b369c',
-                cancelButtonColor: '#aaa'
             }).then((result) => {
-                if (result.isConfirmed) {
-                    navigate('/auth');
-                }
+                if (result.isConfirmed) navigate('/auth');
             });
         } else {
             navigate('/checkout');
@@ -76,14 +81,13 @@ const Carrito = () => {
         try {
             const productRef = doc(db, 'productos', productId);
             const productSnap = await getDoc(productRef);
-
             if (productSnap.exists()) {
                 const data = productSnap.data();
-                if (data.hasVariations && variationId && data.variationsList) {
+                if (data.hasVariations === true && variationId && data.variationsList) {
                     const variation = data.variationsList.find(v => v.id === variationId);
-                    return variation ? variation.stock : 0;
+                    return variation ? (variation.stock || 0) : 0;
                 }
-                return data.stock || 0; 
+                return data.stock || 0;
             }
             return 0;
         } catch (error) {
@@ -96,65 +100,40 @@ const Carrito = () => {
     const handleCantidadChange = async (itemId, nuevaCantidad, variationId = null) => {
         const cantidad = parseInt(nuevaCantidad, 10);
         if (isNaN(cantidad) || cantidad <= 0) {
-            eliminarDelCarrito(itemId, variationId); 
-            toast.error("Producto eliminado");
+            eliminarDelCarrito(itemId, variationId);
+            toast.success("Producto eliminado del carrito.");
         } else {
-            const stockDisponible = await obtenerStockDisponible(itemId, variationId); 
+            const stockDisponible = await obtenerStockDisponible(itemId, variationId);
             if (cantidad > stockDisponible) {
-                actualizarCantidad(itemId, stockDisponible, variationId); 
-                toast.info(`Máximo stock disponible: ${stockDisponible}`);
+                actualizarCantidad(itemId, stockDisponible, variationId);
+                toast.warn(`Stock máximo disponible: ${stockDisponible} unidades.`);
             } else {
-                actualizarCantidad(itemId, cantidad, variationId); 
+                actualizarCantidad(itemId, cantidad, variationId);
             }
-        }
-    };
-
-    const handleInputChange = (itemId, event, variationId = null) => {
-        const valorInput = event.target.value;
-        const cantidad = parseInt(valorInput, 10);
-        if (!isNaN(cantidad) && cantidad > 0) {
-            handleCantidadChange(itemId, cantidad, variationId); 
-        } else if (valorInput === "") {
-
-        } else if (!isNaN(cantidad) && cantidad <= 0) {
-            eliminarDelCarrito(itemId, variationId); 
-            toast.error("Producto eliminado");
         }
     };
 
     const handleVaciarCarrito = () => {
         Swal.fire({
             title: '¿Vaciar Carrito?',
-            text: "Se eliminarán todos los productos.",
+            text: "Se eliminarán todos los productos de tu carrito.",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#0b369c',
-            cancelButtonColor: '#dc3545',
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
             confirmButtonText: 'Sí, vaciar',
             cancelButtonText: 'Cancelar',
-            customClass: { popup: 'swal2-popup' }
         }).then((result) => {
             if (result.isConfirmed) {
                 vaciarCarrito();
-                toast.error("Carrito vaciado");
+                toast.error("Carrito vaciado con éxito.");
             }
         });
     };
 
     return (
         <div className="carrito-page">
-            <ToastContainer
-                 position="top-center"
-                 autoClose={2000}
-                 hideProgressBar
-                 newestOnTop={false}
-                 closeOnClick
-                 rtl={false}
-                 pauseOnFocusLoss
-                 draggable
-                 pauseOnHover
-                 theme="colored"
-            />
+            <ToastContainer position="top-center" autoClose={2000} hideProgressBar newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="colored" />
             <Link className='boton-volver' to="/productos">
                 <FaArrowLeft /> <span>Volver a Productos</span>
             </Link>
@@ -170,41 +149,38 @@ const Carrito = () => {
                 <div className="carrito-content">
                     <div className="carrito-items-list">
                         {carrito.map(item => {
-                            const fallback = productosInfo[item.id + (item.variationId || '')] || productosInfo[item.id] || {};
-                            const nombre = item.name || fallback.name || 'Producto';
-                            const imagen = item.imageUrl || fallback.imageUrl || '';
-                            const precio = item.price ?? fallback.price ?? 0;
-                            const attrs = item.attributes || fallback.attributes || {};
-                            const hasVars = item.hasVariations ?? fallback.hasVariations;
+                            const itemKey = item.id + (item.variationId || '');
+                            const info = productosInfo[itemKey] || {};
+                            const nombre = item.name || info.name || 'Cargando...';
+                            const imagen = item.imageUrl || info.imageUrl || 'https://placehold.co/100x100/eee/ccc?text=...';
+                            const precio = item.price ?? info.price ?? 0;
+                            const attrs = item.attributes || info.attributes || {};
 
                             return (
-                                <div key={item.id + (item.variationId || '')} className="carrito-item">
+                                <div key={itemKey} className="carrito-item">
                                     <img src={imagen} alt={nombre} className="item-image"/>
                                     <div className="item-details">
                                         <h2 className="item-name">{nombre}</h2>
-                                        {hasVars && attrs && Object.keys(attrs).length > 0 && (
+                                        {item.hasVariations && Object.keys(attrs).length > 0 && (
                                             <p className="item-variation-attrs">
-                                                {Object.entries(attrs).map(([key, value]) => (
-                                                    `${key}: ${value}`
-                                                )).join(' | ')}
+                                                {Object.entries(attrs).map(([key, value]) => `${key}: ${value}`).join(' | ')}
                                             </p>
                                         )}
                                         <p className="item-price">Precio: ${precio.toFixed(2)}</p>
                                         <div className="item-quantity">
-                                            <label htmlFor={`cantidad-${item.id}-${item.variationId || ''}`}>Cantidad:</label>
+                                            <label htmlFor={`cantidad-${itemKey}`}>Cantidad:</label>
                                             <div className="quantity-controls">
                                                  <button onClick={() => handleCantidadChange(item.id, item.quantity - 1, item.variationId)} aria-label="Restar uno">
                                                     <FaMinus />
                                                 </button>
                                                 <input
-                                                    id={`cantidad-${item.id}-${item.variationId || ''}`}
+                                                    id={`cantidad-${itemKey}`}
                                                     type="number"
                                                     className="cantidad-input"
                                                     value={item.quantity}
-                                                    onChange={(e) => handleInputChange(item.id, e, item.variationId)}
+                                                    onChange={(e) => handleCantidadChange(item.id, e.target.value, item.variationId)}
                                                     aria-label="Cantidad"
                                                     min="1"
-                                                    max={item.stock} 
                                                 />
                                                 <button onClick={() => handleCantidadChange(item.id, item.quantity + 1, item.variationId)} aria-label="Sumar uno">
                                                     <FaPlus />
@@ -223,7 +199,8 @@ const Carrito = () => {
                     <div className="carrito-summary">
                          <div className="total-section">
                              <span className="total-label">Total Compra:</span>
-                             <span className="total-amount">${(calcularTotal()).toFixed(2)}</span>
+                             {/* Use the locally calculated total */}
+                             <span className="total-amount">${totalCompra.toFixed(2)}</span>
                          </div>
                          <div className="actions-section">
                              <button className="vaciar-carrito-button" onClick={handleVaciarCarrito}>

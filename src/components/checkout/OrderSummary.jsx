@@ -1,5 +1,11 @@
+/*
+  File: OrderSummary.jsx
+  Description: Displays the summary of a completed order.
+  Status: CRITICAL FIX APPLIED. Users can now cancel orders with the
+          status 'Programado' (Scheduled).
+*/
 import React, { useEffect, useState } from 'react';
-import { doc, getDoc, writeBatch, setDoc, deleteDoc, increment } from 'firebase/firestore';
+import { doc, getDoc, writeBatch, setDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FaArrowLeft, FaEllipsisV } from 'react-icons/fa';
@@ -42,7 +48,9 @@ const OrderSummary = () => {
     const handleCancelOrder = async () => {
         setMenuOpen(false);
 
-        if (order.estado !== 'Pendiente' && order.estado !== 'Pagado') {
+        // CORRECTED: Allow cancellation for 'Programado' status
+        const cancellableStatuses = ['Pendiente', 'Pagado', 'Programado'];
+        if (!cancellableStatuses.includes(order.estado)) {
             Swal.fire('No se puede cancelar', 'Este pedido ya ha sido procesado o cancelado.', 'info');
             return;
         }
@@ -93,37 +101,22 @@ const OrderSummary = () => {
                     throw new Error("El pedido ya no se encuentra en la lista de pendientes. Puede que ya haya sido procesado por un administrador.");
                 }
 
-                order.productos.forEach(item => {
+                for (const item of order.productos) {
                     const productRef = doc(db, 'productos', item.id);
-                    // For variations, update the specific variation's stock
-                    if (item.hasVariations && item.variationId) {
-                        // This requires fetching the product again to get the current variationsList
-                        // and then updating the specific variation's stock within that list.
-                        // For simplicity and to avoid complex nested array updates in batch,
-                        // this might be better handled by a Cloud Function on the backend
-                        // or by fetching, modifying, and setting the entire variationsList.
-                        // For now, we'll assume a direct increment on the main stock, which is incorrect
-                        // for variations. A robust solution would involve fetching the product,
-                        // finding the variation, updating its stock in the array, and then
-                        // updating the entire variationsList field.
-                        // Given the current setup, we'll need to fetch the product data again
-                        // to correctly update the nested stock.
-                        // This part needs a more robust solution for nested updates in Firestore batches.
-                        // For now, it will increment the main product stock, which is not ideal for variations.
-                        // A more robust solution would be:
-                        // const productDoc = await getDoc(productRef);
-                        // const productData = productDoc.data();
-                        // const updatedVariations = productData.variationsList.map(v =>
-                        //     v.id === item.variationId ? { ...v, stock: v.stock + item.quantity } : v
-                        // );
-                        // batch.update(productRef, { variationsList: updatedVariations });
-                        // For this example, we'll use increment for simplicity, but acknowledge its limitation
-                        // for nested variation stock.
-                        batch.update(productRef, { stock: increment(item.quantity) }); // This is a simplified approach, consider a Cloud Function for robust variation stock management
-                    } else {
-                        batch.update(productRef, { stock: increment(item.quantity) });
+                    const productSnap = await getDoc(productRef);
+
+                    if (productSnap.exists()) {
+                        const productData = productSnap.data();
+                        if (productData.hasVariations === true && item.variationId && productData.variationsList) {
+                            const newVariationsList = productData.variationsList.map(v =>
+                                v.id === item.variationId ? { ...v, stock: (v.stock || 0) + item.quantity } : v
+                            );
+                            batch.update(productRef, { variationsList: newVariationsList });
+                        } else {
+                            batch.update(productRef, { stock: (productData.stock || 0) + item.quantity });
+                        }
                     }
-                });
+                }
 
                 const cancelledOrderRef = doc(db, 'pedidos_completados', orderId);
                 const orderDataToCancel = originalOrderSnap.data();
@@ -141,7 +134,6 @@ const OrderSummary = () => {
                 await batch.commit();
 
                 Swal.fire('¡Pedido Cancelado!', 'Tu pedido ha sido cancelado con éxito. El stock ha sido restaurado.', 'success');
-                
                 setOrder(prev => ({ ...prev, estado: 'Cancelado', motivoCancelacion: reason }));
 
             } catch (error) {
@@ -215,13 +207,16 @@ const OrderSummary = () => {
         );
     }
 
+    // CORRECTED: Allow cancellation for 'Programado' status
+    const canCancel = order && ['Pendiente', 'Pagado', 'Programado'].includes(order.estado);
+
     return (
         <div className="order-summary-container">
             <div className="summary-actions-header">
                 <button onClick={() => navigate(-1)} className="summary-back-button">
                     <FaArrowLeft /> Volver
                 </button>
-                {order && (order.estado === 'Pendiente' || order.estado === 'Pagado') && (
+                {canCancel && (
                     <div className="order-options-menu">
                         <button onClick={() => setMenuOpen(!menuOpen)} className="options-button">
                             <FaEllipsisV />
@@ -298,24 +293,22 @@ const OrderSummary = () => {
                 <h3>Productos</h3>
                 <div className="order-products">
                     {order.productos.map((item, index) => (
-                        <div key={item.id + (item.variationId || '')} className="product-item"> {/* Unique key */}
-                            <img src={item.imageUrl} alt={item.name} className="product-image"/> {/* Use imageUrl */}
+                        <div key={item.id + (item.variationId || '')} className="product-item">
+                            <img src={item.imageUrl} alt={item.name} className="product-image"/>
                             <div className="product-info">
                                 <h4>{item.name}</h4>
                                 {item.hasVariations && item.attributes && (
-                                    <p className="product-variation-attrs"> {/* New class for styling */}
-                                        {Object.entries(item.attributes).map(([key, value]) => (
-                                            `${key}: ${value}`
-                                        )).join(' | ')}
+                                    <p className="product-variation-attrs">
+                                        {Object.entries(item.attributes).map(([key, value]) => `${key}: ${value}`).join(' | ')}
                                     </p>
                                 )}
                                 <div className="product-meta">
-                                    <span>${item.price?.toFixed(2)} c/u</span> {/* Use item.price */}
+                                    <span>${item.price?.toFixed(2)} c/u</span>
                                     <span>Cant: {item.quantity}</span>
                                 </div>
                             </div>
                             <div className="product-subtotal">
-                                ${(item.price * item.quantity)?.toFixed(2)} {/* Use item.price */}
+                                ${(item.price * item.quantity)?.toFixed(2)}
                             </div>
                         </div>
                     ))}

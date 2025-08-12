@@ -1,3 +1,9 @@
+/*
+  File: OrderConfirmation.jsx
+  Description: Confirms and submits the final order.
+  Status: DEBUGGING ADDED. Console logs have been added to inspect the
+          final 'pedido' object before it's saved to Firestore.
+*/
 import React, { useState, useEffect } from 'react';
 import { collection, addDoc, Timestamp, writeBatch, doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
@@ -8,13 +14,67 @@ import { useNavigate } from 'react-router-dom';
 import DeliveryCostCalculator from '../utils/DeliveryCostCalculator';
 import { isStoreOpen } from '../utils/isStoreOpen';
 
-// The component now accepts the 'onBack' prop to handle going to the previous step
 const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryCost, onBack }) => {
-    const { carrito, calcularTotal, vaciarCarrito } = useCarrito();
+    const { carrito, vaciarCarrito } = useCarrito();
     const { currentUser } = useAuth();
     const navigate = useNavigate();
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const productsTotal = calcularTotal();
+    
+    const [productosInfo, setProductosInfo] = useState({});
+
+    useEffect(() => {
+        const fetchMissingDetails = async () => {
+            const newInfo = {};
+            let needsUpdate = false;
+
+            for (const item of carrito) {
+                const itemKey = item.id + (item.variationId || '');
+                
+                if (!item.price || !item.name || !item.imageUrl) {
+                    const productRef = doc(db, 'productos', item.id);
+                    const productSnap = await getDoc(productRef);
+
+                    if (productSnap.exists()) {
+                        const productData = productSnap.data();
+                        const fetchedDetails = {};
+
+                        if (productData.hasVariations && item.variationId) {
+                            const variation = productData.variationsList.find(v => v.id === item.variationId);
+                            if (variation) {
+                                fetchedDetails.price = variation.precio;
+                                fetchedDetails.name = productData.nombre;
+                                fetchedDetails.imageUrl = variation.imagen || productData.imagen;
+                                fetchedDetails.attributes = variation.attributes;
+                            }
+                        } else {
+                            fetchedDetails.price = productData.precio;
+                            fetchedDetails.name = productData.nombre;
+                            fetchedDetails.imageUrl = productData.imagen;
+                        }
+
+                        if (Object.keys(fetchedDetails).length > 0) {
+                            newInfo[itemKey] = fetchedDetails;
+                            needsUpdate = true;
+                        }
+                    }
+                }
+            }
+            if (needsUpdate) {
+                setProductosInfo(prev => ({ ...prev, ...newInfo }));
+            }
+        };
+
+        if (carrito.length > 0) {
+            fetchMissingDetails();
+        }
+    }, [carrito]);
+
+    const productsTotal = carrito.reduce((acc, item) => {
+        const itemKey = item.id + (item.variationId || '');
+        const info = productosInfo[itemKey] || {};
+        const price = item.price ?? info.price ?? 0;
+        return acc + (price * item.quantity);
+    }, 0);
 
     useEffect(() => {
         if (!currentUser) {
@@ -34,86 +94,91 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
 
     const proceedWithOrder = async (isScheduled = false) => {
         setIsSubmitting(true);
-        
         const batch = writeBatch(db);
         let stockInsuficiente = false;
 
-        for (const item of carrito) {
-            const productoRef = doc(db, 'productos', item.id);
-            try {
+        const finalCarrito = carrito.map(item => {
+            const itemKey = item.id + (item.variationId || '');
+            const info = productosInfo[itemKey] || {};
+            // Ensure every field has a valid fallback to prevent 'undefined'
+            return {
+                id: item.id,
+                quantity: item.quantity,
+                hasVariations: item.hasVariations ?? false,
+                variationId: item.variationId || null,
+                name: item.name ?? info.name ?? 'Nombre no disponible',
+                price: item.price ?? info.price ?? 0,
+                imageUrl: item.imageUrl ?? info.imageUrl ?? null,
+                attributes: item.attributes ?? info.attributes ?? null,
+                stock: item.stock ?? 0, // Ensure stock is not undefined
+            };
+        });
+
+        try {
+            for (const item of finalCarrito) {
+                const productoRef = doc(db, 'productos', item.id);
                 const productoSnap = await getDoc(productoRef);
+
                 if (productoSnap.exists()) {
                     const productData = productoSnap.data();
                     let currentStock = 0;
-                    let stockPath = ''; // To specify if it's main stock or variation stock
 
-                    if (item.hasVariations && item.variationId && productData.variationsList) {
-                        const variationIndex = productData.variationsList.findIndex(v => v.id === item.variationId);
-                        if (variationIndex !== -1) {
-                            currentStock = productData.variationsList[variationIndex].stock;
-                            stockPath = `variationsList[${variationIndex}].stock`;
+                    if (productData.hasVariations === true && productData.variationsList) {
+                        const variation = productData.variationsList.find(v => v.id === item.variationId);
+                        if (variation) {
+                            currentStock = variation.stock || 0;
                         } else {
                             stockInsuficiente = true;
                             Swal.fire('Variación no encontrada', `La variación de ${item.name} ya no está disponible.`, 'error');
-                            break;
+                            throw new Error("Variation not found");
                         }
                     } else {
-                        currentStock = productData.stock;
-                        stockPath = 'stock';
+                        currentStock = productData.stock || 0;
                     }
 
                     if (item.quantity > currentStock) {
                         stockInsuficiente = true;
                         Swal.fire('Stock insuficiente', `No hay suficiente stock para ${item.name}. Solo quedan ${currentStock} unidades.`, 'error');
-                        break; 
+                        throw new Error("Insufficient stock");
                     }
 
-                    // Update stock in batch
-                    if (stockPath.startsWith('variationsList')) {
-                        // For variations, update the specific item in the array
-                        const newVariationsList = [...productData.variationsList];
-                        const variationToUpdate = newVariationsList.find(v => v.id === item.variationId);
-                        if (variationToUpdate) {
-                            variationToUpdate.stock -= item.quantity;
-                            batch.update(productoRef, { variationsList: newVariationsList });
-                        }
+                    if (productData.hasVariations === true && productData.variationsList) {
+                        const newVariationsList = productData.variationsList.map(v =>
+                            v.id === item.variationId ? { ...v, stock: v.stock - item.quantity } : v
+                        );
+                        batch.update(productoRef, { variationsList: newVariationsList });
                     } else {
-                        // For simple products, update the main stock field
                         batch.update(productoRef, { stock: currentStock - item.quantity });
                     }
-
                 } else {
                     stockInsuficiente = true;
                     Swal.fire('Producto no encontrado', `El producto ${item.name} ya no está disponible.`, 'error');
-                    break;
+                    throw new Error("Product not found");
                 }
-            } catch (error) {
-                console.error("Error verifying stock:", error);
-                stockInsuficiente = true;
-                Swal.fire('Error', 'No se pudo verificar el stock. Intenta de nuevo.', 'error');
-                break;
             }
-        }
 
-        if (stockInsuficiente) {
-            setIsSubmitting(false);
-            return;
-        }
+            const pedido = {
+                userId: currentUser.uid,
+                email: currentUser.email,
+                nombre: formData.nombre || null,
+                direccion: formData.direccion || null,
+                indicaciones: formData.indicaciones || null,
+                telefono: formData.telefono || null,
+                placeId: formData.placeId || null,
+                productos: finalCarrito,
+                total: productsTotal,
+                costoEnvio: deliveryCost,
+                fecha: Timestamp.now(),
+                estado: isScheduled ? 'Programado' : 'Pendiente',
+                metodoPago: paymentMethod,
+                programado: isScheduled,
+            };
 
-        const pedido = {
-            userId: currentUser.uid,
-            email: currentUser.email,
-            ...formData,
-            productos: carrito, // Carrito items now contain variation info
-            total: productsTotal,
-            costoEnvio: deliveryCost,
-            fecha: Timestamp.now(),
-            estado: isScheduled ? 'Programado' : 'Pendiente',
-            metodoPago: paymentMethod,
-            programado: isScheduled,
-        };
+            // --- DEBUGGING LOG ---
+            // This will print the exact object being sent to Firestore.
+            console.log("Attempting to save the following order object to Firestore:");
+            console.log(JSON.stringify(pedido, null, 2));
 
-        try {
             const docRef = await addDoc(collection(db, 'pedidos'), pedido);
             await batch.commit();
             vaciarCarrito();
@@ -125,19 +190,24 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
                 showConfirmButton: false,
             });
             navigate(`/order-summary/${docRef.id}`);
+
         } catch (error) {
-            console.error("Error confirming order:", error);
+            // --- DEBUGGING LOG ---
+            console.error("FULL FIREBASE ERROR:", error);
+            if (!stockInsuficiente) {
+                 Swal.fire("Error", "Ocurrió un problema al procesar tu pedido. Revisa la consola para más detalles.", "error");
+            }
+        } finally {
             setIsSubmitting(false);
-            Swal.fire("Error", "Ocurrió un problema al procesar tu pedido.", "error");
         }
     };
-
+    
     const handleConfirmOrder = async () => {
         if (carrito.length === 0) {
             Swal.fire('Carrito Vacío', 'No hay productos en tu carrito para confirmar el pedido.', 'info');
             return;
         }
-        if (deliveryCost === 0 && formData.direccion) { // Only require calculation if an address is provided
+        if (deliveryCost === 0 && formData.direccion) {
             Swal.fire('Costo de Envío', 'Por favor, calcula el costo de envío antes de continuar.', 'info');
             return;
         }
@@ -183,25 +253,32 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
             <div className="order-summary-details">
                 <h3>Resumen de Productos</h3>
                 <div className="checkout-items">
-                    {carrito.map(item => (
-                        <div key={item.id + (item.variationId || '')} className="checkout-item"> {/* Unique key */}
-                            <div className="product-details">
-                                <img src={item.imageUrl} alt={item.name} /> {/* Use imageUrl */}
-                                <div className="product-info">
-                                    <h3>{item.name}</h3>
-                                    {item.hasVariations && item.attributes && (
-                                        <p className="item-variation-attrs">
-                                            {Object.entries(item.attributes).map(([key, value]) => (
-                                                `${key}: ${value}`
-                                            )).join(' | ')}
-                                        </p>
-                                    )}
-                                    <p>Cant: {item.quantity}</p>
+                    {carrito.map(item => {
+                        const itemKey = item.id + (item.variationId || '');
+                        const info = productosInfo[itemKey] || {};
+                        const price = item.price ?? info.price ?? 0;
+                        const name = item.name ?? info.name ?? 'Cargando...';
+                        const imageUrl = item.imageUrl ?? info.imageUrl ?? 'https://placehold.co/100x100/eee/ccc?text=...';
+                        const attributes = item.attributes ?? info.attributes ?? {};
+
+                        return (
+                            <div key={itemKey} className="checkout-item">
+                                <div className="product-details">
+                                    <img src={imageUrl} alt={name} />
+                                    <div className="product-info">
+                                        <h3>{name}</h3>
+                                        {item.hasVariations && attributes && Object.keys(attributes).length > 0 && (
+                                            <p className="item-variation-attrs">
+                                                {Object.entries(attributes).map(([key, value]) => `${key}: ${value}`).join(' | ')}
+                                            </p>
+                                        )}
+                                        <p>Cant: {item.quantity}</p>
+                                    </div>
                                 </div>
+                                <div className="product-price">${(price * item.quantity).toLocaleString('es-AR')}</div>
                             </div>
-                            <div className="product-price">${(item.price * item.quantity).toLocaleString('es-AR')}</div> {/* Use item.price */}
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
 
                 <div className="order-total-summary">
