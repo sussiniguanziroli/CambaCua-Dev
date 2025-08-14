@@ -19,25 +19,78 @@ import {
   FaSoap,
 } from "react-icons/fa";
 
-const ProductCard = ({ product }) => (
-  <div className="product-card">
-    <NavLink to={`/producto/${product.id}`} className="image-container">
-      <img
-        className="product-image"
-        src={product.imagen}
-        alt={product.nombre}
-      />
-    </NavLink>
-    <div className="product-info">
-      <p className="product-category">{product.categoria}</p>
-      <h3 className="product-name">{product.nombre}</h3>
-      <strong className="product-price">${product.precio}</strong>
-      <NavLink to={`/producto/${product.id}`} className="add-to-cart-button">
-        Ver Producto
-      </NavLink>
-    </div>
-  </div>
-);
+const processProduct = (doc) => {
+    const data = doc.data();
+    let displayStock = data.stock;
+    let displayPrice = data.precio;
+    let hasAnyVariationStock = false;
+
+    if (data.hasVariations && Array.isArray(data.variationsList)) {
+        let totalStock = 0;
+        let minPrice = Infinity;
+
+        data.variationsList.forEach(variation => {
+            if (variation.activo && variation.stock > 0) {
+                hasAnyVariationStock = true;
+                totalStock += variation.stock;
+            }
+            if (variation.activo && variation.precio < minPrice) {
+                minPrice = variation.precio;
+            }
+        });
+
+        displayStock = hasAnyVariationStock ? totalStock : 0;
+        displayPrice = hasAnyVariationStock && minPrice !== Infinity ? minPrice : null;
+    }
+
+    return {
+        id: doc.id,
+        ...data,
+        _displayStock: displayStock,
+        _displayPrice: displayPrice,
+        _hasAnyVariationStock: hasAnyVariationStock
+    };
+};
+
+const ProductCard = ({ product }) => {
+    const isOutOfStock = product.hasVariations
+        ? !product._hasAnyVariationStock
+        : product._displayStock === 0;
+
+    const displayPrice = product.hasVariations
+        ? product._displayPrice !== null
+            ? `Desde $${product._displayPrice?.toFixed(2)}`
+            : 'Ver Opciones'
+        : `$${product._displayPrice?.toFixed(2)}`;
+    
+    const cardImage = product.imagen ||
+                      (product.hasVariations && product.variationsList?.[0]?.imagen) ||
+                      "https://placehold.co/400x400/E0E0E0/808080?text=No+Image";
+
+    return (
+        <div className={`product-card ${isOutOfStock ? 'out-of-stock' : ''}`}>
+            <NavLink to={`/producto/${product.id}`} className="image-container">
+                <img
+                    className="product-image"
+                    src={cardImage}
+                    alt={product.nombre}
+                />
+            </NavLink>
+            <div className="product-info">
+                <p className="product-category">{product.categoria}</p>
+                <h3 className="product-name">{product.nombre}</h3>
+                <strong className="product-price">{displayPrice}</strong>
+                {isOutOfStock ? (
+                    <div className="stock-status">Sin Stock</div>
+                ) : (
+                    <NavLink to={`/producto/${product.id}`} className="add-to-cart-button">
+                        {product.hasVariations ? "Ver Opciones" : "Ver Producto"}
+                    </NavLink>
+                )}
+            </div>
+        </div>
+    );
+};
 
 const ProductSlider = ({ products }) => {
   const [visibleSlides, setVisibleSlides] = useState(1.3);
@@ -137,10 +190,7 @@ const Landing = () => {
           limit(10)
         );
         const topSellersSnapshot = await getDocs(topSellersQuery);
-        let topSellersList = topSellersSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+        let topSellersList = topSellersSnapshot.docs.map(processProduct);
 
         if (topSellersList.length === 0) {
           const fallbackQuery = query(
@@ -149,10 +199,7 @@ const Landing = () => {
             limit(10)
           );
           const fallbackSnapshot = await getDocs(fallbackQuery);
-          topSellersList = fallbackSnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
+          topSellersList = fallbackSnapshot.docs.map(processProduct);
         }
 
         if (topSellersList.length > 0) {
@@ -171,10 +218,7 @@ const Landing = () => {
             limit(10)
           );
           const productsSnapshot = await getDocs(productsQuery);
-          const productList = productsSnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
+          const productList = productsSnapshot.docs.map(processProduct);
 
           if (productList.length > 0) {
             newSliders.push({
@@ -201,19 +245,22 @@ const Landing = () => {
             src: "https://i.ibb.co/s9tZdQK5/Chat-GPT-Image-Apr-10-2025-11-09-12-AM.png", 
             alt: "Promo 1",
             title: "¡Ahora con envíos!",
-            description: "Lanzamos la tienda online para brindar mejores servicios."
+            description: "Lanzamos la tienda online para brindar mejores servicios.",
+            link: "/productos"
         },
         { 
             src: "https://i.ibb.co/4gNp5dt4/Chat-GPT-Image-Apr-10-2025-11-13-52-AM.png", 
             alt: "Promo 2",
             title: "¿Como comprar?",
-            description: "Aprende a usar la Tienda Online."
+            description: "Aprende a usar la Tienda Online.",
+            link: "/como-comprar"
         },
         { 
             src: "https://i.ibb.co/fzGmLzVp/Chat-GPT-Image-Apr-10-2025-11-06-17-AM.png", 
             alt: "Promo 3",
             title: "Nuevos Productos",
-            description: "Descubre nuestra línea de productos disponibles."
+            description: "Descubre nuestra línea de productos disponibles.",
+            link: "/productos"
         }
     ];
   return (
@@ -230,7 +277,7 @@ const Landing = () => {
           </p>
           <p className="welcome-text">
             Descubre nuestra tienda virtual, donde tu peludo encontrará todo lo
-            que necesita 🐶🐱
+            que necesita �🐱
           </p>
         </section>
 
