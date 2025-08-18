@@ -1,9 +1,3 @@
-/*
-  File: Carrito.jsx
-  Description: Displays the shopping cart items to the user.
-  Status: CRITICAL FIX APPLIED. Total calculation is now performed
-          inside the component to ensure it uses the correct, fetched prices.
-*/
 import React, { useEffect, useState } from 'react';
 import { useCarrito } from '../context/CarritoContext';
 import { useAuth } from '../context/AuthContext';
@@ -16,11 +10,11 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 
 const Carrito = () => {
-    // Removed `calcularTotal` as it will be handled locally
     const { carrito, eliminarDelCarrito, actualizarCantidad, vaciarCarrito } = useCarrito();
     const { currentUser } = useAuth();
     const navigate = useNavigate();
     const [productosInfo, setProductosInfo] = useState({});
+    const [totales, setTotales] = useState({ subtotal: 0, descuentos: 0, totalFinal: 0 });
 
     useEffect(() => {
         const cargarDatosFaltantes = async () => {
@@ -50,15 +44,45 @@ const Carrito = () => {
         if (carrito.length > 0) {
             cargarDatosFaltantes();
         }
+    }, [carrito]);
+
+    useEffect(() => {
+        let subtotal = 0;
+        let totalDescuentos = 0;
+
+        carrito.forEach(item => {
+            const itemKey = item.id + (item.variationId || '');
+            const info = productosInfo[itemKey] || {};
+            const itemPrice = item.price ?? info.price ?? 0;
+
+            if (itemPrice > 0) {
+                const itemSubtotal = itemPrice * item.quantity;
+                subtotal += itemSubtotal;
+
+                if (item.promocion) {
+                    switch (item.promocion.type) {
+                        case 'percentage_discount':
+                            totalDescuentos += itemSubtotal * (item.promocion.value / 100);
+                            break;
+                        case '2x1':
+                            const pares2x1 = Math.floor(item.quantity / 2);
+                            totalDescuentos += pares2x1 * itemPrice;
+                            break;
+                        case 'second_unit_discount':
+                            const pares2daUnidad = Math.floor(item.quantity / 2);
+                            totalDescuentos += pares2daUnidad * itemPrice * (item.promocion.value / 100);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        });
+
+        const totalFinal = subtotal - totalDescuentos;
+        setTotales({ subtotal, descuentos: totalDescuentos, totalFinal });
+
     }, [carrito, productosInfo]);
-    
-    // CORRECTED: Calculate total locally to ensure correct prices are used.
-    const totalCompra = carrito.reduce((acc, item) => {
-        const itemKey = item.id + (item.variationId || '');
-        const info = productosInfo[itemKey] || {};
-        const precio = item.price ?? info.price ?? 0;
-        return acc + (precio * item.quantity);
-    }, 0);
 
     const handleContinuarCompra = () => {
         if (!currentUser) {
@@ -131,6 +155,27 @@ const Carrito = () => {
         });
     };
 
+    const getPromoDescription = (item) => {
+        if (!item.promocion) return null;
+        switch (item.promocion.type) {
+            case 'percentage_discount':
+                return `Descuento: ${item.promocion.value}% OFF`;
+            case '2x1':
+                return `Promo 2x1 aplicada`;
+            case 'second_unit_discount':
+                return `Promo: ${item.promocion.value}% en 2da unidad`;
+            default:
+                return null;
+        }
+    };
+
+    const calculateDiscountedPrice = (price, promo) => {
+        if (promo && promo.type === 'percentage_discount' && price) {
+            return price * (1 - promo.value / 100);
+        }
+        return null;
+    };
+
     return (
         <div className="carrito-page">
             <ToastContainer position="top-center" autoClose={2000} hideProgressBar newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="colored" />
@@ -155,6 +200,8 @@ const Carrito = () => {
                             const imagen = item.imageUrl || info.imageUrl || 'https://placehold.co/100x100/eee/ccc?text=...';
                             const precio = item.price ?? info.price ?? 0;
                             const attrs = item.attributes || info.attributes || {};
+                            const promoDescription = getPromoDescription(item);
+                            const discountedPrice = calculateDiscountedPrice(precio, item.promocion);
 
                             return (
                                 <div key={itemKey} className="carrito-item">
@@ -166,7 +213,17 @@ const Carrito = () => {
                                                 {Object.entries(attrs).map(([key, value]) => `${key}: ${value}`).join(' | ')}
                                             </p>
                                         )}
-                                        <p className="item-price">Precio: ${precio.toFixed(2)}</p>
+                                        {promoDescription && <span className="promo-badge-cart">{promoDescription}</span>}
+                                        <div className="item-price-container">
+                                            {discountedPrice !== null ? (
+                                                <>
+                                                    <span className="item-price original-price">${precio.toFixed(2)}</span>
+                                                    <span className="item-price final-price">${discountedPrice.toFixed(2)}</span>
+                                                </>
+                                            ) : (
+                                                <span className="item-price">${precio.toFixed(2)}</span>
+                                            )}
+                                        </div>
                                         <div className="item-quantity">
                                             <label htmlFor={`cantidad-${itemKey}`}>Cantidad:</label>
                                             <div className="quantity-controls">
@@ -187,7 +244,7 @@ const Carrito = () => {
                                                 </button>
                                             </div>
                                         </div>
-                                        <p className="item-subtotal">Subtotal: <strong>${(precio * item.quantity).toFixed(2)}</strong></p>
+                                        <p className="item-subtotal">Subtotal: <strong>${( (discountedPrice !== null ? discountedPrice : precio) * item.quantity).toFixed(2)}</strong></p>
                                     </div>
                                     <button className="item-delete-button" onClick={() => eliminarDelCarrito(item.id, item.variationId)} aria-label={`Eliminar ${nombre}`}>
                                         <FaTrashAlt />
@@ -197,10 +254,21 @@ const Carrito = () => {
                         })}
                     </div>
                     <div className="carrito-summary">
+                         <div className="summary-section">
+                            <div className="summary-row">
+                                <span className="summary-label">Subtotal:</span>
+                                <span className="summary-value">${totales.subtotal.toFixed(2)}</span>
+                            </div>
+                            {totales.descuentos > 0 && (
+                                <div className="summary-row discount">
+                                    <span className="summary-label">Descuentos:</span>
+                                    <span className="summary-value">- ${totales.descuentos.toFixed(2)}</span>
+                                </div>
+                            )}
+                         </div>
                          <div className="total-section">
-                             <span className="total-label">Total Compra:</span>
-                             {/* Use the locally calculated total */}
-                             <span className="total-amount">${totalCompra.toFixed(2)}</span>
+                             <span className="total-label">Total:</span>
+                             <span className="total-amount">${totales.totalFinal.toFixed(2)}</span>
                          </div>
                          <div className="actions-section">
                              <button className="vaciar-carrito-button" onClick={handleVaciarCarrito}>

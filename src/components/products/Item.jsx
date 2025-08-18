@@ -63,30 +63,75 @@ const Item = ({ producto, notifyAgregado, notifyCarrito, notifyCopiar }) => {
         ? !producto._hasAnyVariationStock
         : producto._displayStock === 0;
 
-    const displayPrice = producto.hasVariations
-        ? producto._displayPrice !== Infinity && producto._displayPrice !== null
-            ? `Desde $${producto._displayPrice?.toFixed(2)}`
-            : 'Ver Opciones'
-        : `$${producto._displayPrice?.toFixed(2)}`;
-
-    // Determine the image to display on the product card
-    // Prioritize product.imagen, then first variation's image, then fallback
     const cardImage = producto.imagen ||
                       (producto.hasVariations && producto.variationsList && producto.variationsList[0] && producto.variationsList[0].imagen) ||
                       "https://placehold.co/400x400/E0E0E0/808080?text=No+Image";
 
+    const getPromoBadgeText = (promo) => {
+        if (!promo) return null;
+        switch (promo.type) {
+            case 'percentage_discount':
+                return `${promo.value}% OFF`;
+            case 'second_unit_discount':
+                return `${promo.value}% 2da Unidad`;
+            case '2x1':
+                return '2x1';
+            default:
+                return null;
+        }
+    };
+
+    const calculateDiscountedPrice = (price, promo) => {
+        if (promo && promo.type === 'percentage_discount' && price) {
+            return price * (1 - promo.value / 100);
+        }
+        return null;
+    };
+
+    const promoBadgeText = getPromoBadgeText(producto.promocion);
+    const discountedPrice = calculateDiscountedPrice(producto._displayPrice, producto.promocion);
+
+    const renderPrice = () => {
+        const originalPrice = producto._displayPrice;
+
+        if (producto.hasVariations) {
+            if (originalPrice === Infinity || originalPrice === null) {
+                return <strong className="product-price">Ver Opciones</strong>;
+            }
+            const discountedVariationPrice = calculateDiscountedPrice(originalPrice, producto.promocion);
+            if (discountedVariationPrice !== null) {
+                return (
+                    <div className="price-container">
+                        <strong className="product-price final-price">Desde ${discountedVariationPrice.toFixed(2)}</strong>
+                        <span className="product-price original-price">Desde ${originalPrice.toFixed(2)}</span>
+                    </div>
+                );
+            }
+            return <strong className="product-price">Desde ${originalPrice.toFixed(2)}</strong>;
+        }
+
+        if (discountedPrice !== null) {
+            return (
+                <div className="price-container">
+                    <strong className="product-price final-price">${discountedPrice.toFixed(2)}</strong>
+                    <span className="product-price original-price">${originalPrice.toFixed(2)}</span>
+                </div>
+            );
+        }
+        return <strong className="product-price">${originalPrice?.toFixed(2)}</strong>;
+    };
 
     return (
         <>
             <div className={`product-card ${isOutOfStock ? 'out-of-stock' : ''}`}>
                 <div onClick={() => handleOpenModal(producto)} className="image-container">
+                    {promoBadgeText && <div className="promo-badge">{promoBadgeText}</div>}
                     <img className="product-image" src={cardImage} alt={`${producto.nombre}`} />
                 </div>
                 <div>
                     <h3 onClick={() => handleOpenModal(producto)} className="product-name">{producto.nombre}</h3>
                     <p className='product-category'>{producto.categoria}</p>
-                    <strong className="product-price">{displayPrice}</strong>
-
+                    {renderPrice()}
                     {isOutOfStock ? (
                         <div className="stock-status">Sin Stock</div>
                     ) : (

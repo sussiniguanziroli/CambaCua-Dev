@@ -1,9 +1,3 @@
-/*
-  File: CarritoContext.jsx
-  Description: Manages the global state of the shopping cart.
-  Status: CRITICAL FIX APPLIED. The `calcularTotal` function now safely
-          handles null or undefined prices to prevent NaN errors.
-*/
 import React, { createContext, useContext, useState } from 'react';
 
 const CarritoContext = createContext();
@@ -48,17 +42,49 @@ export const CarritoProvider = ({ children }) => {
                     hasVariations: producto.hasVariations,
                     variationId: producto.variationId || null,
                     attributes: producto.attributes || null,
+                    promocion: producto.promocion || null,
                 }];
             }
         });
     };
 
-    // CORRECTED FUNCTION
-    const calcularTotal = () => {
-        return carrito.reduce((acc, prod) => {
-            const price = prod.price || 0; // Fallback to 0 if price is null/undefined
-            return acc + (price * prod.quantity);
-        }, 0);
+    const calcularTotales = (productosInfo = {}) => {
+        let subtotal = 0;
+        let totalDescuentos = 0;
+
+        carrito.forEach(item => {
+            const itemKey = item.id + (item.variationId || '');
+            const info = productosInfo[itemKey] || {};
+            const itemPrice = item.price ?? info.price ?? 0;
+            
+            const itemSubtotal = itemPrice * item.quantity;
+            subtotal += itemSubtotal;
+
+            if (item.promocion) {
+                switch (item.promocion.type) {
+                    case 'percentage_discount':
+                        totalDescuentos += itemSubtotal * (item.promocion.value / 100);
+                        break;
+                    case '2x1':
+                        const pares2x1 = Math.floor(item.quantity / 2);
+                        totalDescuentos += pares2x1 * itemPrice;
+                        break;
+                    case 'second_unit_discount':
+                        const pares2daUnidad = Math.floor(item.quantity / 2);
+                        totalDescuentos += pares2daUnidad * itemPrice * (item.promocion.value / 100);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        });
+
+        const totalFinal = subtotal - totalDescuentos;
+        return {
+            subtotal: subtotal,
+            descuentos: totalDescuentos,
+            totalFinal: totalFinal,
+        };
     };
 
     const eliminarDelCarrito = (productoId, variationId = null) => {
@@ -88,7 +114,7 @@ export const CarritoProvider = ({ children }) => {
     const vaciarCarrito = () => setCarrito([]);
 
     return (
-        <CarritoContext.Provider value={{ carrito, agregarAlCarrito, eliminarDelCarrito, actualizarCantidad, vaciarCarrito, calcularTotal }}>
+        <CarritoContext.Provider value={{ carrito, agregarAlCarrito, eliminarDelCarrito, actualizarCantidad, vaciarCarrito, calcularTotales }}>
             {children}
         </CarritoContext.Provider>
     );

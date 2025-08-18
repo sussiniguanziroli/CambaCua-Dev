@@ -1,22 +1,20 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Flickity from 'flickity';
-import "flickity/css/flickity.css"; 
-import { FiShoppingCart } from 'react-icons/fi'; 
-import Swal from 'sweetalert2'; 
-import { useCarrito } from '../../context/CarritoContext'; 
+import "flickity/css/flickity.css";
+import { FiShoppingCart } from 'react-icons/fi';
+import Swal from 'sweetalert2';
+import { useCarrito } from '../../context/CarritoContext';
 
 const ItemDetail = ({ product }) => {
     const { agregarAlCarrito, carrito } = useCarrito();
-    const flickityRef = useRef(null); 
-    const flktyInstance = useRef(null); 
+    const flickityRef = useRef(null);
+    const flktyInstance = useRef(null);
 
     const [selectedAttributes, setSelectedAttributes] = useState({});
-
     const [currentVariation, setCurrentVariation] = useState(null);
 
     useEffect(() => {
         if (product && product.hasVariations && product.variationsList && product.variationsList.length > 0) {
-
             const initialVariation = product.variationsList.find(v => v.activo) || product.variationsList[0];
             const initialAttrs = {};
             if (initialVariation && initialVariation.attributes) {
@@ -27,7 +25,6 @@ const ItemDetail = ({ product }) => {
             setSelectedAttributes(initialAttrs);
             setCurrentVariation(initialVariation);
         } else if (product && !product.hasVariations) {
-
             setSelectedAttributes({});
             setCurrentVariation(null);
         }
@@ -36,28 +33,24 @@ const ItemDetail = ({ product }) => {
     useEffect(() => {
         if (product && product.hasVariations && product.variationsList) {
             const matchingVariation = product.variationsList.find(variation => {
-
                 if (!variation.attributes) return false;
-
                 return Object.keys(selectedAttributes).every(attrName =>
-                    selectedAttributes[attrName] === '' || 
+                    selectedAttributes[attrName] === '' ||
                     variation.attributes[attrName] === selectedAttributes[attrName]
                 );
             });
             setCurrentVariation(matchingVariation);
         }
-    }, [selectedAttributes, product]); 
+    }, [selectedAttributes, product]);
 
     useEffect(() => {
         let timerId = null;
-
         if (flickityRef.current) {
             timerId = setTimeout(() => {
                 if (flktyInstance.current) {
                     flktyInstance.current.destroy();
                     flktyInstance.current = null;
                 }
-
                 if (flickityRef.current) {
                     flktyInstance.current = new Flickity(flickityRef.current, {
                         cellAlign: 'center',
@@ -71,7 +64,6 @@ const ItemDetail = ({ product }) => {
                 }
             }, 50);
         }
-
         return () => {
             clearTimeout(timerId);
             setTimeout(() => {
@@ -108,33 +100,26 @@ const ItemDetail = ({ product }) => {
     const handleAttributeChange = useCallback((attrName, value) => {
         setSelectedAttributes(prev => {
             const newAttributes = { ...prev, [attrName]: value };
-
             const orderedAttributeNames = Object.keys(availableAttributes);
-
             const changedAttrIndex = orderedAttributeNames.indexOf(attrName);
-
             const attributesToReset = {};
             for (let i = changedAttrIndex + 1; i < orderedAttributeNames.length; i++) {
                 const subsequentAttrName = orderedAttributeNames[i];
                 const currentlySelectedSubsequentValue = newAttributes[subsequentAttrName];
-
                 const tempSelectionsForValidation = {};
                 for (let j = 0; j <= i; j++) {
                     if (newAttributes[orderedAttributeNames[j]] !== undefined && newAttributes[orderedAttributeNames[j]] !== '') {
                         tempSelectionsForValidation[orderedAttributeNames[j]] = newAttributes[orderedAttributeNames[j]];
                     }
                 }
-
                 const validOptionsForSubsequent = getAvailableAttributeValues(subsequentAttrName, tempSelectionsForValidation);
-
                 if (currentlySelectedSubsequentValue && !validOptionsForSubsequent.includes(currentlySelectedSubsequentValue)) {
-                    attributesToReset[subsequentAttrName] = ''; 
+                    attributesToReset[subsequentAttrName] = '';
                 }
             }
-
             return { ...newAttributes, ...attributesToReset };
         });
-    }, [product]); 
+    }, [product]);
 
     const handleAddToCart = () => {
         let itemToAdd = {};
@@ -160,6 +145,7 @@ const ItemDetail = ({ product }) => {
                 imageUrl: currentVariation.imagen || product.imagen,
                 quantity: 1,
                 hasVariations: true,
+                promocion: product.promocion || null
             };
             stockAvailable = currentVariation.stock;
             itemNameForSwal = `${product.nombre} (${Object.values(currentVariation.attributes).join(', ')})`;
@@ -176,6 +162,7 @@ const ItemDetail = ({ product }) => {
                 imageUrl: product.imagen,
                 quantity: 1,
                 hasVariations: false,
+                promocion: product.promocion || null
             };
             stockAvailable = product.stock;
         }
@@ -221,16 +208,12 @@ const ItemDetail = ({ product }) => {
 
     const getAvailableAttributeValues = (attrName, currentSelections) => {
         if (!product || !product.hasVariations || !product.variationsList) return [];
-
         const validValues = new Set();
         const orderedAttributeNames = Object.keys(availableAttributes);
         const attrIndex = orderedAttributeNames.indexOf(attrName);
-
         product.variationsList.forEach(variation => {
-            if (!variation.activo) return; 
-
+            if (!variation.activo) return;
             let matchesPreviousSelections = true;
-
             for (let i = 0; i < attrIndex; i++) {
                 const prevAttrName = orderedAttributeNames[i];
                 if (currentSelections[prevAttrName] !== '' && variation.attributes[prevAttrName] !== currentSelections[prevAttrName]) {
@@ -238,7 +221,6 @@ const ItemDetail = ({ product }) => {
                     break;
                 }
             }
-
             if (matchesPreviousSelections && variation.attributes && variation.attributes[attrName]) {
                 validValues.add(variation.attributes[attrName]);
             }
@@ -246,19 +228,51 @@ const ItemDetail = ({ product }) => {
         return Array.from(validValues).sort();
     };
 
+    const getPromoBadgeText = (promo) => {
+        if (!promo) return null;
+        switch (promo.type) {
+            case 'percentage_discount':
+                return `OFERTA: ${promo.value}% OFF`;
+            case 'second_unit_discount':
+                return `PROMO: ${promo.value}% EN LA 2DA UNIDAD`;
+            case '2x1':
+                return 'PROMO: 2x1';
+            default:
+                return null;
+        }
+    };
+
+    const calculateDiscountedPrice = (price, promo) => {
+        if (promo && promo.type === 'percentage_discount' && price) {
+            return price * (1 - promo.value / 100);
+        }
+        return null;
+    };
+
+    const promoBadgeText = getPromoBadgeText(product.promocion);
+
+    const renderPrice = (price, promo) => {
+        const discountedPrice = calculateDiscountedPrice(price, promo);
+        if (discountedPrice !== null) {
+            return (
+                <div className="price-container-detail">
+                    <span className="product-price-detail final-price">${discountedPrice.toFixed(2)}</span>
+                    <span className="product-price-detail original-price">${price.toFixed(2)}</span>
+                </div>
+            );
+        }
+        return <p className="product-price-detail">${price?.toFixed(2) || 'N/A'}</p>;
+    };
+
     return (
         <div className="item-detail-page-content">
             <div className="detail-main-area">
-                {}
                 <div className="detail-carousel-column">
                     <div key={product.id + (currentVariation ? currentVariation.id : '')} className="carousel" ref={flickityRef}>
                         {imagenesCarousel.length > 0 ? (
                             imagenesCarousel.map((img, index) => (
                                 <div key={index} className="carousel-cell">
-                                    <img
-                                        src={img}
-                                        alt={`${product.nombre} - Imagen ${index + 1}`}
-                                    />
+                                    <img src={img} alt={`${product.nombre} - Imagen ${index + 1}`} />
                                 </div>
                             ))
                         ) : (
@@ -269,9 +283,9 @@ const ItemDetail = ({ product }) => {
                     </div>
                 </div>
 
-                {}
                 <div className="detail-body-column">
                     <h1 className="product-title">{product.nombre}</h1>
+                    {promoBadgeText && <div className="promo-badge-detail">{promoBadgeText}</div>}
                     <p className="product-category">
                         Categoría: {product.categoria} {product.subcategoria && ` / ${product.subcategoria}`}
                     </p>
@@ -279,9 +293,7 @@ const ItemDetail = ({ product }) => {
                     {product.hasVariations ? (
                         <div className="variations-selection-area">
                             {Object.keys(availableAttributes).map(attrName => {
-
                                 const currentSelectionsForValidation = { ...selectedAttributes };
-
                                 const availableValues = getAvailableAttributeValues(attrName, currentSelectionsForValidation);
                                 return (
                                     <div key={attrName} className="form-group variation-selector">
@@ -309,7 +321,7 @@ const ItemDetail = ({ product }) => {
 
                             {currentVariation ? (
                                 <div className="variation-info">
-                                    <p className="product-price">${currentVariation.precio?.toFixed(2) || 'N/A'}</p>
+                                    {renderPrice(currentVariation.precio, product.promocion)}
                                     <p className={`stock-available ${currentVariation.stock === 0 ? 'text-red' : 'text-green'}`}>
                                         Disponibles: {currentVariation.stock}
                                     </p>
@@ -322,7 +334,7 @@ const ItemDetail = ({ product }) => {
                         </div>
                     ) : (
                         <div className="simple-product-info">
-                            <p className="product-price">${product.precio?.toFixed(2) || 'N/A'}</p>
+                            {renderPrice(product.precio, product.promocion)}
                             <p className={`stock-available ${product.stock === 0 ? 'text-red' : 'text-green'}`}>
                                 Disponibles: {product.stock}
                             </p>

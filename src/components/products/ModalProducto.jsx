@@ -64,7 +64,7 @@ const ModalProducto = ({ producto, isOpen, onClose, addToCart, existsInCart, not
 
     if (!isOpen || !producto) return null;
 
-    const urlProducto = `${window.location.origin}/producto/${producto.id}`; // Changed to /producto/:id
+    const urlProducto = `${window.location.origin}/producto/${producto.id}`;
 
     const handleCopyLink = () => {
         const el = document.createElement('textarea');
@@ -91,7 +91,42 @@ const ModalProducto = ({ producto, isOpen, onClose, addToCart, existsInCart, not
             });
         }
     };
+    
+    const getPromoBadgeText = (promo) => {
+        if (!promo) return null;
+        switch (promo.type) {
+            case 'percentage_discount':
+                return `${promo.value}% OFF`;
+            case 'second_unit_discount':
+                return `${promo.value}% 2da Unidad`;
+            case '2x1':
+                return '2x1';
+            default:
+                return null;
+        }
+    };
 
+    const calculateDiscountedPrice = (price, promo) => {
+        if (promo && promo.type === 'percentage_discount' && price) {
+            return price * (1 - promo.value / 100);
+        }
+        return null;
+    };
+
+    const renderPrice = (price, promo) => {
+        const discountedPrice = calculateDiscountedPrice(price, promo);
+        if (discountedPrice !== null) {
+            return (
+                <div className="price-container-modal">
+                    <span className="product-price final-price">${discountedPrice.toFixed(2)}</span>
+                    <span className="product-price original-price">${price.toFixed(2)}</span>
+                </div>
+            );
+        }
+        return <p className="product-price">${price?.toFixed(2) || 'N/A'}</p>;
+    };
+
+    const promoBadgeText = getPromoBadgeText(producto.promocion);
     const imagenesCarousel = [producto.imagen, producto.imagenB, producto.imagenC].filter(Boolean);
     const fallbackImage = "https://placehold.co/400x400/E0E0E0/808080?text=Imagen+no+disponible";
 
@@ -122,7 +157,7 @@ const ModalProducto = ({ producto, isOpen, onClose, addToCart, existsInCart, not
                             <h2>{producto.nombre}</h2>
                             {producto.hasVariations ? (
                                 <button
-                                    onClick={() => { onClose(); navigate(`/producto/${producto.id}`); }} // Changed to /producto/:id
+                                    onClick={() => { onClose(); navigate(`/producto/${producto.id}`); }}
                                     className="add-to-cart"
                                 >
                                     Ver Detalles y Opciones
@@ -136,11 +171,12 @@ const ModalProducto = ({ producto, isOpen, onClose, addToCart, existsInCart, not
                             )}
                         </div>
                         <div className="modal-body">
+                            {promoBadgeText && <div className="promo-badge-modal">{promoBadgeText}</div>}
                             {producto.hasVariations ? (
                                 <p className="info-message">Este producto tiene variaciones (ej. talla, color). Por favor, haz clic en "Ver Detalles y Opciones" para seleccionarlas.</p>
                             ) : (
                                 <>
-                                    <p className="product-price">${producto.precio}</p>
+                                    {renderPrice(producto.precio, producto.promocion)}
                                     <p>{producto.descripcion}</p>
                                     <div className="product-details">
                                         {producto.categoria && (<><strong>Categoría:</strong> {producto.categoria}<br /></>)}

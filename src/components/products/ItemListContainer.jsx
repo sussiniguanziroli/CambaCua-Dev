@@ -15,7 +15,7 @@ function useQuery() {
 }
 
 const ItemListContainer = () => {
-    const { calcularTotal, carrito, eliminarDelCarrito, actualizarCantidad, vaciarCarrito } = useCarrito(CarritoProvider);
+    const { calcularTotales, carrito, eliminarDelCarrito, actualizarCantidad, vaciarCarrito } = useCarrito(CarritoProvider);
     const [productos, setProductos] = useState([]);
     const [filteredProducts, setFilteredProducts] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -49,7 +49,6 @@ const ItemListContainer = () => {
                     let hasAnyVariationStock = false;
 
                     if (data.hasVariations && Array.isArray(data.variationsList)) {
-                        // For variable products, calculate display stock and min price
                         let totalStock = 0;
                         let minPrice = Infinity;
 
@@ -63,17 +62,16 @@ const ItemListContainer = () => {
                             }
                         });
 
-                        displayStock = hasAnyVariationStock ? totalStock : 0; // Show total stock of active variations, or 0
-                        displayPrice = hasAnyVariationStock ? minPrice : null; // Show min price if any variation is in stock
+                        displayStock = hasAnyVariationStock ? totalStock : 0;
+                        displayPrice = hasAnyVariationStock ? minPrice : null;
                     }
 
                     return {
                         id: doc.id,
                         ...data,
-                        // Add computed properties for list display
                         _displayStock: displayStock,
                         _displayPrice: displayPrice,
-                        _hasAnyVariationStock: hasAnyVariationStock // Helper to check if any variation is in stock
+                        _hasAnyVariationStock: hasAnyVariationStock
                     };
                 });
                 setProductos(productosFirebase);
@@ -103,13 +101,10 @@ const ItemListContainer = () => {
     }, []);
 
     useEffect(() => {
-        // Filter products based on search term, category, and subcategory
         let filtered = productos.filter(producto => {
-            // Apply category and subcategory filters first
             const matchesCategory = !selectedCategory || producto.categoryAdress === selectedCategory;
             const matchesSubcategory = !selectedSubcategory || producto.subcategoria === selectedSubcategory;
 
-            // Apply search term filter
             const matchesSearch = !searchTerm ||
                 producto.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 (producto.descripcion && producto.descripcion.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -117,7 +112,6 @@ const ItemListContainer = () => {
             return matchesCategory && matchesSubcategory && matchesSearch;
         });
 
-        // Separate products with stock from those without, considering variations
         const productosConStock = filtered.filter(producto =>
             producto.hasVariations ? producto._hasAnyVariationStock : producto._displayStock > 0
         );
@@ -125,7 +119,6 @@ const ItemListContainer = () => {
             producto.hasVariations ? !producto._hasAnyVariationStock : producto._displayStock === 0
         );
 
-        // Sort: products with stock first, then products without stock
         const productosOrdenados = [...productosConStock, ...productosSinStock];
 
         setFilteredProducts(productosOrdenados);
@@ -163,12 +156,12 @@ const ItemListContainer = () => {
         const stockDisponible = await obtenerStockDisponible(id, variationId);
 
         if (cantidad > stockDisponible) {
-            actualizarCantidad(id, stockDisponible, variationId); // Pass variationId to actualizarCantidad
+            actualizarCantidad(id, stockDisponible, variationId);
             toast.info(`Se ha alcanzado el máximo de productos disponibles (${stockDisponible})`);
         } else if (cantidad > 0) {
-            actualizarCantidad(id, cantidad, variationId); // Pass variationId
+            actualizarCantidad(id, cantidad, variationId);
         } else {
-            eliminarDelCarrito(id, variationId); // Pass variationId
+            eliminarDelCarrito(id, variationId);
             notifyEliminar();
         }
     };
@@ -178,6 +171,7 @@ const ItemListContainer = () => {
 
     const currentCategoryData = categories.find(cat => cat.adress === selectedCategory);
     const showSubcategories = currentCategoryData && currentCategoryData.subcategorias && currentCategoryData.subcategorias.length > 0;
+    const { totalFinal } = calcularTotales();
 
     return (
         <div className='item-list-container'>
@@ -200,9 +194,9 @@ const ItemListContainer = () => {
                     ) : (
                         <div>
                             {carrito.map(item => (
-                                <div key={item.id + (item.variationId || '')} className="carrito-item-desk"> {/* Use variationId in key */}
+                                <div key={item.id + (item.variationId || '')} className="carrito-item-desk">
                                     <div className='carrito-first-item'>
-                                        <img src={item.imageUrl} alt={item.name} /> {/* Use imageUrl from cart item */}
+                                        <img src={item.imageUrl} alt={item.name} />
                                         <h2>
                                             {item.name}
                                             {item.hasVariations && item.attributes && (
@@ -212,7 +206,7 @@ const ItemListContainer = () => {
                                             )}
                                         </h2>
                                     </div>
-                                    <p>Precio: ${item.price?.toFixed(2)}</p> {/* Use price from cart item */}
+                                    <p>Precio: ${item.price?.toFixed(2)}</p>
                                     <div className="cantidad-control">
                                         <button onClick={() => handleCantidadChangeDesktop(item.id, { target: { value: item.quantity - 1 } }, item.variationId)}><FaMinus /></button>
                                         <input
@@ -230,7 +224,7 @@ const ItemListContainer = () => {
                                     </div>
                                 </div>
                             ))}
-                            <strong className='total-compra'>Total Compra: ${(calcularTotal()).toFixed(2)}</strong>
+                            <strong className='total-compra'>Total Compra: ${totalFinal.toFixed(2)}</strong>
                             <button className='button-vaciar' onClick={() => { vaciarCarrito(); notifyVaciar() }}>Vaciar Carrito</button>
                             <Link to="/checkout"><button className='button-comprar'>Continuar Compra</button></Link>
                         </div>
