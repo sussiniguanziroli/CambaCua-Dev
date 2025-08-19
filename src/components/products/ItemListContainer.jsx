@@ -171,7 +171,7 @@ const ItemListContainer = () => {
 
     const currentCategoryData = categories.find(cat => cat.adress === selectedCategory);
     const showSubcategories = currentCategoryData && currentCategoryData.subcategorias && currentCategoryData.subcategorias.length > 0;
-    const { totalFinal } = calcularTotales();
+    const { total } = calcularTotales();
 
     return (
         <div className='item-list-container'>
@@ -224,7 +224,7 @@ const ItemListContainer = () => {
                                     </div>
                                 </div>
                             ))}
-                            <strong className='total-compra'>Total Compra: ${totalFinal.toFixed(2)}</strong>
+                            <strong className='total-compra'>Total Compra: ${total.toFixed(2)}</strong>
                             <button className='button-vaciar' onClick={() => { vaciarCarrito(); notifyVaciar() }}>Vaciar Carrito</button>
                             <Link to="/checkout"><button className='button-comprar'>Continuar Compra</button></Link>
                         </div>

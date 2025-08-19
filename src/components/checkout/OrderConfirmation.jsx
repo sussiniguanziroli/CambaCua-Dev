@@ -1,9 +1,3 @@
-/*
-  File: OrderConfirmation.jsx
-  Description: Confirms and submits the final order.
-  Status: FEATURE UPDATED. Points system is now a toggle (all or nothing)
-          instead of a manual input, simplifying the user experience.
-*/
 import React, { useState, useEffect } from 'react';
 import { collection, addDoc, Timestamp, writeBatch, doc, getDoc, increment } from 'firebase/firestore';
 import { db } from '../../firebase/config';
@@ -13,48 +7,30 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import DeliveryCostCalculator from '../utils/DeliveryCostCalculator';
 import { isStoreOpen } from '../utils/isStoreOpen';
-import { FaGift } from 'react-icons/fa';
+import { FaGift, FaTags } from 'react-icons/fa';
 
 const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryCost, onBack }) => {
-    const { carrito, vaciarCarrito } = useCarrito();
+    const { carrito, vaciarCarrito, calcularTotales } = useCarrito();
     const { currentUser } = useAuth();
     const navigate = useNavigate();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [productosInfo, setProductosInfo] = useState({});
-    
-    // State for points system
     const [userScore, setUserScore] = useState(0);
-    const [applyPoints, setApplyPoints] = useState(false); // Replaces pointsToUse and discount
-
-    const productsTotal = carrito.reduce((acc, item) => {
-        const itemKey = item.id + (item.variationId || '');
-        const info = productosInfo[itemKey] || {};
-        const price = item.price ?? info.price ?? 0;
-        return acc + (price * item.quantity);
-    }, 0);
-
-    // Fetch user points
-    useEffect(() => {
-        const fetchUserScore = async () => {
-            if (currentUser) {
-                const userRef = doc(db, 'users', currentUser.uid);
-                const userSnap = await getDoc(userRef);
-                if (userSnap.exists()) {
-                    setUserScore(userSnap.data().score || 0);
-                }
-            }
-        };
-        fetchUserScore();
-    }, [currentUser]);
+    const [applyPoints, setApplyPoints] = useState(false);
+    
+    const [totales, setTotales] = useState({
+        subtotal: 0,
+        descuentos: 0,
+        total: 0,
+    });
 
     useEffect(() => {
         const fetchMissingDetails = async () => {
             const newInfo = {};
             let needsUpdate = false;
-
             for (const item of carrito) {
                 const itemKey = item.id + (item.variationId || '');
-                if (!item.price || !item.name || !item.imageUrl) {
+                if (!productosInfo[itemKey] && (!item.price || !item.name || !item.imageUrl)) {
                     const productRef = doc(db, 'productos', item.id);
                     const productSnap = await getDoc(productRef);
                     if (productSnap.exists()) {
@@ -84,15 +60,43 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
                 setProductosInfo(prev => ({ ...prev, ...newInfo }));
             }
         };
+
         if (carrito.length > 0) {
             fetchMissingDetails();
         }
-    }, [carrito]);
+    }, [carrito, productosInfo]);
+    
+    useEffect(() => {
+        const calculatedTotals = calcularTotales(productosInfo);
+        setTotales(calculatedTotals);
+    }, [carrito, productosInfo, calcularTotales]);
 
-    // Simplified discount calculation
-    const maxDiscount = Math.min(userScore, productsTotal);
-    const discountAmount = applyPoints ? maxDiscount : 0;
-    const finalTotal = productsTotal - discountAmount;
+    useEffect(() => {
+        const fetchUserScore = async () => {
+            if (currentUser) {
+                const userRef = doc(db, 'users', currentUser.uid);
+                const userSnap = await getDoc(userRef);
+                if (userSnap.exists()) {
+                    setUserScore(userSnap.data().score || 0);
+                }
+            }
+        };
+        fetchUserScore();
+    }, [currentUser]);
+
+    const maxDiscountFromPoints = Math.min(userScore, totales.total);
+    const pointsDiscountAmount = applyPoints ? maxDiscountFromPoints : 0;
+    const finalTotal = totales.total - pointsDiscountAmount;
+
+    const getPromoDescription = (item) => {
+        if (!item.promocion) return null;
+        switch (item.promocion.type) {
+            case 'percentage_discount': return `${item.promocion.value}% OFF`;
+            case '2x1': return `Promo 2x1`;
+            case 'second_unit_discount': return `${item.promocion.value}% en 2da unidad`;
+            default: return "Promo aplicada";
+        }
+    };
 
     const proceedWithOrder = async (isScheduled = false) => {
         setIsSubmitting(true);
@@ -103,10 +107,16 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
             const itemKey = item.id + (item.variationId || '');
             const info = productosInfo[itemKey] || {};
             return {
-                id: item.id, quantity: item.quantity, hasVariations: item.hasVariations ?? false,
-                variationId: item.variationId || null, name: item.name ?? info.name ?? 'Nombre no disponible',
-                price: item.price ?? info.price ?? 0, imageUrl: item.imageUrl ?? info.imageUrl ?? null,
-                attributes: item.attributes ?? info.attributes ?? null, stock: item.stock ?? 0,
+                id: item.id,
+                quantity: item.quantity,
+                hasVariations: item.hasVariations ?? false,
+                variationId: item.variationId || null,
+                promocion: item.promocion || null,
+                name: item.name ?? info.name ?? 'Nombre no disponible',
+                price: item.price ?? info.price ?? 0,
+                imageUrl: item.imageUrl ?? info.imageUrl ?? null,
+                attributes: item.attributes ?? info.attributes ?? null,
+                stock: item.stock ?? 0,
             };
         });
 
@@ -116,44 +126,50 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
                 const productoSnap = await getDoc(productoRef);
                 if (productoSnap.exists()) {
                     const productData = productoSnap.data();
-                    let currentStock = 0;
-                    if (productData.hasVariations === true && productData.variationsList) {
+                    let currentStock;
+                    if (productData.hasVariations && item.variationId) {
                         const variation = productData.variationsList.find(v => v.id === item.variationId);
-                        if (variation) { currentStock = variation.stock || 0; } 
-                        else { stockInsuficiente = true; throw new Error("Variation not found"); }
+                        if (!variation) { throw new Error(`Variación no encontrada para ${item.name}`); }
+                        currentStock = variation.stock || 0;
                     } else {
                         currentStock = productData.stock || 0;
                     }
+
                     if (item.quantity > currentStock) {
                         stockInsuficiente = true;
                         Swal.fire('Stock insuficiente', `No hay suficiente stock para ${item.name}. Solo quedan ${currentStock} unidades.`, 'error');
                         throw new Error("Insufficient stock");
                     }
-                    if (productData.hasVariations === true && productData.variationsList) {
+                    
+                    if (productData.hasVariations && item.variationId) {
                         const newVariationsList = productData.variationsList.map(v => v.id === item.variationId ? { ...v, stock: v.stock - item.quantity } : v);
                         batch.update(productoRef, { variationsList: newVariationsList });
                     } else {
-                        batch.update(productoRef, { stock: currentStock - item.quantity });
+                        batch.update(productoRef, { stock: increment(-item.quantity) });
                     }
                 } else {
-                    stockInsuficiente = true;
-                    Swal.fire('Producto no encontrado', `El producto ${item.name} ya no está disponible.`, 'error');
-                    throw new Error("Product not found");
+                    throw new Error(`Producto ${item.name} no encontrado.`);
                 }
             }
 
             const pedido = {
                 userId: currentUser.uid, email: currentUser.email, ...formData,
-                productos: finalCarrito, total: productsTotal,
-                puntosDescontados: discountAmount, totalConDescuento: finalTotal,
-                costoEnvio: deliveryCost, fecha: Timestamp.now(),
+                productos: finalCarrito,
+                subtotal: totales.subtotal,
+                descuentoPromociones: totales.descuentos,
+                total: totales.total,
+                puntosDescontados: pointsDiscountAmount,
+                totalConDescuento: finalTotal,
+                costoEnvio: deliveryCost,
+                fecha: Timestamp.now(),
                 estado: isScheduled ? 'Programado' : 'Pendiente',
-                metodoPago: paymentMethod, programado: isScheduled,
+                metodoPago: paymentMethod,
+                programado: isScheduled,
             };
             
-            if (discountAmount > 0) {
+            if (pointsDiscountAmount > 0) {
                 const userRef = doc(db, 'users', currentUser.uid);
-                batch.update(userRef, { score: increment(-discountAmount) });
+                batch.update(userRef, { score: increment(-pointsDiscountAmount) });
             }
 
             const docRef = await addDoc(collection(db, 'pedidos'), pedido);
@@ -165,7 +181,7 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
         } catch (error) {
             console.error("Error confirming order:", error);
             if (!stockInsuficiente) {
-                 Swal.fire("Error", "Ocurrió un problema al procesar tu pedido. Revisa la consola para más detalles.", "error");
+                 Swal.fire("Error", "Ocurrió un problema al procesar tu pedido. Por favor, inténtalo de nuevo.", "error");
             }
         } finally {
             setIsSubmitting(false);
@@ -174,11 +190,11 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
     
     const handleConfirmOrder = async () => {
         if (carrito.length === 0) {
-            Swal.fire('Carrito Vacío', 'No hay productos en tu carrito para confirmar el pedido.', 'info');
+            Swal.fire('Carrito Vacío', 'No hay productos en tu carrito.', 'info');
             return;
         }
         if (deliveryCost === 0 && formData.direccion) {
-            Swal.fire('Costo de Envío', 'Por favor, calcula el costo de envío antes de continuar.', 'info');
+            Swal.fire('Costo de Envío', 'Por favor, calcula el costo de envío.', 'info');
             return;
         }
         if (isSubmitting || !currentUser) return;
@@ -186,31 +202,18 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
         if (isStoreOpen()) {
             proceedWithOrder(false);
         } else {
-            let confirmationHtml = `
-                <p>Nuestro horario de atención ha finalizado.</p>
-                <p>Tu pedido será preparado y enviado el próximo día hábil.</p>
-                <div style="margin: 1.5em 0; padding: 0.5em; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;">
-                    <strong>Nuestros Horarios:</strong><br>
-                    Lunes a Viernes: 9:00-12:30 y 17:00-21:00<br>
-                    Sábados: 9:00-13:00
-                </div>
-            `;
-
+            let confirmationHtml = `<p>Nuestro horario de atención ha finalizado. Tu pedido será preparado y enviado el próximo día hábil.</p>`;
             if (paymentMethod === 'Transferencia Bancaria') {
-                confirmationHtml += `
-                    <p><strong>Ya puedes realizar la transferencia</strong> para asegurar tu pedido. Lo prepararemos en cuanto abramos.</p>
-                `;
+                confirmationHtml += `<p><strong>Ya puedes realizar la transferencia</strong> para asegurar tu pedido.</p>`;
             }
-
             const result = await Swal.fire({
                 title: 'Pedido Fuera de Horario',
                 html: confirmationHtml,
                 icon: 'info',
                 showCancelButton: true,
-                confirmButtonText: 'Entendido, Confirmar Pedido',
+                confirmButtonText: 'Confirmar Pedido',
                 cancelButtonText: 'Cancelar',
             });
-
             if (result.isConfirmed) {
                 proceedWithOrder(true);
             }
@@ -230,6 +233,7 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
                         const name = item.name ?? info.name ?? 'Cargando...';
                         const imageUrl = item.imageUrl ?? info.imageUrl ?? 'https://placehold.co/100x100/eee/ccc?text=...';
                         const attributes = item.attributes ?? info.attributes ?? {};
+                        const promoDescription = getPromoDescription(item);
                         return (
                             <div key={itemKey} className="checkout-item">
                                 <div className="product-details">
@@ -237,44 +241,49 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
                                     <div className="product-info">
                                         <h3>{name}</h3>
                                         {item.hasVariations && attributes && Object.keys(attributes).length > 0 && (<p className="item-variation-attrs">{Object.entries(attributes).map(([key, value]) => `${key}: ${value}`).join(' | ')}</p>)}
+                                        {promoDescription && <span className="promo-badge-checkout">{promoDescription}</span>}
                                         <p>Cant: {item.quantity}</p>
                                     </div>
                                 </div>
-                                <div className="product-price">${(price * item.quantity).toLocaleString('es-AR')}</div>
+                                <div className="product-price">${(price * item.quantity).toFixed(2)}</div>
                             </div>
                         );
                     })}
                 </div>
 
-                <div className="points-discount-section">
-                    <h4><FaGift /> Tienes {userScore} Puntos</h4>
-                    {userScore > 0 && (
-                        <>
-                            <p>Puedes usar tus puntos para obtener un descuento de hasta ${maxDiscount.toLocaleString('es-ar')}.</p>
-                            <button 
-                                onClick={() => setApplyPoints(!applyPoints)} 
-                                className={`points-toggle-button ${applyPoints ? 'active' : ''}`}
-                            >
-                                {applyPoints ? 'Quitar Descuento' : 'Usar Puntos'}
-                            </button>
-                        </>
-                    )}
-                </div>
+                {userScore > 0 && (
+                    <div className="points-discount-section">
+                        <h4><FaGift /> Tienes {userScore} Puntos</h4>
+                        <p>Puedes usar tus puntos para obtener un descuento de hasta ${maxDiscountFromPoints.toFixed(2)}.</p>
+                        <button 
+                            onClick={() => setApplyPoints(!applyPoints)} 
+                            className={`points-toggle-button ${applyPoints ? 'active' : ''}`}
+                        >
+                            {applyPoints ? 'Quitar Descuento' : 'Usar Puntos'}
+                        </button>
+                    </div>
+                )}
 
                 <div className="order-total-summary">
                     <div className="total-row">
                         <span>Subtotal:</span>
-                        <span>${productsTotal.toLocaleString('es-ar')}</span>
+                        <span>${totales.subtotal.toFixed(2)}</span>
                     </div>
-                    {discountAmount > 0 && (
-                        <div className="total-row discount">
-                            <span>Descuento por Puntos:</span>
-                            <span>-${discountAmount.toLocaleString('es-ar')}</span>
+                    {totales.descuentos > 0 && (
+                        <div className="total-row promo-discount">
+                            <span><FaTags /> Descuentos por Promociones:</span>
+                            <span>-${totales.descuentos.toFixed(2)}</span>
+                        </div>
+                    )}
+                    {pointsDiscountAmount > 0 && (
+                        <div className="total-row points-discount">
+                            <span><FaGift /> Descuento por Puntos:</span>
+                            <span>-${pointsDiscountAmount.toFixed(2)}</span>
                         </div>
                     )}
                     <div className="total-row grand-total">
                         <span>Total de Productos:</span>
-                        <span>${finalTotal.toLocaleString('es-ar')}</span>
+                        <span>${finalTotal.toFixed(2)}</span>
                     </div>
                     <p className="payment-method-notice">A pagar por {paymentMethod}.</p>
                 </div>
@@ -289,7 +298,7 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
                
                 {deliveryCost > 0 && (
                     <div className="delivery-cost-final-notice">
-                        <p>El costo del envío de <strong>${deliveryCost.toLocaleString('es-AR')}</strong> se abona en efectivo o transferencia directamente al repartidor al momento de la entrega.</p>
+                        <p>El costo del envío de <strong>${deliveryCost.toFixed(2)}</strong> se abona al repartidor.</p>
                     </div>
                 )}
 

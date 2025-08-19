@@ -1,26 +1,35 @@
-/*
-  File: OrderDetails.jsx
-  Description: Displays a list of the user's past orders.
-  Status: FEATURE ADDED. Now fetches and displays the user's current point balance.
-*/
 import React, { useState, useEffect, useMemo } from 'react';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import { FaSearch, FaChevronDown, FaChevronUp, FaGift } from 'react-icons/fa';
+import { FaSearch, FaChevronDown, FaChevronUp, FaGift, FaTags } from 'react-icons/fa';
 
-const OrderProductItem = ({ item }) => (
-    <div className="order-product-item">
-        <img src={item.imageUrl} alt={item.name} className="product-image"/>
-        <div className="product-info">
-            <h4>{item.name}</h4>
-            {item.hasVariations && item.attributes && (<p className="product-variation-attrs">{Object.entries(item.attributes).map(([key, value]) => `${key}: ${value}`).join(' | ')}</p>)}
-            <div className="product-meta"><span>${item.price?.toFixed(2)} c/u</span><span>Cant: {item.quantity}</span></div>
+const getPromoDescription = (item) => {
+    if (!item.promocion) return null;
+    switch (item.promocion.type) {
+        case 'percentage_discount': return `${item.promocion.value}% OFF`;
+        case '2x1': return `Promo 2x1`;
+        case 'second_unit_discount': return `${item.promocion.value}% en 2da unidad`;
+        default: return "Promo";
+    }
+};
+
+const OrderProductItem = ({ item }) => {
+    const promoDescription = getPromoDescription(item);
+    return (
+        <div className="order-product-item">
+            <img src={item.imageUrl} alt={item.name} className="product-image"/>
+            <div className="product-info">
+                <h4>{item.name}</h4>
+                {item.hasVariations && item.attributes && (<p className="product-variation-attrs">{Object.entries(item.attributes).map(([key, value]) => `${key}: ${value}`).join(' | ')}</p>)}
+                {promoDescription && <span className="promo-badge-details">{promoDescription}</span>}
+                <div className="product-meta"><span>${item.price?.toFixed(2)} c/u</span><span>Cant: {item.quantity}</span></div>
+            </div>
+            <div className="product-subtotal">${(item.price * item.quantity)?.toFixed(2)}</div>
         </div>
-        <div className="product-subtotal">${(item.price * item.quantity)?.toFixed(2)}</div>
-    </div>
-);
+    );
+};
 
 const OrderHistoryItem = ({ order }) => {
     const [isExpanded, setIsExpanded] = useState(false);
@@ -43,7 +52,7 @@ const OrderHistoryItem = ({ order }) => {
                 <div className="order-details-expanded">
                     <div className="expanded-section">
                         <h4>Productos del Pedido:</h4>
-                        <div className="order-products-list">{order.productos.map((item) => (<OrderProductItem key={item.id + (item.variationId || '')} item={item} />))}</div>
+                        <div className="order-products-list">{order.productos.map((item, index) => (<OrderProductItem key={`${item.id}-${item.variationId || index}`} item={item} />))}</div>
                     </div>
                     <div className="expanded-section">
                         <h4>Detalles de Envío:</h4>
@@ -53,10 +62,19 @@ const OrderHistoryItem = ({ order }) => {
                         <p><strong>Método de Pago:</strong> {order.metodoPago}</p>
                         {order.costoEnvio > 0 && <p><strong>Costo de Envío:</strong> ${order.costoEnvio.toFixed(2)}</p>}
                     </div>
-                     {order.puntosDescontados > 0 && (
+                     {(order.descuentoPromociones > 0 || order.puntosDescontados > 0) && (
                          <div className="expanded-section">
-                            <h4>Descuentos</h4>
-                            <p><strong>Puntos Usados:</strong> {order.puntosDescontados} (${order.puntosDescontados.toFixed(2)})</p>
+                            <h4>Descuentos Aplicados</h4>
+                            {order.descuentoPromociones > 0 && (
+                                <p className="discount-details promo-discount-details">
+                                    <FaTags /> <strong>Promociones:</strong> -${order.descuentoPromociones.toFixed(2)}
+                                </p>
+                            )}
+                            {order.puntosDescontados > 0 && (
+                                <p className="discount-details points-discount-details">
+                                    <FaGift /> <strong>Puntos Usados:</strong> -${order.puntosDescontados.toFixed(2)}
+                                </p>
+                            )}
                         </div>
                     )}
                     <Link to={`/order-summary/${order.id}`} className="details-link">Ver Resumen Completo</Link>
@@ -112,10 +130,12 @@ const OrderDetails = () => {
         let orders = [...allOrders];
         if (searchTerm) { orders = orders.filter(order => order.id.toLowerCase().includes(searchTerm.toLowerCase())); }
         orders.sort((a, b) => {
+            const totalA = a.totalConDescuento ?? a.total;
+            const totalB = b.totalConDescuento ?? b.total;
             switch (sortOption) {
                 case 'date-asc': return a.fecha - b.fecha;
-                case 'total-desc': return (b.totalConDescuento ?? b.total) - (a.totalConDescuento ?? a.total);
-                case 'total-asc': return (a.totalConDescuento ?? a.total) - (b.totalConDescuento ?? b.total);
+                case 'total-desc': return totalB - totalA;
+                case 'total-asc': return totalA - totalB;
                 case 'date-desc': default: return b.fecha - a.fecha;
             }
         });

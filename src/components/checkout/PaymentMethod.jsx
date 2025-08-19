@@ -3,8 +3,8 @@ import Swal from 'sweetalert2';
 import { useCarrito } from '../../context/CarritoContext';
 
 const PaymentMethod = ({ paymentMethod, setPaymentMethod, onNext, onBack }) => {
-    const { calcularTotal } = useCarrito();
-    const total = calcularTotal();
+    const { calcularTotales } = useCarrito();
+    const total = calcularTotales();
     const LIMITE_EFECTIVO = 70000;
     const efectivoDeshabilitado = total > LIMITE_EFECTIVO;
 

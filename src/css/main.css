@@ -2327,6 +2327,17 @@ html {
   color: #474747;
   font-size: 1rem;
 }
+.checkout-container .checkout-items .checkout-item .product-details .product-info .promo-badge-checkout {
+  background-color: #e67e22;
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  display: inline-block;
+  margin-top: 0.2rem;
+  align-self: flex-start;
+}
 .checkout-container .checkout-items .checkout-item .product-price {
   font-size: 1.5rem;
   font-weight: 600;
@@ -2813,13 +2824,6 @@ html {
   border-top: 2px solid #686a6e;
   padding-top: 1.5rem;
 }
-.order-total-summary .total-row.discount {
-  color: #059669;
-  font-weight: 500;
-}
-.order-total-summary .total-row.discount span:last-child {
-  color: #059669;
-}
 .order-total-summary .total-row {
   display: flex;
   justify-content: space-between;
@@ -2829,10 +2833,19 @@ html {
 }
 .order-total-summary .total-row span:first-child {
   color: #4b5563;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 .order-total-summary .total-row span:last-child {
   font-weight: 600;
   color: #111827;
+}
+.order-total-summary .total-row.promo-discount, .order-total-summary .total-row.points-discount {
+  font-weight: 500;
+}
+.order-total-summary .total-row.promo-discount span, .order-total-summary .total-row.points-discount span {
+  color: #059669;
 }
 .order-total-summary .grand-total {
   margin-top: 1rem;
@@ -3321,6 +3334,18 @@ html {
   color: #343a40;
   margin-right: 0.3rem;
 }
+.order-details-container .order-details-expanded .expanded-section .discount-details {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+}
+.order-details-container .order-details-expanded .expanded-section .discount-details.promo-discount-details {
+  color: #e67e22;
+}
+.order-details-container .order-details-expanded .expanded-section .discount-details.points-discount-details {
+  color: #28a745;
+}
 .order-details-container .order-details-expanded .order-products-list {
   display: flex;
   flex-direction: column;
@@ -3352,6 +3377,16 @@ html {
   font-weight: 500;
   color: #0b369c;
   margin: 0 0 0.2rem 0;
+}
+.order-details-container .order-details-expanded .order-product-item .product-info .promo-badge-details {
+  background-color: #e67e22;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  display: inline-block;
+  margin-bottom: 0.3rem;
 }
 .order-details-container .order-details-expanded .order-product-item .product-info .product-meta {
   font-size: 0.85rem;
@@ -3426,12 +3461,14 @@ html {
   font-family: "Poppins", sans-serif;
   position: relative;
 }
-.order-summary-container .order-detail.discount {
-  color: #059669;
+.order-summary-container .order-detail.promo-discount, .order-summary-container .order-detail.points-discount {
   font-weight: 500;
 }
-.order-summary-container .order-detail.discount span {
+.order-summary-container .order-detail.promo-discount span, .order-summary-container .order-detail.promo-discount strong, .order-summary-container .order-detail.points-discount span, .order-summary-container .order-detail.points-discount strong {
   color: #059669;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 .order-summary-container .order-detail.grand-total {
   font-size: 1.1rem;
@@ -3606,6 +3643,16 @@ html {
   color: #1f2937;
   margin-bottom: 0.3rem;
   font-size: 1.1rem;
+}
+.order-summary-container .order-products .product-item .product-info .promo-badge-summary {
+  background-color: #e67e22;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  display: inline-block;
+  margin-bottom: 0.4rem;
 }
 .order-summary-container .order-products .product-item .product-info .product-meta {
   color: #6b7280;

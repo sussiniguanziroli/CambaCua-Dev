@@ -14,7 +14,7 @@ const Carrito = () => {
     const { currentUser } = useAuth();
     const navigate = useNavigate();
     const [productosInfo, setProductosInfo] = useState({});
-    const [totales, setTotales] = useState({ subtotal: 0, descuentos: 0, totalFinal: 0 });
+    const [totales, setTotales] = useState({ subtotal: 0, descuentos: 0, total: 0 });
 
     useEffect(() => {
         const cargarDatosFaltantes = async () => {
@@ -79,8 +79,8 @@ const Carrito = () => {
             }
         });
 
-        const totalFinal = subtotal - totalDescuentos;
-        setTotales({ subtotal, descuentos: totalDescuentos, totalFinal });
+        const total = subtotal - totalDescuentos;
+        setTotales({ subtotal, descuentos: totalDescuentos, total });
 
     }, [carrito, productosInfo]);
 
@@ -268,7 +268,7 @@ const Carrito = () => {
                          </div>
                          <div className="total-section">
                              <span className="total-label">Total:</span>
-                             <span className="total-amount">${totales.totalFinal.toFixed(2)}</span>
+                             <span className="total-amount">${totales.total.toFixed(2)}</span>
                          </div>
                          <div className="actions-section">
                              <button className="vaciar-carrito-button" onClick={handleVaciarCarrito}>

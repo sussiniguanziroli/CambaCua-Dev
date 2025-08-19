@@ -79,11 +79,11 @@ export const CarritoProvider = ({ children }) => {
             }
         });
 
-        const totalFinal = subtotal - totalDescuentos;
+        const total = subtotal - totalDescuentos;
         return {
             subtotal: subtotal,
             descuentos: totalDescuentos,
-            totalFinal: totalFinal,
+            total: total,
         };
     };
 

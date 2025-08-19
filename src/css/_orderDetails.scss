@@ -13,7 +13,6 @@
     align-items: center;
     justify-content: space-between;
 
-    // Assumed Variables
     $azul-cambacua: #0b369c;
     $button-hover-cambacua: #1d5aea;
     $main-white: #ffffff;
@@ -21,6 +20,8 @@
     $light-gray-bg: #f8f9fa;
     $border-color: #e0e0e0;
     $heading-color: #343a40;
+    $promo-color: #e67e22;
+    $success-color: #28a745;
 
     .css-loader {
         width: 50px;
@@ -44,10 +45,7 @@
         margin: 1rem auto;
         padding: 1rem;
         font-family: "Poppins", sans-serif;
-
-        
     }
-
 
     .my-purchases-header {
         text-align: center;
@@ -68,24 +66,24 @@
     }
 
     .user-score-display {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
-            background-color: #eff6ff;
-            border: 1px solid #bfdbfe;
-            color: #1e40af;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-            font-size: 1.1rem;
-            font-weight: 500;
-            
-
-            strong {
-                font-weight: 700;
-            }
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        background-color: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #1e40af;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        font-size: 1.1rem;
+        font-weight: 500;
+        
+        strong {
+            font-weight: 700;
         }
+    }
+
     .controls-bar {
         width: 100%;
         display: flex;
@@ -154,13 +152,6 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
             transform: translateY(-2px);
         }
-
-        @media(min-width: 768px) {
-            // No longer always flex-row, as it's now collapsible
-            // flex-direction: row;
-            // justify-content: space-between;
-            // align-items: center;
-        }
     }
 
     .order-summary-header {
@@ -169,8 +160,8 @@
         align-items: center;
         width: 100%;
         cursor: pointer;
-        padding-bottom: 0.5rem; // Space between header and expanded content
-        border-bottom: 1px solid transparent; // Initially transparent
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid transparent;
         transition: border-bottom 0.2s ease;
 
         .order-info {
@@ -210,23 +201,10 @@
                 text-transform: capitalize;
                 color: white;
 
-                &.pendiente {
-                    background-color: #ffc107;
-                    color: #333;
-                }
-
-                &.pagado {
-                    background-color: #28a745;
-                }
-
-                &.completado,
-                &.enviado {
-                    background-color: #17a2b8;
-                }
-
-                &.cancelado {
-                    background-color: #dc3545;
-                }
+                &.pendiente { background-color: #ffc107; color: #333; }
+                &.pagado { background-color: #28a745; }
+                &.completado, &.enviado { background-color: #17a2b8; }
+                &.cancelado { background-color: #dc3545; }
             }
 
             .expand-button {
@@ -236,10 +214,7 @@
                 font-size: 1.2rem;
                 cursor: pointer;
                 transition: transform 0.2s ease;
-
-                &:hover {
-                    color: $button-hover-cambacua;
-                }
+                &:hover { color: $button-hover-cambacua; }
             }
         }
     }
@@ -247,22 +222,19 @@
     .order-details-expanded {
         width: 100%;
         padding-top: 1rem;
-        border-top: 1px solid $border-color; // Separator when expanded
-        animation: fadeIn 0.3s ease-out; // Smooth reveal
+        border-top: 1px solid $border-color;
+        animation: fadeIn 0.3s ease-out;
 
         .expanded-section {
             margin-bottom: 1.5rem;
-
-            &:last-of-type {
-                margin-bottom: 0;
-            }
+            &:last-of-type { margin-bottom: 0; }
 
             h4 {
                 font-size: 1.1rem;
                 font-weight: 600;
                 color: $heading-color;
                 margin-bottom: 0.75rem;
-                border-bottom: 1px solid $light-gray-bg; // Subtle separator
+                border-bottom: 1px solid $light-gray-bg;
                 padding-bottom: 0.25rem;
             }
 
@@ -270,11 +242,16 @@
                 font-size: 0.9rem;
                 color: $text-gray;
                 margin-bottom: 0.4rem;
+                strong { color: $heading-color; margin-right: 0.3rem; }
+            }
 
-                strong {
-                    color: $heading-color;
-                    margin-right: 0.3rem;
-                }
+            .discount-details {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                font-size: 0.95rem;
+                &.promo-discount-details { color: $promo-color; }
+                &.points-discount-details { color: $success-color; }
             }
         }
 
@@ -313,30 +290,30 @@
                     margin: 0 0 0.2rem 0;
                 }
 
+                .promo-badge-details {
+                    background-color: $promo-color;
+                    color: $main-white;
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                    padding: 0.15rem 0.5rem;
+                    border-radius: 4px;
+                    display: inline-block;
+                    margin-bottom: 0.3rem;
+                }
+
                 .product-meta {
                     font-size: 0.85rem;
                     color: $text-gray;
-
-                    span {
-                        &:not(:last-child) {
-                            margin-right: 0.5rem;
-                        }
-                    }
+                    span:not(:last-child) { margin-right: 0.5rem; }
                 }
             }
 
-            // New style for variation attributes in order details
             .product-variation-attrs {
                 font-size: 0.8rem;
                 color: darken($text-gray, 10%);
-                margin-top: -0.2rem; // Adjust spacing
+                margin-top: -0.2rem;
                 margin-bottom: 0.2rem;
-
-                span {
-                    &:not(:last-child) {
-                        margin-right: 0.3rem;
-                    }
-                }
+                span:not(:last-child) { margin-right: 0.3rem; }
             }
 
             .product-subtotal {
@@ -359,10 +336,7 @@
             transition: background-color 0.2s ease;
             margin-top: 1rem;
             text-align: center;
-
-            &:hover {
-                background-color: $button-hover-cambacua;
-            }
+            &:hover { background-color: $button-hover-cambacua; }
         }
     }
 
@@ -387,10 +361,7 @@
             border-radius: 6px;
             font-weight: 500;
             transition: background-color 0.2s ease;
-
-            &:hover {
-                background-color: $button-hover-cambacua;
-            }
+            &:hover { background-color: $button-hover-cambacua; }
         }
     }
 }

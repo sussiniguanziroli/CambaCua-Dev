@@ -1,14 +1,8 @@
-/*
-  File: OrderSummary.jsx
-  Description: Displays the summary of a completed order.
-  Status: FEATURE ADDED. Now displays points discount and correctly
-          refunds points on order cancellation.
-*/
 import React, { useEffect, useState } from 'react';
 import { doc, getDoc, writeBatch, setDoc, deleteDoc, increment } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { useNavigate, useParams } from 'react-router-dom';
-import { FaArrowLeft, FaEllipsisV } from 'react-icons/fa';
+import { FaArrowLeft, FaEllipsisV, FaTags, FaGift } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 
 const OrderSummary = () => {
@@ -20,6 +14,16 @@ const OrderSummary = () => {
     const [aliasCopied, setAliasCopied] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
 
+    const getPromoDescription = (item) => {
+        if (!item.promocion) return null;
+        switch (item.promocion.type) {
+            case 'percentage_discount': return `${item.promocion.value}% OFF`;
+            case '2x1': return `Promo 2x1`;
+            case 'second_unit_discount': return `${item.promocion.value}% en 2da unidad`;
+            default: return "Promo";
+        }
+    };
+
     const handleCancelOrder = async () => {
         setMenuOpen(false);
         const cancellableStatuses = ['Pendiente', 'Pagado', 'Programado'];
@@ -29,15 +33,14 @@ const OrderSummary = () => {
         }
 
         const result = await Swal.fire({
-            title: '¿Estás seguro de que quieres cancelar? Se te reintegrarán los puntos usados.',
-            html: `<p>Esta acción no se puede deshacer. Los productos del pedido serán devueltos al stock.</p><p>Recibirás una notificación por correo sobre el estado de tu cancelación.</p>`,
+            title: '¿Estás seguro de que quieres cancelar?',
+            html: `<p>Esta acción no se puede deshacer. Los productos del pedido serán devueltos al stock y se te reintegrarán los puntos usados.</p>`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#3085d6',
             confirmButtonText: 'Sí, cancelar el pedido',
             cancelButtonText: 'No, conservar mi pedido',
-            reverseButtons: true
         });
 
         if (!result.isConfirmed) return;
@@ -46,53 +49,52 @@ const OrderSummary = () => {
             title: 'Motivo de la cancelación',
             input: 'textarea',
             inputLabel: 'Tu opinión nos ayuda a mejorar. ¿Por qué cancelas tu pedido?',
-            inputPlaceholder: 'Ej: Me equivoqué de producto, ya no lo necesito...',
+            inputPlaceholder: 'Ej: Me equivoqué de producto...',
             showCancelButton: true,
             confirmButtonText: 'Confirmar cancelación',
             cancelButtonText: 'Volver atrás',
-            inputValidator: (value) => {
-                if (!value) { return '¡Es necesario que escribas un motivo para continuar!'; }
-            }
+            inputValidator: (value) => !value && '¡Es necesario que escribas un motivo!',
         });
 
         if (reason) {
-            Swal.fire({ title: 'Procesando cancelación...', text: 'Por favor, espera...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            Swal.fire({ title: 'Procesando cancelación...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
             try {
                 const batch = writeBatch(db);
                 const originalOrderRef = doc(db, 'pedidos', orderId);
                 const originalOrderSnap = await getDoc(originalOrderRef);
 
-                if (!originalOrderSnap.exists()) {
-                    throw new Error("El pedido ya no se encuentra en la lista de pendientes.");
+                if (!originalOrderSnap.exists()) throw new Error("El pedido ya no se encuentra en la lista de pendientes.");
+                
+                const orderDataToCancel = originalOrderSnap.data();
+
+                if (orderDataToCancel.puntosDescontados > 0) {
+                    const userRef = doc(db, 'users', orderDataToCancel.userId);
+                    batch.update(userRef, { score: increment(orderDataToCancel.puntosDescontados) });
                 }
 
-                if (order.puntosDescontados > 0) {
-                    const userRef = doc(db, 'users', order.userId);
-                    batch.update(userRef, { score: increment(order.puntosDescontados) });
-                }
-
-                for (const item of order.productos) {
+                for (const item of orderDataToCancel.productos) {
                     const productRef = doc(db, 'productos', item.id);
                     const productSnap = await getDoc(productRef);
                     if (productSnap.exists()) {
                         const productData = productSnap.data();
-                        if (productData.hasVariations === true && item.variationId && productData.variationsList) {
+                        if (productData.hasVariations && item.variationId) {
                             const newVariationsList = productData.variationsList.map(v => v.id === item.variationId ? { ...v, stock: (v.stock || 0) + item.quantity } : v);
                             batch.update(productRef, { variationsList: newVariationsList });
                         } else {
-                            batch.update(productRef, { stock: (productData.stock || 0) + item.quantity });
+                            batch.update(productRef, { stock: increment(item.quantity) });
                         }
                     }
                 }
 
                 const cancelledOrderRef = doc(db, 'pedidos_completados', orderId);
-                const orderDataToCancel = originalOrderSnap.data();
                 const cancelledOrderData = { ...orderDataToCancel, estado: 'Cancelado', canceladoPor: 'cliente', motivoCancelacion: reason, fechaCancelacion: new Date() };
                 batch.set(cancelledOrderRef, cancelledOrderData);
                 batch.delete(originalOrderRef);
+                
                 await batch.commit();
-                Swal.fire('¡Pedido Cancelado!', 'Tu pedido ha sido cancelado y el stock ha sido restaurado.', 'success');
+                
+                Swal.fire('¡Pedido Cancelado!', 'Tu pedido ha sido cancelado.', 'success');
                 setOrder(prev => ({ ...prev, estado: 'Cancelado', motivoCancelacion: reason }));
 
             } catch (error) {
@@ -115,14 +117,10 @@ const OrderSummary = () => {
                         break;
                     }
                 }
-                if (orderData) {
-                    setOrder({
-                        ...orderData,
-                        fecha: new Date(orderData.fecha.seconds * 1000).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
-                    });
-                } else {
-                    setOrder(null);
-                }
+                setOrder(orderData ? {
+                    ...orderData,
+                    fecha: new Date(orderData.fecha.seconds * 1000).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                } : null);
             } catch (error) {
                 console.error("Error fetching order:", error);
             } finally {
@@ -132,22 +130,17 @@ const OrderSummary = () => {
         fetchOrder();
     }, [orderId]);
 
-    const copyOrderId = () => {
-        navigator.clipboard.writeText(orderId);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
-    
-    const copyAlias = () => {
-        navigator.clipboard.writeText("cambacuavet.mp");
-        setAliasCopied(true);
-        setTimeout(() => setAliasCopied(false), 2000);
+    const copyToClipboard = (text, setCopiedState) => {
+        navigator.clipboard.writeText(text);
+        setCopiedState(true);
+        setTimeout(() => setCopiedState(false), 2000);
     };
 
     if (loading) { return <div className="order-summary-loading"><div className="css-loader"></div><h3>Cargando...</h3></div>; }
     if (!order) { return <div className="order-summary-error"><h2>Pedido no encontrado</h2><button onClick={() => navigate('/')}>Volver</button></div>; }
 
-    const canCancel = order && ['Pendiente', 'Pagado', 'Programado'].includes(order.estado);
+    const canCancel = ['Pendiente', 'Pagado', 'Programado'].includes(order.estado);
+    const finalTotal = order.totalConDescuento ?? order.total;
 
     return (
         <div className="order-summary-container">
@@ -163,7 +156,7 @@ const OrderSummary = () => {
 
             <div className="order-header">
                 <h2>Resumen de tu Pedido</h2>
-                <div className="order-id-section"><p>Número: <strong>{order.id}</strong></p><button onClick={copyOrderId} className={`copy-button ${copied ? 'copied' : ''}`}>{copied ? '✓ Copiado!' : 'Copiar'}</button></div>
+                <div className="order-id-section"><p>Número: <strong>{order.id}</strong></p><button onClick={() => copyToClipboard(orderId, setCopied)} className={`copy-button ${copied ? 'copied' : ''}`}>{copied ? '✓ Copiado!' : 'Copiar'}</button></div>
             </div>
 
             <div className="info-banner info-banner-info">Puedes usar este código en "Mis Compras" para ver el estado de tu pedido.</div>
@@ -175,10 +168,11 @@ const OrderSummary = () => {
             <div className="order-section">
                 <h3>Detalles del Pedido</h3>
                 <div className="order-detail"><strong>Fecha:</strong><span>{order.fecha}</span></div>
-                <div className="order-detail"><strong>Subtotal:</strong><span>${order.total.toLocaleString('es-AR')}</span></div>
-                {order.puntosDescontados > 0 && (<div className="order-detail discount"><strong>Descuento por Puntos:</strong><span>-${order.puntosDescontados.toLocaleString('es-AR')}</span></div>)}
-                <div className="order-detail grand-total"><strong>Total Productos:</strong><span>${(order.totalConDescuento ?? order.total).toLocaleString('es-AR')}</span></div>
-                {order.costoEnvio > 0 && (<div className="order-detail"><strong>Costo Envío:</strong><span>${order.costoEnvio.toLocaleString('es-AR')}</span></div>)}
+                <div className="order-detail"><strong>Subtotal:</strong><span>${order.subtotal.toFixed(2)}</span></div>
+                {order.descuentoPromociones > 0 && (<div className="order-detail promo-discount"><strong><FaTags /> Descuento Promociones:</strong><span>-${order.descuentoPromociones.toFixed(2)}</span></div>)}
+                {order.puntosDescontados > 0 && (<div className="order-detail points-discount"><strong><FaGift /> Descuento por Puntos:</strong><span>-${order.puntosDescontados.toFixed(2)}</span></div>)}
+                <div className="order-detail grand-total"><strong>Total Productos:</strong><span>${finalTotal.toFixed(2)}</span></div>
+                {order.costoEnvio > 0 && (<div className="order-detail"><strong>Costo Envío:</strong><span>${order.costoEnvio.toFixed(2)}</span></div>)}
                 <div className="order-detail"><strong>Método de Pago:</strong><span>{order.metodoPago}</span></div>
             </div>
             
@@ -187,24 +181,28 @@ const OrderSummary = () => {
             <div className="order-section">
                 <h3>Productos</h3>
                 <div className="order-products">
-                    {order.productos.map((item) => (
-                        <div key={item.id + (item.variationId || '')} className="product-item">
-                            <img src={item.imageUrl} alt={item.name} className="product-image"/>
-                            <div className="product-info">
-                                <h4>{item.name}</h4>
-                                {item.hasVariations && item.attributes && (<p className="product-variation-attrs">{Object.entries(item.attributes).map(([key, value]) => `${key}: ${value}`).join(' | ')}</p>)}
-                                <div className="product-meta"><span>${item.price?.toFixed(2)} c/u</span><span>Cant: {item.quantity}</span></div>
+                    {order.productos.map((item, index) => {
+                        const promoDescription = getPromoDescription(item);
+                        return (
+                            <div key={`${item.id}-${item.variationId || index}`} className="product-item">
+                                <img src={item.imageUrl} alt={item.name} className="product-image"/>
+                                <div className="product-info">
+                                    <h4>{item.name}</h4>
+                                    {item.hasVariations && item.attributes && (<p className="product-variation-attrs">{Object.entries(item.attributes).map(([key, value]) => `${key}: ${value}`).join(' | ')}</p>)}
+                                    {promoDescription && <span className="promo-badge-summary">{promoDescription}</span>}
+                                    <div className="product-meta"><span>${item.price?.toFixed(2)} c/u</span><span>Cant: {item.quantity}</span></div>
+                                </div>
+                                <div className="product-subtotal">${(item.price * item.quantity)?.toFixed(2)}</div>
                             </div>
-                            <div className="product-subtotal">${(item.price * item.quantity)?.toFixed(2)}</div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
 
             {order.metodoPago === 'Transferencia Bancaria' && order.estado !== 'Cancelado' && (
                 <div className="order-section">
                     <h3>Información para Transferencia</h3>
-                    <div className="order-detail"><div className="alias-row"><div><strong>Alias MP:</strong><span> cambacuavet.mp</span></div><button onClick={copyAlias} className={`copy-alias-button ${aliasCopied ? 'copied' : ''}`}>{aliasCopied ? '✓ Copiado' : 'Copiar'}</button></div></div>
+                    <div className="order-detail"><div className="alias-row"><div><strong>Alias MP:</strong><span> cambacuavet.mp</span></div><button onClick={() => copyToClipboard('cambacuavet.mp', setAliasCopied)} className={`copy-alias-button ${aliasCopied ? 'copied' : ''}`}>{aliasCopied ? '✓ Copiado' : 'Copiar'}</button></div></div>
                     <div className="order-detail"><strong>Nombre:</strong><span>Maria Celeste Guanziroli Stefani</span></div>
                 </div>
             )}
