@@ -10,11 +10,10 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 
 const Carrito = () => {
-    const { carrito, eliminarDelCarrito, actualizarCantidad, vaciarCarrito } = useCarrito();
+    const { carrito, eliminarDelCarrito, actualizarCantidad, vaciarCarrito, calcularTotales } = useCarrito();
     const { currentUser } = useAuth();
     const navigate = useNavigate();
     const [productosInfo, setProductosInfo] = useState({});
-    const [totales, setTotales] = useState({ subtotal: 0, descuentos: 0, total: 0 });
 
     useEffect(() => {
         const cargarDatosFaltantes = async () => {
@@ -46,43 +45,7 @@ const Carrito = () => {
         }
     }, [carrito]);
 
-    useEffect(() => {
-        let subtotal = 0;
-        let totalDescuentos = 0;
-
-        carrito.forEach(item => {
-            const itemKey = item.id + (item.variationId || '');
-            const info = productosInfo[itemKey] || {};
-            const itemPrice = item.price ?? info.price ?? 0;
-
-            if (itemPrice > 0) {
-                const itemSubtotal = itemPrice * item.quantity;
-                subtotal += itemSubtotal;
-
-                if (item.promocion) {
-                    switch (item.promocion.type) {
-                        case 'percentage_discount':
-                            totalDescuentos += itemSubtotal * (item.promocion.value / 100);
-                            break;
-                        case '2x1':
-                            const pares2x1 = Math.floor(item.quantity / 2);
-                            totalDescuentos += pares2x1 * itemPrice;
-                            break;
-                        case 'second_unit_discount':
-                            const pares2daUnidad = Math.floor(item.quantity / 2);
-                            totalDescuentos += pares2daUnidad * itemPrice * (item.promocion.value / 100);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            }
-        });
-
-        const total = subtotal - totalDescuentos;
-        setTotales({ subtotal, descuentos: totalDescuentos, total });
-
-    }, [carrito, productosInfo]);
+    const totales = calcularTotales(productosInfo);
 
     const handleContinuarCompra = () => {
         if (!currentUser) {
