@@ -4,8 +4,7 @@ import { LoadScript, Autocomplete } from '@react-google-maps/api';
 const GOOGLE_MAPS_API_KEY = 'AIzaSyBOH_eDOaDrvYnkPqwju6GnMwnhx7X597o';
 const libraries = ['places'];
 
-// This is the component that will render the Google Maps Autocomplete input.
-const AddressAutocomplete = ({ onPlaceSelect }) => {
+const AutocompleteComponent = ({ onPlaceSelect }) => {
     const [autocomplete, setAutocomplete] = useState(null);
 
     const onLoad = (autocompleteInstance) => {
@@ -39,23 +38,28 @@ const AddressAutocomplete = ({ onPlaceSelect }) => {
             <input
               type="text"
               placeholder="Empezá a escribir tu calle y número..."
-              className="address-input-style" // We'll style this to match your form
+              className="address-input-style"
             />
         </Autocomplete>
     );
 };
 
+const AddressAutocomplete = ({ onPlaceSelect }) => {
+    const isGoogleMapsScriptLoaded = window.google && window.google.maps;
 
-// The main exported component that loads the script first.
-const AddressAutocompleteWrapper = ({ onPlaceSelect }) => {
+    if (isGoogleMapsScriptLoaded) {
+        return <AutocompleteComponent onPlaceSelect={onPlaceSelect} />;
+    }
+
     return (
         <LoadScript
             googleMapsApiKey={GOOGLE_MAPS_API_KEY}
             libraries={libraries}
+            loadingElement={<div>Cargando...</div>}
         >
-            <AddressAutocomplete onPlaceSelect={onPlaceSelect} />
+            <AutocompleteComponent onPlaceSelect={onPlaceSelect} />
         </LoadScript>
     );
 };
 
-export default memo(AddressAutocompleteWrapper);
+export default memo(AddressAutocomplete);

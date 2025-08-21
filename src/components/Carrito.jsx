@@ -161,7 +161,7 @@ const Carrito = () => {
             case 'percentage_discount':
                 return `Descuento: ${item.promocion.value}% OFF`;
             case '2x1':
-                return `Promo 2x1 aplicada`;
+                return `Promo 2x1 llevando 2`;
             case 'second_unit_discount':
                 return `Promo: ${item.promocion.value}% en 2da unidad`;
             default:

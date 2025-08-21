@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { doc, getDoc, writeBatch, setDoc, deleteDoc, increment } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { useNavigate, useParams } from 'react-router-dom';
-import { FaArrowLeft, FaEllipsisV, FaTags, FaGift } from 'react-icons/fa';
+import { FaArrowLeft, FaEllipsisV, FaTags, FaGift, FaWhatsapp } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 
 const OrderSummary = () => {
@@ -136,6 +136,34 @@ const OrderSummary = () => {
         setTimeout(() => setCopiedState(false), 2000);
     };
 
+    const generarMensajeWhatsApp = (order) => {
+        const resumenURL = `https://www.cambacuavetshop.com.ar/order-summary/${order.id}`;
+    
+        let mensaje = `*📦 Pedido Nº ${order.id}*\n\n`;
+        mensaje += `¡Confirmo el pedido!\n\n`;
+    
+        mensaje += `🔁 *Acceder nuevamente al resumen:*\n${resumenURL}\n\n`;
+    
+        mensaje += `💳 *Método de Pago:* ${order.metodoPago}\n`;
+        mensaje += `💰 *Total:* $${order.total}\n\n`;
+    
+        mensaje += `👤 *Datos del Cliente*\n`;
+        mensaje += `📍 Nombre: ${order.nombre}\n`;
+        mensaje += `🏠 Dirección: ${order.direccion}\n`;
+        if (order.telefono) mensaje += `📞 Teléfono: ${order.telefono}\n`;
+        if (order.email) mensaje += `📧 Email: ${order.email}\n\n`;
+    
+        mensaje += `🛒 *Productos*\n`;
+        order.productos.forEach((item) => {
+            mensaje += `• ${item.name} x${item.quantity} - $${(item.price * item.quantity).toFixed(2)}\n`;
+        });
+    
+        mensaje += `\n📎 *Adjunto comprobante:*`;
+        
+    
+        return encodeURIComponent(mensaje);
+    };
+
     if (loading) { return <div className="order-summary-loading"><div className="css-loader"></div><h3>Cargando...</h3></div>; }
     if (!order) { return <div className="order-summary-error"><h2>Pedido no encontrado</h2><button onClick={() => navigate('/')}>Volver</button></div>; }
 
@@ -214,6 +242,20 @@ const OrderSummary = () => {
                 {order.indicaciones && (<div className="order-detail"><strong>Indicaciones:</strong><span>{order.indicaciones}</span></div>)}
                 {order.telefono && (<div className="order-detail"><strong>Teléfono:</strong><span>{order.telefono}</span></div>)}
                 {order.email && (<div className="order-detail"><strong>Email:</strong><span>{order.email}</span></div>)}
+            </div>
+
+            <div className="order-actions">
+                <button onClick={() => navigate('/miscompras')} className="action-button secondary">Ver mis compras</button>
+                {order.metodoPago === 'Transferencia Bancaria' && order.estado !== 'Cancelado' && (
+                    <a
+                        href={`https://wa.me/543795048310?text=${generarMensajeWhatsApp(order)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="action-button whatsapp"
+                    >
+                        <FaWhatsapp /> Ir a WhatsApp para Enviar Comprobante
+                    </a>
+                )}
             </div>
         </div>
     );
