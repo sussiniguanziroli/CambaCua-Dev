@@ -7,6 +7,8 @@ $border-color: #e0e0e0;
 $danger-color: #dc3545;
 $success-color: #28a745;
 $heading-color: #333333;
+$promo-color: #e67e22;
+$promo-gradient: linear-gradient(45deg, #ff8c00, #e67e22);
 
 @keyframes shimmer {
     0% {
@@ -249,7 +251,6 @@ $heading-color: #333333;
         }
     }
 
-
     .product-card {
         background-color: $main-white;
         border-radius: 10px;
@@ -277,6 +278,21 @@ $heading-color: #333333;
         border-top-left-radius: 10px;
         border-top-right-radius: 10px;
         background-color: $light-gray-bg;
+        position: relative;
+    }
+
+    .promo-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: $promo-gradient;
+        color: $main-white;
+        padding: 0.3rem 0.7rem;
+        border-radius: 5px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        z-index: 2;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
 
     .product-image {

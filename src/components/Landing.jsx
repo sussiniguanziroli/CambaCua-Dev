@@ -18,6 +18,7 @@ import {
   FaSyringe,
   FaSoap,
 } from "react-icons/fa";
+import LandingCard from "./landing/LandingCard";
 
 const processProduct = (doc) => {
     const data = doc.data();
@@ -50,46 +51,6 @@ const processProduct = (doc) => {
         _displayPrice: displayPrice,
         _hasAnyVariationStock: hasAnyVariationStock
     };
-};
-
-const ProductCard = ({ product }) => {
-    const isOutOfStock = product.hasVariations
-        ? !product._hasAnyVariationStock
-        : product._displayStock === 0;
-
-    const displayPrice = product.hasVariations
-        ? product._displayPrice !== null
-            ? `Desde $${product._displayPrice?.toFixed(2)}`
-            : 'Ver Opciones'
-        : `$${product._displayPrice?.toFixed(2)}`;
-    
-    const cardImage = product.imagen ||
-                      (product.hasVariations && product.variationsList?.[0]?.imagen) ||
-                      "https://placehold.co/400x400/E0E0E0/808080?text=No+Image";
-
-    return (
-        <div className={`product-card ${isOutOfStock ? 'out-of-stock' : ''}`}>
-            <NavLink to={`/producto/${product.id}`} className="image-container">
-                <img
-                    className="product-image"
-                    src={cardImage}
-                    alt={product.nombre}
-                />
-            </NavLink>
-            <div className="product-info">
-                <p className="product-category">{product.categoria}</p>
-                <h3 className="product-name">{product.nombre}</h3>
-                <strong className="product-price">{displayPrice}</strong>
-                {isOutOfStock ? (
-                    <div className="stock-status">Sin Stock</div>
-                ) : (
-                    <NavLink to={`/producto/${product.id}`} className="add-to-cart-button">
-                        {product.hasVariations ? "Ver Opciones" : "Ver Producto"}
-                    </NavLink>
-                )}
-            </div>
-        </div>
-    );
 };
 
 const ProductSlider = ({ products }) => {
@@ -139,7 +100,7 @@ const ProductSlider = ({ products }) => {
       <Slider>
         {products.map((product, index) => (
           <Slide index={index} key={product.id}>
-            <ProductCard product={product} />
+            <LandingCard product={product} />
           </Slide>
         ))}
       </Slider>
@@ -170,6 +131,19 @@ const Landing = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    const fetchProductsForSlider = async (baseQuery, maxLimit = 10) => {
+        const productsSnapshot = await getDocs(query(baseQuery, limit(maxLimit * 2)));
+        const productList = productsSnapshot.docs.map(processProduct);
+        
+        productList.sort((a, b) => {
+            const aHasPromo = a.promocion ? 1 : 0;
+            const bHasPromo = b.promocion ? 1 : 0;
+            return bHasPromo - aHasPromo;
+        });
+
+        return productList.slice(0, maxLimit);
+    };
+
     const fetchCategoriesAndProducts = async () => {
       setIsLoading(true);
       try {
@@ -183,23 +157,16 @@ const Landing = () => {
         const productsRef = collection(db, "productos");
         const newSliders = [];
 
-        const topSellersQuery = query(
+        const topSellersBaseQuery = query(
           productsRef,
           where("destacado", "==", true),
-          where("activo", "==", true),
-          limit(10)
+          where("activo", "==", true)
         );
-        const topSellersSnapshot = await getDocs(topSellersQuery);
-        let topSellersList = topSellersSnapshot.docs.map(processProduct);
+        let topSellersList = await fetchProductsForSlider(topSellersBaseQuery);
 
         if (topSellersList.length === 0) {
-          const fallbackQuery = query(
-            productsRef,
-            where("activo", "==", true),
-            limit(10)
-          );
-          const fallbackSnapshot = await getDocs(fallbackQuery);
-          topSellersList = fallbackSnapshot.docs.map(processProduct);
+            const fallbackBaseQuery = query(productsRef, where("activo", "==", true));
+            topSellersList = await fetchProductsForSlider(fallbackBaseQuery);
         }
 
         if (topSellersList.length > 0) {
@@ -211,14 +178,12 @@ const Landing = () => {
         }
 
         for (const category of categoriesList) {
-          const productsQuery = query(
+          const categoryBaseQuery = query(
             productsRef,
             where("categoryAdress", "==", category.adress),
-            where("activo", "==", true),
-            limit(10)
+            where("activo", "==", true)
           );
-          const productsSnapshot = await getDocs(productsQuery);
-          const productList = productsSnapshot.docs.map(processProduct);
+          const productList = await fetchProductsForSlider(categoryBaseQuery);
 
           if (productList.length > 0) {
             newSliders.push({
@@ -277,7 +242,7 @@ const Landing = () => {
           </p>
           <p className="welcome-text">
             Descubre nuestra tienda virtual, donde tu peludo encontrará todo lo
-            que necesita �🐱
+            que necesita 🐶🐱
           </p>
         </section>
 

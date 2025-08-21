@@ -1,32 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { db } from '../../firebase/config';
-import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import ItemList from './ItemList';
 import { FiSearch } from 'react-icons/fi';
-import { Link } from 'react-router-dom';
-import { FaMinus, FaPlus, FaShoppingCart, FaTimes, FaTrashAlt } from 'react-icons/fa';
-import { CarritoProvider, useCarrito } from '../../context/CarritoContext';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 function useQuery() {
     return new URLSearchParams(useLocation().search);
 }
 
 const ItemListContainer = () => {
-    const { calcularTotales, carrito, eliminarDelCarrito, actualizarCantidad, vaciarCarrito } = useCarrito(CarritoProvider);
     const [productos, setProductos] = useState([]);
     const [filteredProducts, setFilteredProducts] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [categories, setCategories] = useState([]);
 
     const location = useLocation();
-    const queryParams = useQuery();
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedSubcategory, setSelectedSubcategory] = useState('');
-
-    const [isMenuHidden, setIsMenuHidden] = useState(true);
 
     useEffect(() => {
         const newParams = new URLSearchParams(location.search);
@@ -128,108 +119,14 @@ const ItemListContainer = () => {
         setSelectedCategory(categoryAdress);
         setSelectedSubcategory('');
     };
-
-    const toggleMenuFachaCarrito = () => {
-        setIsMenuHidden(!isMenuHidden);
-    };
-
-    const closeMenu = () => {
-        setIsMenuHidden(true);
-    };
-
-    const obtenerStockDisponible = async (productoId, variationId = null) => {
-        const productRef = doc(db, 'productos', productoId);
-        const productSnap = await getDoc(productRef);
-        if (productSnap.exists()) {
-            const data = productSnap.data();
-            if (data.hasVariations && variationId) {
-                const variation = data.variationsList.find(v => v.id === variationId);
-                return variation ? variation.stock : 0;
-            }
-            return data.stock;
-        }
-        return 0;
-    };
-
-    const handleCantidadChangeDesktop = async (id, e, variationId = null) => {
-        const cantidad = parseInt(e.target.value, 10);
-        const stockDisponible = await obtenerStockDisponible(id, variationId);
-
-        if (cantidad > stockDisponible) {
-            actualizarCantidad(id, stockDisponible, variationId);
-            toast.info(`Se ha alcanzado el máximo de productos disponibles (${stockDisponible})`);
-        } else if (cantidad > 0) {
-            actualizarCantidad(id, cantidad, variationId);
-        } else {
-            eliminarDelCarrito(id, variationId);
-            notifyEliminar();
-        }
-    };
-
-    const notifyEliminar = () => toast.error("Producto Eliminado!");
-    const notifyVaciar = () => toast.error("Carrito Vacio!");
-
+    
     const currentCategoryData = categories.find(cat => cat.adress === selectedCategory);
     const showSubcategories = currentCategoryData && currentCategoryData.subcategorias && currentCategoryData.subcategorias.length > 0;
-    const { total } = calcularTotales();
 
     return (
         <div className='item-list-container'>
             <div className='item-list-container-controls'>
                 <h1>Productos</h1>
-
-                <div className='carrito-button-container hiddenInMobile'>
-                    <button onClick={toggleMenuFachaCarrito} className='carrito-button'><FaShoppingCart />
-                        <strong>{carrito.length}</strong>
-                    </button>
-                </div>
-
-                <div className={`carrito-menu-desk ${isMenuHidden ? 'hidden' : 'visible'}`}>
-                    <button className='close-menu-button' onClick={closeMenu}>
-                        <FaTimes />
-                    </button>
-                    <h2>Tu Carrito</h2>
-                    {carrito.length === 0 ? (
-                        <p>El carrito está vacío</p>
-                    ) : (
-                        <div>
-                            {carrito.map(item => (
-                                <div key={item.id + (item.variationId || '')} className="carrito-item-desk">
-                                    <div className='carrito-first-item'>
-                                        <img src={item.imageUrl} alt={item.name} />
-                                        <h2>
-                                            {item.name}
-                                            {item.hasVariations && item.attributes && (
-                                                <span className="text-sm text-gray-600 ml-2">
-                                                    ({Object.values(item.attributes).join(', ')})
-                                                </span>
-                                            )}
-                                        </h2>
-                                    </div>
-                                    <p>Precio: ${item.price?.toFixed(2)}</p>
-                                    <div className="cantidad-control">
-                                        <button onClick={() => handleCantidadChangeDesktop(item.id, { target: { value: item.quantity - 1 } }, item.variationId)}><FaMinus /></button>
-                                        <input
-                                            type="number"
-                                            value={item.quantity}
-                                            onChange={(e) => handleCantidadChangeDesktop(item.id, e, item.variationId)}
-                                        />
-                                        <button onClick={() => handleCantidadChangeDesktop(item.id, { target: { value: item.quantity + 1 } }, item.variationId)}><FaPlus /></button>
-                                    </div>
-                                    <div className='precio-borrar'>
-                                        <p className="total-price">Subtotal: ${(item.price * item.quantity)?.toFixed(2)}</p>
-                                        <button className="eliminar-button" onClick={() => { eliminarDelCarrito(item.id, item.variationId); notifyEliminar() }}>
-                                            <FaTrashAlt />Eliminar
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                            <strong className='total-compra'>Total Compra: ${total.toFixed(2)}</strong>
-                            <button className='button-vaciar' onClick={() => { vaciarCarrito(); notifyVaciar() }}>Vaciar Carrito</button>
-                            <Link to="/checkout"><button className='button-comprar'>Continuar Compra</button></Link>
-                        </div>
-                    )}
-                </div>
 
                 <div className="search-container">
                     <input
