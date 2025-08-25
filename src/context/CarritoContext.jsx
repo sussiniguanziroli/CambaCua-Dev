@@ -43,47 +43,59 @@ export const CarritoProvider = ({ children }) => {
                     variationId: producto.variationId || null,
                     attributes: producto.attributes || null,
                     promocion: producto.promocion || null,
+                    categoria: producto.categoria || null,
                 }];
             }
         });
     };
 
     const calcularTotales = (productosInfo = {}) => {
-        let subtotal = 0;
-        let totalDescuentos = 0;
-
-        carrito.forEach(item => {
+        let subtotalBruto = 0;
+        let descuentoPromociones = 0;
+        const detailedCart = carrito.map(item => {
             const itemKey = item.id + (item.variationId || '');
             const info = productosInfo[itemKey] || {};
-            const itemPrice = item.price ?? info.price ?? 0;
-            
-            const itemSubtotal = itemPrice * item.quantity;
-            subtotal += itemSubtotal;
+            const originalPrice = item.price ?? info.price ?? 0;
+            const itemSubtotal = originalPrice * item.quantity;
+            let itemPromoDiscount = 0;
 
             if (item.promocion) {
                 switch (item.promocion.type) {
                     case 'percentage_discount':
-                        totalDescuentos += itemSubtotal * (item.promocion.value / 100);
+                        itemPromoDiscount = itemSubtotal * (item.promocion.value / 100);
                         break;
                     case '2x1':
                         const pares2x1 = Math.floor(item.quantity / 2);
-                        totalDescuentos += pares2x1 * itemPrice;
+                        itemPromoDiscount = pares2x1 * originalPrice;
                         break;
                     case 'second_unit_discount':
                         const pares2daUnidad = Math.floor(item.quantity / 2);
-                        totalDescuentos += pares2daUnidad * itemPrice * (item.promocion.value / 100);
+                        itemPromoDiscount = pares2daUnidad * originalPrice * (item.promocion.value / 100);
                         break;
                     default:
                         break;
                 }
             }
+            
+            subtotalBruto += itemSubtotal;
+            descuentoPromociones += itemPromoDiscount;
+
+            return {
+                ...item,
+                originalPrice: originalPrice,
+                finalPrice: originalPrice - (itemPromoDiscount / item.quantity),
+                promoDiscount: itemPromoDiscount,
+                categoria: item.categoria ?? info.categoria,
+            };
         });
 
-        const total = subtotal - totalDescuentos;
+        const totalNeto = subtotalBruto - descuentoPromociones;
+
         return {
-            subtotal: subtotal,
-            descuentos: totalDescuentos,
-            total: total,
+            subtotalBruto,
+            descuentoPromociones,
+            totalNeto,
+            detailedCart,
         };
     };
 

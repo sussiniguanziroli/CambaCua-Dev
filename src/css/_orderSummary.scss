@@ -9,7 +9,7 @@
   position: relative;
 
   .order-detail {
-    &.promo-discount, &.points-discount {
+    &.promo-discount, &.points-discount, &.convenio-discount {
       font-weight: 500;
       span, strong {
         color: #059669;
@@ -129,7 +129,9 @@
       text-transform: uppercase;
       font-size: 0.9rem;
       &.pendiente { background-color: #ffedd5; color: #9a3412; }
-      &.completado { background-color: #dcfce7; color: #166534; }
+      &.pagado { background-color: #d1fae5; color: #065f46; }
+      &.programado { background-color: #dbeafe; color: #1e40af; }
+      &.completado, &.enviado { background-color: #dcfce7; color: #166534; }
       &.cancelado { background-color: #fee2e2; color: #991b1b; }
     }
   }
@@ -151,8 +153,9 @@
 
     .order-detail {
       display: flex;
+      flex-wrap: wrap;
       margin-bottom: 0.5rem;
-      strong { min-width: 120px; color: #374151; }
+      strong { min-width: 140px; color: #374151; }
       span { color: #6b7280; }
     }
   }
@@ -251,7 +254,7 @@
     }
   }
 
-  .copy-button {
+  .copy-button, .copy-alias-button {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;

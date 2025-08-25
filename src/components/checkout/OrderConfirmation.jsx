@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { collection, addDoc, Timestamp, writeBatch, doc, getDoc, increment } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import Swal from 'sweetalert2';
@@ -7,7 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import DeliveryCostCalculator from '../utils/DeliveryCostCalculator';
 import { isStoreOpen } from '../utils/isStoreOpen';
-import { FaGift, FaTags } from 'react-icons/fa';
+import { FaGift, FaTags, FaHandshake } from 'react-icons/fa';
 
 const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryCost, onBack }) => {
     const { carrito, vaciarCarrito, calcularTotales } = useCarrito();
@@ -16,13 +16,8 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [productosInfo, setProductosInfo] = useState({});
     const [userScore, setUserScore] = useState(0);
+    const [userRole, setUserRole] = useState(null);
     const [applyPoints, setApplyPoints] = useState(false);
-    
-    const [totales, setTotales] = useState({
-        subtotal: 0,
-        descuentos: 0,
-        total: 0,
-    });
 
     useEffect(() => {
         const fetchMissingDetails = async () => {
@@ -30,12 +25,12 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
             let needsUpdate = false;
             for (const item of carrito) {
                 const itemKey = item.id + (item.variationId || '');
-                if (!productosInfo[itemKey] && (!item.price || !item.name || !item.imageUrl)) {
+                if (!productosInfo[itemKey] && (!item.name || !item.imageUrl || !item.categoria)) {
                     const productRef = doc(db, 'productos', item.id);
                     const productSnap = await getDoc(productRef);
                     if (productSnap.exists()) {
                         const productData = productSnap.data();
-                        const fetchedDetails = {};
+                        const fetchedDetails = { categoria: productData.categoria };
                         if (productData.hasVariations && item.variationId) {
                             const variation = productData.variationsList.find(v => v.id === item.variationId);
                             if (variation) {
@@ -65,28 +60,42 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
             fetchMissingDetails();
         }
     }, [carrito, productosInfo]);
-    
-    useEffect(() => {
-        const calculatedTotals = calcularTotales(productosInfo);
-        setTotales(calculatedTotals);
-    }, [carrito, productosInfo, calcularTotales]);
 
     useEffect(() => {
-        const fetchUserScore = async () => {
+        const fetchUserData = async () => {
             if (currentUser) {
                 const userRef = doc(db, 'users', currentUser.uid);
                 const userSnap = await getDoc(userRef);
                 if (userSnap.exists()) {
                     setUserScore(userSnap.data().score || 0);
+                    setUserRole(userSnap.data().role || 'baseCustomer');
                 }
             }
         };
-        fetchUserScore();
+        fetchUserData();
     }, [currentUser]);
 
-    const maxDiscountFromPoints = Math.min(userScore, totales.total);
+    const { subtotalBruto, descuentoPromociones, totalNeto, detailedCart } = useMemo(
+        () => calcularTotales(productosInfo),
+        [carrito, productosInfo, calcularTotales]
+    );
+
+    const convenioDiscountAmount = useMemo(() => {
+        if (userRole !== 'convenioCustomer' || !detailedCart.length) {
+            return 0;
+        }
+        const subtotalConvenio = detailedCart.reduce((acc, item) => {
+            if (item.categoria !== 'Alimentos') {
+                return acc + (item.finalPrice * item.quantity);
+            }
+            return acc;
+        }, 0);
+        return subtotalConvenio * 0.10;
+    }, [detailedCart, userRole]);
+
+    const maxDiscountFromPoints = Math.min(userScore, totalNeto - convenioDiscountAmount);
     const pointsDiscountAmount = applyPoints ? maxDiscountFromPoints : 0;
-    const finalTotal = totales.total - pointsDiscountAmount;
+    const total = totalNeto - convenioDiscountAmount - pointsDiscountAmount;
 
     const getPromoDescription = (item) => {
         if (!item.promocion) return null;
@@ -107,16 +116,11 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
             const itemKey = item.id + (item.variationId || '');
             const info = productosInfo[itemKey] || {};
             return {
-                id: item.id,
-                quantity: item.quantity,
-                hasVariations: item.hasVariations ?? false,
-                variationId: item.variationId || null,
-                promocion: item.promocion || null,
+                id: item.id, quantity: item.quantity, hasVariations: item.hasVariations ?? false,
+                variationId: item.variationId || null, promocion: item.promocion || null,
                 name: item.name ?? info.name ?? 'Nombre no disponible',
-                price: item.price ?? info.price ?? 0,
-                imageUrl: item.imageUrl ?? info.imageUrl ?? null,
-                attributes: item.attributes ?? info.attributes ?? null,
-                stock: item.stock ?? 0,
+                price: item.price ?? info.price ?? 0, imageUrl: item.imageUrl ?? info.imageUrl ?? null,
+                attributes: item.attributes ?? info.attributes ?? null, stock: item.stock ?? 0,
             };
         });
 
@@ -134,13 +138,11 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
                     } else {
                         currentStock = productData.stock || 0;
                     }
-
                     if (item.quantity > currentStock) {
                         stockInsuficiente = true;
                         Swal.fire('Stock insuficiente', `No hay suficiente stock para ${item.name}. Solo quedan ${currentStock} unidades.`, 'error');
                         throw new Error("Insufficient stock");
                     }
-                    
                     if (productData.hasVariations && item.variationId) {
                         const newVariationsList = productData.variationsList.map(v => v.id === item.variationId ? { ...v, stock: v.stock - item.quantity } : v);
                         batch.update(productoRef, { variationsList: newVariationsList });
@@ -155,11 +157,11 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
             const pedido = {
                 userId: currentUser.uid, email: currentUser.email, ...formData,
                 productos: finalCarrito,
-                subtotal: totales.subtotal,
-                descuentoPromociones: totales.descuentos,
-                total: totales.total,
+                subtotalBruto: subtotalBruto,
+                descuentoPromociones: descuentoPromociones,
+                descuentoConvenio: convenioDiscountAmount,
                 puntosDescontados: pointsDiscountAmount,
-                totalConDescuento: finalTotal,
+                total: total,
                 costoEnvio: deliveryCost,
                 fecha: Timestamp.now(),
                 estado: isScheduled ? 'Programado' : 'Pendiente',
@@ -226,26 +228,29 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
             <div className="order-summary-details">
                 <h3>Resumen de Productos</h3>
                 <div className="checkout-items">
-                    {carrito.map(item => {
+                    {detailedCart.map(item => {
                         const itemKey = item.id + (item.variationId || '');
                         const info = productosInfo[itemKey] || {};
-                        const price = item.price ?? info.price ?? 0;
-                        const name = item.name ?? info.name ?? 'Cargando...';
-                        const imageUrl = item.imageUrl ?? info.imageUrl ?? 'https://placehold.co/100x100/eee/ccc?text=...';
-                        const attributes = item.attributes ?? info.attributes ?? {};
+                        const name = item.name || info.name || 'Cargando...';
+                        const imageUrl = item.imageUrl || info.imageUrl || 'https://placehold.co/100x100/eee/ccc?text=...';
+                        const hasPromo = item.promoDiscount > 0;
                         const promoDescription = getPromoDescription(item);
+
                         return (
                             <div key={itemKey} className="checkout-item">
                                 <div className="product-details">
                                     <img src={imageUrl} alt={name} />
                                     <div className="product-info">
                                         <h3>{name}</h3>
-                                        {item.hasVariations && attributes && Object.keys(attributes).length > 0 && (<p className="item-variation-attrs">{Object.entries(attributes).map(([key, value]) => `${key}: ${value}`).join(' | ')}</p>)}
+                                        {item.hasVariations && item.attributes && Object.keys(item.attributes).length > 0 && (<p className="item-variation-attrs">{Object.entries(item.attributes).map(([key, value]) => `${key}: ${value}`).join(' | ')}</p>)}
                                         {promoDescription && <span className="promo-badge-checkout">{promoDescription}</span>}
                                         <p>Cant: {item.quantity}</p>
                                     </div>
                                 </div>
-                                <div className="product-price">${(price * item.quantity).toFixed(2)}</div>
+                                <div className="product-price">
+                                    {hasPromo && <span className="original-price-confirm">${(item.originalPrice * item.quantity).toFixed(2)}</span>}
+                                    <span>${(item.finalPrice * item.quantity).toFixed(2)}</span>
+                                </div>
                             </div>
                         );
                     })}
@@ -267,12 +272,18 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
                 <div className="order-total-summary">
                     <div className="total-row">
                         <span>Subtotal:</span>
-                        <span>${totales.subtotal.toFixed(2)}</span>
+                        <span>${subtotalBruto.toFixed(2)}</span>
                     </div>
-                    {totales.descuentos > 0 && (
+                    {descuentoPromociones > 0 && (
                         <div className="total-row promo-discount">
                             <span><FaTags /> Descuentos por Promociones:</span>
-                            <span>-${totales.descuentos.toFixed(2)}</span>
+                            <span>-${descuentoPromociones.toFixed(2)}</span>
+                        </div>
+                    )}
+                    {convenioDiscountAmount > 0 && (
+                         <div className="total-row convenio-discount">
+                            <span><FaHandshake /> Descuento Convenio:</span>
+                            <span>-${convenioDiscountAmount.toFixed(2)}</span>
                         </div>
                     )}
                     {pointsDiscountAmount > 0 && (
@@ -282,8 +293,8 @@ const OrderConfirmation = ({ formData, paymentMethod, deliveryCost, setDeliveryC
                         </div>
                     )}
                     <div className="total-row grand-total">
-                        <span>Total de Productos:</span>
-                        <span>${finalTotal.toFixed(2)}</span>
+                        <span>Total a Pagar:</span>
+                        <span>${total.toFixed(2)}</span>
                     </div>
                     <p className="payment-method-notice">A pagar por {paymentMethod}.</p>
                 </div>

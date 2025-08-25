@@ -2622,6 +2622,278 @@ html {
   background-color: #d1d5db;
 }
 
+.checkout-items {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+}
+.checkout-items .checkout-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+.checkout-items .checkout-item:last-child {
+  border-bottom: none;
+}
+.checkout-items .checkout-item .product-details {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+.checkout-items .checkout-item .product-details img {
+  width: 5rem;
+  height: 5rem;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+.checkout-items .checkout-item .product-details .product-info h3 {
+  color: #343a40;
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+.checkout-items .checkout-item .product-details .product-info p {
+  color: #555;
+  font-size: 0.9rem;
+}
+.checkout-items .checkout-item .product-details .product-info .promo-badge-checkout {
+  background-color: #e67e22;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  display: inline-block;
+}
+.checkout-items .checkout-item .product-price {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #343a40;
+  text-align: right;
+}
+.checkout-items .checkout-item .product-price .original-price-confirm {
+  text-decoration: line-through;
+  color: #999;
+  font-weight: 400;
+  font-size: 0.9rem;
+  margin-right: 0.5rem;
+}
+
+.points-discount-section {
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+  color: #14532d;
+  text-align: center;
+}
+.points-discount-section h4 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+.points-discount-section p {
+  margin: 0 0 1rem 0;
+  font-size: 0.95rem;
+}
+.points-discount-section .points-toggle-button {
+  padding: 0.75rem 2rem;
+  background-color: #059669;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+.points-discount-section .points-toggle-button:hover {
+  background-color: #047857;
+  transform: translateY(-2px);
+}
+.points-discount-section .points-toggle-button.active {
+  background-color: #ef4444;
+}
+.points-discount-section .points-toggle-button.active:hover {
+  background-color: #dc2626;
+}
+
+h2, h3 {
+  color: #0b369c;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+input[type=text],
+input[type=tel],
+input[type=email],
+input[type=number] {
+  padding: 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+input[type=text]:focus,
+input[type=tel]:focus,
+input[type=email]:focus,
+input[type=number]:focus {
+  outline: none;
+  border-color: #0b369c;
+  box-shadow: 0 0 0 3px rgba(11, 54, 156, 0.15);
+}
+
+.payment-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.checkout-button {
+  position: relative;
+  padding: 0.8rem 1.5rem;
+  background-color: #0b369c;
+  color: #ffffff;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+.checkout-button:hover {
+  background-color: #1d5aea;
+}
+.checkout-button.secondary {
+  background-color: #e5e7eb;
+  color: #374151;
+}
+.checkout-button.secondary:hover {
+  background-color: #d1d5db;
+}
+.checkout-button.loading {
+  padding-left: 3rem;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+.checkout-button .button-loader {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+}
+@keyframes spin {
+  to {
+    transform: translateY(-50%) rotate(360deg);
+  }
+}
+
+.delivery-calculator-container {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+}
+.delivery-calculator-container h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #111827;
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+.delivery-calculator-container .delivery-address-info {
+  margin-bottom: 1rem;
+}
+.delivery-calculator-container .delivery-address-info p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+.delivery-calculator-container .delivery-address-info strong {
+  font-size: 1rem;
+  color: #374151;
+}
+.delivery-calculator-container .calculate-button {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: 500;
+  background-color: #0b369c;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.delivery-calculator-container .calculate-button:hover {
+  background-color: #1d5aea;
+}
+.delivery-calculator-container .calculate-button:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+.delivery-calculator-container .button-loader-small {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+.delivery-calculator-container .delivery-cost-result {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #eef2ff;
+  border-radius: 6px;
+  text-align: center;
+}
+.delivery-calculator-container .delivery-cost-result p {
+  margin: 0;
+  color: #4338ca;
+  font-weight: 500;
+}
+.delivery-calculator-container .delivery-cost-result span {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #4338ca;
+}
+.delivery-calculator-container .delivery-error {
+  margin-top: 1rem;
+  color: #ef4444;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
 .item-detail-loading {
   padding: 1rem 0;
   min-height: 85vh;
@@ -2946,6 +3218,22 @@ html {
   font-size: 1rem;
   color: #555;
 }
+.order-details-container .convenio-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background-color: #e7f5ff;
+  border: 1px solid #b3d7ff;
+  color: #004085;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  width: 100%;
+  text-align: center;
+}
 .order-details-container .user-score-display {
   display: flex;
   align-items: center;
@@ -3081,6 +3369,9 @@ html {
 .order-details-container .order-summary-header .order-details-right .status-badge.pagado {
   background-color: #28a745;
 }
+.order-details-container .order-summary-header .order-details-right .status-badge.programado {
+  background-color: #17a2b8;
+}
 .order-details-container .order-summary-header .order-details-right .status-badge.completado, .order-details-container .order-summary-header .order-details-right .status-badge.enviado {
   background-color: #17a2b8;
 }
@@ -3135,6 +3426,9 @@ html {
 }
 .order-details-container .order-details-expanded .expanded-section .discount-details.promo-discount-details {
   color: #e67e22;
+}
+.order-details-container .order-details-expanded .expanded-section .discount-details.convenio-discount-details {
+  color: #0d6efd;
 }
 .order-details-container .order-details-expanded .expanded-section .discount-details.points-discount-details {
   color: #28a745;
@@ -3254,10 +3548,10 @@ html {
   font-family: "Poppins", sans-serif;
   position: relative;
 }
-.order-summary-container .order-detail.promo-discount, .order-summary-container .order-detail.points-discount {
+.order-summary-container .order-detail.promo-discount, .order-summary-container .order-detail.points-discount, .order-summary-container .order-detail.convenio-discount {
   font-weight: 500;
 }
-.order-summary-container .order-detail.promo-discount span, .order-summary-container .order-detail.promo-discount strong, .order-summary-container .order-detail.points-discount span, .order-summary-container .order-detail.points-discount strong {
+.order-summary-container .order-detail.promo-discount span, .order-summary-container .order-detail.promo-discount strong, .order-summary-container .order-detail.points-discount span, .order-summary-container .order-detail.points-discount strong, .order-summary-container .order-detail.convenio-discount span, .order-summary-container .order-detail.convenio-discount strong {
   color: #059669;
   display: flex;
   align-items: center;
@@ -3379,7 +3673,15 @@ html {
   background-color: #ffedd5;
   color: #9a3412;
 }
-.order-summary-container .order-status .status-badge.completado {
+.order-summary-container .order-status .status-badge.pagado {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+.order-summary-container .order-status .status-badge.programado {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+.order-summary-container .order-status .status-badge.completado, .order-summary-container .order-status .status-badge.enviado {
   background-color: #dcfce7;
   color: #166534;
 }
@@ -3403,10 +3705,11 @@ html {
 }
 .order-summary-container .order-section .order-detail {
   display: flex;
+  flex-wrap: wrap;
   margin-bottom: 0.5rem;
 }
 .order-summary-container .order-section .order-detail strong {
-  min-width: 120px;
+  min-width: 140px;
   color: #374151;
 }
 .order-summary-container .order-section .order-detail span {
@@ -3503,7 +3806,7 @@ html {
 .order-summary-container .order-actions .action-button.whatsapp:hover {
   background-color: rgb(30.9129032258, 176.2870967742, 85.2193548387);
 }
-.order-summary-container .copy-button {
+.order-summary-container .copy-button, .order-summary-container .copy-alias-button {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -3515,10 +3818,10 @@ html {
   transition: all 0.3s ease;
   font-size: 0.9rem;
 }
-.order-summary-container .copy-button:hover {
+.order-summary-container .copy-button:hover, .order-summary-container .copy-alias-button:hover {
   background-color: #e5e7eb;
 }
-.order-summary-container .copy-button.copied {
+.order-summary-container .copy-button.copied, .order-summary-container .copy-alias-button.copied {
   background-color: #10b981;
   color: white;
 }

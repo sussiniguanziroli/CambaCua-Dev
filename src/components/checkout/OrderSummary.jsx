@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { doc, getDoc, writeBatch, setDoc, deleteDoc, increment } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { useNavigate, useParams } from 'react-router-dom';
-import { FaArrowLeft, FaEllipsisV, FaTags, FaGift, FaWhatsapp } from 'react-icons/fa';
+import { FaArrowLeft, FaEllipsisV, FaTags, FaGift, FaWhatsapp, FaHandshake } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 
 const OrderSummary = () => {
@@ -137,30 +137,22 @@ const OrderSummary = () => {
     };
 
     const generarMensajeWhatsApp = (order) => {
-        const resumenURL = `https://www.cambacuavetshop.com.ar/order-summary/${order.id}`;
-    
+        const resumenURL = `${window.location.origin}/order-summary/${order.id}`;
         let mensaje = `*📦 Pedido Nº ${order.id}*\n\n`;
         mensaje += `¡Confirmo el pedido!\n\n`;
-    
         mensaje += `🔁 *Acceder nuevamente al resumen:*\n${resumenURL}\n\n`;
-    
         mensaje += `💳 *Método de Pago:* ${order.metodoPago}\n`;
-        mensaje += `💰 *Total:* $${order.total}\n\n`;
-    
+        mensaje += `💰 *Total a Pagar:* $${order.total.toFixed(2)}\n\n`;
         mensaje += `👤 *Datos del Cliente*\n`;
         mensaje += `📍 Nombre: ${order.nombre}\n`;
         mensaje += `🏠 Dirección: ${order.direccion}\n`;
         if (order.telefono) mensaje += `📞 Teléfono: ${order.telefono}\n`;
         if (order.email) mensaje += `📧 Email: ${order.email}\n\n`;
-    
         mensaje += `🛒 *Productos*\n`;
         order.productos.forEach((item) => {
             mensaje += `• ${item.name} x${item.quantity} - $${(item.price * item.quantity).toFixed(2)}\n`;
         });
-    
         mensaje += `\n📎 *Adjunto comprobante:*`;
-        
-    
         return encodeURIComponent(mensaje);
     };
 
@@ -168,7 +160,6 @@ const OrderSummary = () => {
     if (!order) { return <div className="order-summary-error"><h2>Pedido no encontrado</h2><button onClick={() => navigate('/')}>Volver</button></div>; }
 
     const canCancel = ['Pendiente', 'Pagado', 'Programado'].includes(order.estado);
-    const finalTotal = order.totalConDescuento ?? order.total;
 
     return (
         <div className="order-summary-container">
@@ -196,10 +187,11 @@ const OrderSummary = () => {
             <div className="order-section">
                 <h3>Detalles del Pedido</h3>
                 <div className="order-detail"><strong>Fecha:</strong><span>{order.fecha}</span></div>
-                <div className="order-detail"><strong>Subtotal:</strong><span>${order.subtotal.toFixed(2)}</span></div>
+                <div className="order-detail"><strong>Subtotal:</strong><span>${order.subtotalBruto.toFixed(2)}</span></div>
                 {order.descuentoPromociones > 0 && (<div className="order-detail promo-discount"><strong><FaTags /> Descuento Promociones:</strong><span>-${order.descuentoPromociones.toFixed(2)}</span></div>)}
+                {order.descuentoConvenio > 0 && (<div className="order-detail convenio-discount"><strong><FaHandshake /> Descuento Convenio:</strong><span>-${order.descuentoConvenio.toFixed(2)}</span></div>)}
                 {order.puntosDescontados > 0 && (<div className="order-detail points-discount"><strong><FaGift /> Descuento por Puntos:</strong><span>-${order.puntosDescontados.toFixed(2)}</span></div>)}
-                <div className="order-detail grand-total"><strong>Total Productos:</strong><span>${finalTotal.toFixed(2)}</span></div>
+                <div className="order-detail grand-total"><strong>Total a Pagar:</strong><span>${order.total.toFixed(2)}</span></div>
                 {order.costoEnvio > 0 && (<div className="order-detail"><strong>Costo Envío:</strong><span>${order.costoEnvio.toFixed(2)}</span></div>)}
                 <div className="order-detail"><strong>Método de Pago:</strong><span>{order.metodoPago}</span></div>
             </div>

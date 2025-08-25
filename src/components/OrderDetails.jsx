@@ -3,7 +3,7 @@ import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firesto
 import { db } from '../firebase/config';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import { FaSearch, FaChevronDown, FaChevronUp, FaGift, FaTags } from 'react-icons/fa';
+import { FaSearch, FaChevronDown, FaChevronUp, FaGift, FaTags, FaHandshake } from 'react-icons/fa';
 
 const getPromoDescription = (item) => {
     if (!item.promocion) return null;
@@ -33,7 +33,6 @@ const OrderProductItem = ({ item }) => {
 
 const OrderHistoryItem = ({ order }) => {
     const [isExpanded, setIsExpanded] = useState(false);
-    const totalFinal = order.totalConDescuento ?? order.total;
 
     return (
         <div className="order-history-item">
@@ -43,7 +42,7 @@ const OrderHistoryItem = ({ order }) => {
                     <span className="order-date">{order.fecha}</span>
                 </div>
                 <div className="order-details-right">
-                    <span className="order-total">${totalFinal.toFixed(2)}</span>
+                    <span className="order-total">${order.total.toFixed(2)}</span>
                     <span className={`status-badge ${order.estado.toLowerCase()}`}>{order.estado}</span>
                     <button className="expand-button">{isExpanded ? <FaChevronUp /> : <FaChevronDown />}</button>
                 </div>
@@ -62,12 +61,17 @@ const OrderHistoryItem = ({ order }) => {
                         <p><strong>Método de Pago:</strong> {order.metodoPago}</p>
                         {order.costoEnvio > 0 && <p><strong>Costo de Envío:</strong> ${order.costoEnvio.toFixed(2)}</p>}
                     </div>
-                     {(order.descuentoPromociones > 0 || order.puntosDescontados > 0) && (
+                     {(order.descuentoPromociones > 0 || order.puntosDescontados > 0 || order.descuentoConvenio > 0) && (
                          <div className="expanded-section">
                             <h4>Descuentos Aplicados</h4>
                             {order.descuentoPromociones > 0 && (
                                 <p className="discount-details promo-discount-details">
                                     <FaTags /> <strong>Promociones:</strong> -${order.descuentoPromociones.toFixed(2)}
+                                </p>
+                            )}
+                            {order.descuentoConvenio > 0 && (
+                                <p className="discount-details convenio-discount-details">
+                                    <FaHandshake /> <strong>Convenio:</strong> -${order.descuentoConvenio.toFixed(2)}
                                 </p>
                             )}
                             {order.puntosDescontados > 0 && (
@@ -88,6 +92,7 @@ const OrderDetails = () => {
     const { currentUser } = useAuth();
     const [allOrders, setAllOrders] = useState([]);
     const [userScore, setUserScore] = useState(0);
+    const [userRole, setUserRole] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
@@ -102,7 +107,10 @@ const OrderDetails = () => {
             try {
                 const userRef = doc(db, "users", currentUser.uid);
                 const userSnap = await getDoc(userRef);
-                if (userSnap.exists()) { setUserScore(userSnap.data().score || 0); }
+                if (userSnap.exists()) { 
+                    setUserScore(userSnap.data().score || 0);
+                    setUserRole(userSnap.data().role || 'baseCustomer');
+                }
 
                 const q1 = query(collection(db, "pedidos"), where("userId", "==", currentUser.uid));
                 const q2 = query(collection(db, "pedidos_completados"), where("userId", "==", currentUser.uid));
@@ -130,12 +138,10 @@ const OrderDetails = () => {
         let orders = [...allOrders];
         if (searchTerm) { orders = orders.filter(order => order.id.toLowerCase().includes(searchTerm.toLowerCase())); }
         orders.sort((a, b) => {
-            const totalA = a.totalConDescuento ?? a.total;
-            const totalB = b.totalConDescuento ?? b.total;
             switch (sortOption) {
                 case 'date-asc': return a.fecha - b.fecha;
-                case 'total-desc': return totalB - totalA;
-                case 'total-asc': return totalA - totalB;
+                case 'total-desc': return b.total - a.total;
+                case 'total-asc': return a.total - b.total;
                 case 'date-desc': default: return b.fecha - a.fecha;
             }
         });
@@ -151,6 +157,13 @@ const OrderDetails = () => {
                 <h2>Mis Compras</h2>
                 <p>Aquí encontrarás el historial de todos tus pedidos.</p>
             </div>
+            
+            {userRole === 'convenioCustomer' && (
+                <div className="convenio-banner">
+                    <FaHandshake />
+                    <span>¡Convenio Activo! 10% OFF</span>
+                </div>
+            )}
 
             <div className="user-score-display">
                 <FaGift />

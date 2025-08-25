@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useCarrito } from '../context/CarritoContext';
 import { useAuth } from '../context/AuthContext';
-import { FaTrashAlt, FaArrowLeft, FaPlus, FaMinus } from 'react-icons/fa';
+import { FaTrashAlt, FaArrowLeft, FaPlus, FaMinus, FaHandshake } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -14,6 +14,7 @@ const Carrito = () => {
     const { currentUser } = useAuth();
     const navigate = useNavigate();
     const [productosInfo, setProductosInfo] = useState({});
+    const [userRole, setUserRole] = useState(null);
 
     useEffect(() => {
         const cargarDatosFaltantes = async () => {
@@ -28,10 +29,10 @@ const Carrito = () => {
                         if (data.hasVariations && item.variationId) {
                             const variacion = data.variationsList.find(v => v.id === item.variationId);
                             if (variacion) {
-                                nuevosDatos[itemKey] = { name: data.nombre, imageUrl: variacion.imagen || data.imagen, price: variacion.precio, attributes: variacion.attributes || {} };
+                                nuevosDatos[itemKey] = { name: data.nombre, imageUrl: variacion.imagen || data.imagen, price: variacion.precio, attributes: variacion.attributes || {}, categoria: data.categoria };
                             }
                         } else {
-                            nuevosDatos[itemKey] = { name: data.nombre, imageUrl: data.imagen, price: data.precio };
+                            nuevosDatos[itemKey] = { name: data.nombre, imageUrl: data.imagen, price: data.precio, categoria: data.categoria };
                         }
                     }
                 }
@@ -45,7 +46,40 @@ const Carrito = () => {
         }
     }, [carrito]);
 
-    const totales = calcularTotales(productosInfo);
+    useEffect(() => {
+        const fetchUserRole = async () => {
+            if (currentUser) {
+                const userRef = doc(db, 'users', currentUser.uid);
+                const userSnap = await getDoc(userRef);
+                if (userSnap.exists()) {
+                    setUserRole(userSnap.data().role || 'baseCustomer');
+                }
+            } else {
+                setUserRole(null);
+            }
+        };
+        fetchUserRole();
+    }, [currentUser]);
+
+    const { subtotalBruto, descuentoPromociones, totalNeto, detailedCart } = useMemo(
+        () => calcularTotales(productosInfo),
+        [carrito, productosInfo, calcularTotales]
+    );
+
+    const convenioDiscountAmount = useMemo(() => {
+        if (userRole !== 'convenioCustomer' || !detailedCart.length) {
+            return 0;
+        }
+        const subtotalConvenio = detailedCart.reduce((acc, item) => {
+            if (item.categoria !== 'Alimentos') {
+                return acc + (item.finalPrice * item.quantity);
+            }
+            return acc;
+        }, 0);
+        return subtotalConvenio * 0.10;
+    }, [detailedCart, userRole]);
+
+    const finalTotal = totalNeto - convenioDiscountAmount;
 
     const handleContinuarCompra = () => {
         if (!currentUser) {
@@ -220,18 +254,24 @@ const Carrito = () => {
                          <div className="summary-section">
                             <div className="summary-row">
                                 <span className="summary-label">Subtotal:</span>
-                                <span className="summary-value">${totales.subtotal.toFixed(2)}</span>
+                                <span className="summary-value">${subtotalBruto.toFixed(2)}</span>
                             </div>
-                            {totales.descuentos > 0 && (
+                            {descuentoPromociones > 0 && (
                                 <div className="summary-row discount">
                                     <span className="summary-label">Descuentos:</span>
-                                    <span className="summary-value">- ${totales.descuentos.toFixed(2)}</span>
+                                    <span className="summary-value">- ${descuentoPromociones.toFixed(2)}</span>
+                                </div>
+                            )}
+                            {convenioDiscountAmount > 0 && (
+                                <div className="summary-row discount convenio">
+                                    <span className="summary-label"><FaHandshake /> Convenio:</span>
+                                    <span className="summary-value">- ${convenioDiscountAmount.toFixed(2)}</span>
                                 </div>
                             )}
                          </div>
                          <div className="total-section">
                              <span className="total-label">Total:</span>
-                             <span className="total-amount">${totales.total.toFixed(2)}</span>
+                             <span className="total-amount">${finalTotal.toFixed(2)}</span>
                          </div>
                          <div className="actions-section">
                              <button className="vaciar-carrito-button" onClick={handleVaciarCarrito}>

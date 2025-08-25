@@ -92,34 +92,49 @@ const Item = ({ producto, notifyAgregado, notifyCarrito, notifyCopiar }) => {
     const discountedPrice = calculateDiscountedPrice(producto._displayPrice, producto.promocion);
 
     const renderPrice = () => {
-        const originalPrice = producto._displayPrice;
+    const originalPrice = producto._displayPrice;
 
-        if (producto.hasVariations) {
-            if (originalPrice === Infinity || originalPrice === null) {
-                return <strong className="product-price">Ver Opciones</strong>;
-            }
-            const discountedVariationPrice = calculateDiscountedPrice(originalPrice, producto.promocion);
-            if (discountedVariationPrice !== null) {
-                return (
-                    <div className="price-container">
-                        <strong className="product-price final-price">Desde ${discountedVariationPrice.toFixed(2)}</strong>
-                        <span className="product-price original-price">Desde ${originalPrice.toFixed(2)}</span>
-                    </div>
-                );
-            }
-            return <strong className="product-price">Desde ${originalPrice.toFixed(2)}</strong>;
+    const formatPrice = (price) =>
+        price?.toLocaleString("es-AR", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        });
+
+    if (producto.hasVariations) {
+        if (originalPrice === Infinity || originalPrice === null) {
+            return <strong className="product-price">Ver Opciones</strong>;
         }
-
-        if (discountedPrice !== null) {
+        const discountedVariationPrice = calculateDiscountedPrice(originalPrice, producto.promocion);
+        if (discountedVariationPrice !== null) {
             return (
                 <div className="price-container">
-                    <strong className="product-price final-price">${discountedPrice.toFixed(2)}</strong>
-                    <span className="product-price original-price">${originalPrice.toFixed(2)}</span>
+                    <strong className="product-price final-price">
+                        Desde ${formatPrice(discountedVariationPrice)}
+                    </strong>
+                    <span className="product-price original-price">
+                        Desde ${formatPrice(originalPrice)}
+                    </span>
                 </div>
             );
         }
-        return <strong className="product-price">${originalPrice?.toFixed(2)}</strong>;
-    };
+        return <strong className="product-price">Desde ${formatPrice(originalPrice)}</strong>;
+    }
+
+    if (discountedPrice !== null) {
+        return (
+            <div className="price-container">
+                <strong className="product-price final-price">
+                    ${formatPrice(discountedPrice)}
+                </strong>
+                <span className="product-price original-price">
+                    ${formatPrice(originalPrice)}
+                </span>
+            </div>
+        );
+    }
+    return <strong className="product-price">${formatPrice(originalPrice)}</strong>;
+};
+
 
     return (
         <>
