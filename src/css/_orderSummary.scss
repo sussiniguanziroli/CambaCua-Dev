@@ -202,7 +202,25 @@
           font-size: 0.9rem;
           display: flex;
           gap: 1rem;
+          align-items: center;
           span { display: flex; align-items: center; }
+
+          .price-container {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+
+            .original-price-crossed {
+              text-decoration: line-through;
+              color: #9ca3af;
+              font-size: 0.85rem;
+            }
+
+            .final-price {
+              font-weight: 600;
+              color: #374151;
+            }
+          }
         }
       }
 

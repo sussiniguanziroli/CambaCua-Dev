@@ -203,6 +203,29 @@ const OrderSummary = () => {
                 <div className="order-products">
                     {order.productos.map((item, index) => {
                         const promoDescription = getPromoDescription(item);
+                        let discountedPrice = null;
+                        let lineItemSubtotal = item.price * item.quantity;
+                        
+                        if (item.promocion) {
+                            switch (item.promocion.type) {
+                                case 'percentage_discount':
+                                    discountedPrice = item.price * (1 - item.promocion.value / 100);
+                                    lineItemSubtotal = discountedPrice * item.quantity;
+                                    break;
+                                case '2x1':
+                                    const pairs2x1 = Math.floor(item.quantity / 2);
+                                    lineItemSubtotal = (item.quantity - pairs2x1) * item.price;
+                                    break;
+                                case 'second_unit_discount':
+                                    const pairs2ndUnit = Math.floor(item.quantity / 2);
+                                    const discountAmount = pairs2ndUnit * item.price * (item.promocion.value / 100);
+                                    lineItemSubtotal -= discountAmount;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+
                         return (
                             <div key={`${item.id}-${item.variationId || index}`} className="product-item">
                                 <img src={item.imageUrl} alt={item.name} className="product-image"/>
@@ -210,9 +233,19 @@ const OrderSummary = () => {
                                     <h4>{item.name}</h4>
                                     {item.hasVariations && item.attributes && (<p className="product-variation-attrs">{Object.entries(item.attributes).map(([key, value]) => `${key}: ${value}`).join(' | ')}</p>)}
                                     {promoDescription && <span className="promo-badge-summary">{promoDescription}</span>}
-                                    <div className="product-meta"><span>${item.price?.toFixed(2)} c/u</span><span>Cant: {item.quantity}</span></div>
+                                    <div className="product-meta">
+                                        {discountedPrice !== null ? (
+                                            <span className="price-container">
+                                                <span className="original-price-crossed">${item.price?.toFixed(2)}</span>
+                                                <span className="final-price">${discountedPrice.toFixed(2)} c/u</span>
+                                            </span>
+                                        ) : (
+                                            <span>${item.price?.toFixed(2)} c/u</span>
+                                        )}
+                                        <span>Cant: {item.quantity}</span>
+                                    </div>
                                 </div>
-                                <div className="product-subtotal">${(item.price * item.quantity)?.toFixed(2)}</div>
+                                <div className="product-subtotal">${lineItemSubtotal.toFixed(2)}</div>
                             </div>
                         );
                     })}
