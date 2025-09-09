@@ -3,7 +3,8 @@ import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firesto
 import { db } from '../firebase/config';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import { FaSearch, FaChevronDown, FaChevronUp, FaGift, FaTags, FaHandshake } from 'react-icons/fa';
+import { FaSearch, FaChevronDown, FaChevronUp, FaGift, FaTags, FaHandshake, FaTicketAlt } from 'react-icons/fa';
+import CouponRedeemer from './utils/CouponRedeemer';
 
 const getPromoDescription = (item) => {
     if (!item.promocion) return null;
@@ -97,6 +98,7 @@ const OrderDetails = () => {
     const [error, setError] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [sortOption, setSortOption] = useState('date-desc');
+    const [isRedeemerOpen, setIsRedeemerOpen] = useState(false);
 
     useEffect(() => {
         if (!currentUser) { setLoading(false); return; }
@@ -134,6 +136,10 @@ const OrderDetails = () => {
         fetchData();
     }, [currentUser]);
 
+    const handleRedemptionSuccess = (pointsAdded) => {
+        setUserScore(prevScore => prevScore + pointsAdded);
+    };
+
     const filteredAndSortedOrders = useMemo(() => {
         let orders = [...allOrders];
         if (searchTerm) { orders = orders.filter(order => order.id.toLowerCase().includes(searchTerm.toLowerCase())); }
@@ -152,50 +158,68 @@ const OrderDetails = () => {
     if (error) { return <div className="order-details-container"><p className="error-message">{error}</p></div>; }
 
     return (
-        <div className="order-details-container my-purchases-container">
-            <div className="my-purchases-header">
-                <h2>Mis Compras</h2>
-                <p>Aquí encontrarás el historial de todos tus pedidos.</p>
-            </div>
-            
-            {userRole === 'convenioCustomer' && (
-                <div className="convenio-banner">
-                    <FaHandshake />
-                    <span>¡Convenio Activo! 10% OFF</span>
+        <>
+            <div className="order-details-container my-purchases-container">
+                <div className="my-purchases-header">
+                    <h2>Mis Compras</h2>
+                    <p>Aquí encontrarás el historial de todos tus pedidos.</p>
                 </div>
-            )}
-
-            <div className="user-score-display">
-                <FaGift />
-                <span>Tus Puntos: <strong>{userScore}</strong></span>
-            </div>
-
-            <div className="controls-bar">
-                <div className="search-control">
-                    <FaSearch />
-                    <input type="text" placeholder="Buscar por N° de pedido..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-                </div>
-                <div className="sort-control">
-                    <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
-                        <option value="date-desc">Más Recientes</option>
-                        <option value="date-asc">Más Antiguas</option>
-                        <option value="total-desc">Mayor Total</option>
-                        <option value="total-asc">Menor Total</option>
-                    </select>
-                </div>
-            </div>
-
-            <div className="order-history-list">
-                {filteredAndSortedOrders.length > 0 ? (
-                    filteredAndSortedOrders.map(order => <OrderHistoryItem key={order.id} order={order} />)
-                ) : (
-                    <div className="no-orders-found">
-                        {searchTerm ? <p>No se encontraron pedidos.</p> : <p>Aún no has realizado ninguna compra.</p> }
-                        <Link to="/productos" className="shop-now-button">Ir a la Tienda</Link>
+                
+                {userRole === 'convenioCustomer' && (
+                    <div className="convenio-banner">
+                        <FaHandshake />
+                        <span>¡Convenio Activo! 10% OFF</span>
                     </div>
                 )}
+
+                <div className="user-panel">
+                    <div className="score-display">
+                         <FaGift />
+                         <div className="score-text">
+                            <span>Tus Puntos</span>
+                            <strong>{userScore}</strong>
+                         </div>
+                    </div>
+                    <div className="redeem-action">
+                        <button className="redeem-btn" onClick={() => setIsRedeemerOpen(true)}>
+                            <FaTicketAlt /> Canjear Cupón
+                        </button>
+                    </div>
+                </div>
+
+
+                <div className="controls-bar">
+                    <div className="search-control">
+                        <FaSearch />
+                        <input type="text" placeholder="Buscar por N° de pedido..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                    </div>
+                    <div className="sort-control">
+                        <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
+                            <option value="date-desc">Más Recientes</option>
+                            <option value="date-asc">Más Antiguas</option>
+                            <option value="total-desc">Mayor Total</option>
+                            <option value="total-asc">Menor Total</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div className="order-history-list">
+                    {filteredAndSortedOrders.length > 0 ? (
+                        filteredAndSortedOrders.map(order => <OrderHistoryItem key={order.id} order={order} />)
+                    ) : (
+                        <div className="no-orders-found">
+                            {searchTerm ? <p>No se encontraron pedidos.</p> : <p>Aún no has realizado ninguna compra.</p> }
+                            <Link to="/productos" className="shop-now-button">Ir a la Tienda</Link>
+                        </div>
+                    )}
+                </div>
             </div>
-        </div>
+            <CouponRedeemer 
+                isOpen={isRedeemerOpen} 
+                onClose={() => setIsRedeemerOpen(false)}
+                onRedemptionSuccess={handleRedemptionSuccess}
+            />
+        </>
     );
 };
 

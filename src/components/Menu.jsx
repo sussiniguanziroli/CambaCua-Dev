@@ -96,7 +96,7 @@ const Menu = () => {
             </li>
             <li>
               <NavLink onClick={closeMenu} to="/miscompras" className="burger-nav-item" activeclassname="burger-active">
-                Mis Compras
+                Mis Compras y Perfil
               </NavLink>
             </li>
           </ul>

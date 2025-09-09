@@ -26,7 +26,7 @@ const NavBar = () => {
         <NavLink className={getNavLinkClass} to="/">Inicio</NavLink>
         <NavLink className={getNavLinkClass} to="/productos">Tienda</NavLink>
         <NavLink className={getNavLinkClass} to="/contacto">Contacto</NavLink>
-        <NavLink className={getNavLinkClass} to="/miscompras">Mis Compras</NavLink>
+        <NavLink className={getNavLinkClass} to="/miscompras">Mis Compras y Perfil</NavLink>
       </div>
       <div className='auth-links'>
         {currentUser ? (
