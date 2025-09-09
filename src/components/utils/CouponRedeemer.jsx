@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { db } from '../../firebase/config';
-import { collection, query, where, getDocs, writeBatch, doc, increment, serverTimestamp, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, writeBatch, doc, increment, serverTimestamp, getDoc, arrayUnion } from 'firebase/firestore';
 import { useAuth } from '../../context/AuthContext';
 import Swal from 'sweetalert2';
 import { FaTicketAlt, FaTimes } from 'react-icons/fa';
@@ -43,16 +43,24 @@ const CouponRedeemer = ({ isOpen, onClose, onRedemptionSuccess }) => {
                  throw new Error("Este cupón ha expirado.");
             }
             
-            if (couponData.batchId) {
-                const batchRef = doc(db, "coupon_batches", couponData.batchId);
-                const batchSnap = await getDoc(batchRef);
-                if (!batchSnap.exists() || !batchSnap.data().isActive) {
-                    throw new Error("Esta promoción de cupones ya no se encuentra activa.");
-                }
-            } else {
-                throw new Error("Error de validación del cupón. Contacta a soporte.");
+            if (!couponData.batchId) {
+                 throw new Error("Error de validación del cupón. Contacta a soporte.");
             }
 
+            const userRef = doc(db, 'users', currentUser.uid);
+            const batchRef = doc(db, "coupon_batches", couponData.batchId);
+            
+            const [userSnap, batchSnap] = await Promise.all([getDoc(userRef), getDoc(batchRef)]);
+
+            if (!batchSnap.exists() || !batchSnap.data().isActive) {
+                throw new Error("Esta promoción de cupones ya no se encuentra activa.");
+            }
+            
+            const userData = userSnap.data();
+            const claimedBatches = userData.claimedCouponBatches || [];
+            if (claimedBatches.includes(couponData.batchId)) {
+                throw new Error("Ya has canjeado un cupón de esta promoción.");
+            }
 
             const batch = writeBatch(db);
             
@@ -63,9 +71,9 @@ const CouponRedeemer = ({ isOpen, onClose, onRedemptionSuccess }) => {
                 claimedAt: serverTimestamp()
             });
 
-            const userRef = doc(db, 'users', currentUser.uid);
             batch.update(userRef, {
-                score: increment(couponData.points)
+                score: increment(couponData.points),
+                claimedCouponBatches: arrayUnion(couponData.batchId)
             });
 
             await batch.commit();
@@ -85,7 +93,7 @@ const CouponRedeemer = ({ isOpen, onClose, onRedemptionSuccess }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="coupon-redeemer-overlay">
+        <div className="coupon-redeemer-overlay open">
             <div className="coupon-redeemer-modal">
                 <button className="close-btn" onClick={onClose}><FaTimes /></button>
                 <h3><FaTicketAlt /> Canjear Cupón</h3>
