@@ -82,7 +82,10 @@ const OrderHistoryItem = ({ order }) => {
                             )}
                         </div>
                     )}
-                    <Link to={`/order-summary/${order.id}`} className="details-link">Ver Resumen Completo</Link>
+                    <div style={{ display: 'flex', gap: '10px', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+                        <Link to={`/order-summary/${order.id}`} className="details-link" style={{ marginTop: 0 }}>Ver Resumen Completo</Link>
+                        <Link to="/devoluciones-reclamos" className="details-link" style={{ marginTop: 0, backgroundColor: '#e67e22' }}>Reclamos / Devoluciones</Link>
+                    </div>
                 </div>
             )}
         </div>
@@ -186,7 +189,6 @@ const OrderDetails = () => {
                         </button>
                     </div>
                 </div>
-
 
                 <div className="controls-bar">
                     <div className="search-control">

@@ -16,6 +16,7 @@ import OrderSummary from "./components/checkout/OrderSummary.jsx";
 import FloatingCartButton from "./components/carrito/FloatingCartButton.jsx";
 import AuthPage from "./components/auth/AuthPage.jsx";
 import ProtectedRoute from "./components/auth/ProtectedRoute.jsx";
+import DevolucionesReclamos from "./components/DevolucionesReclamos.jsx";
 
 function App() {
   return (
@@ -53,6 +54,10 @@ function App() {
               <Route
                 path="/order-summary/:orderId"
                 element={<OrderSummary />}
+              />
+              <Route 
+                path="/devoluciones-reclamos" 
+                element={<DevolucionesReclamos />} 
               />
             </Routes>
             <FloatingCartButton />
