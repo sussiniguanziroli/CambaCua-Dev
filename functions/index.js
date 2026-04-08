@@ -78,8 +78,8 @@ exports.calculateDeliveryCost = functions.https.onRequest((request, response) =>
         return response.status(500).json({ error: "No se pudo calcular la distancia a esa ubicación." });
       }
       const distanceInKm = data.rows[0].elements[0].distance.value / 1000;
-      const baseFee = 1600;
-      const costPerExtraKm = 600;
+      const baseFee = 2100;
+      const costPerExtraKm = 700;
       const finalCost = (distanceInKm <= 1) ? baseFee : baseFee + ((distanceInKm - 1) * costPerExtraKm);
       const roundedCost = Math.round(finalCost / 100) * 100;
       log(`Calculated cost: ${roundedCost} for distance: ${distanceInKm}km`);
